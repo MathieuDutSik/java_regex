@@ -1,4 +1,3 @@
-use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Flag {
@@ -72,8 +71,8 @@ impl Regex {
 
         // Handle special anchors
         let start_anchor = self.pattern.starts_with("\\A");
-        let end_anchor = self.pattern.ends_with("\\z");
-        let end_anchor_z = self.pattern.ends_with("\\Z");
+        let _end_anchor = self.pattern.ends_with("\\z");
+        let _end_anchor_z = self.pattern.ends_with("\\Z");
 
         let start_pos = if start_anchor { 0 } else { 0 };
 
@@ -99,10 +98,10 @@ impl Regex {
         matches
     }
 
-    fn try_match_at(&self, input: &str, start_pos: usize) -> Option<MatchInfo> {
+    fn try_match_at(&self, input: &str, _start_pos: usize) -> Option<MatchInfo> {
         let (matched, groups) = self.match_pattern(&self.pattern, input)?;
 
-        if matched {
+        if !matched.is_empty() {
             Some(MatchInfo {
                 matched_text: matched,
                 groups,
@@ -261,8 +260,9 @@ impl Regex {
                     }
 
                     if let Some((matched, rest_groups)) = best_match {
-                        result = matched;
-                        pos += matched.len();
+                        let matched_len = matched.len();
+                        result = matched.clone();
+                        pos += matched_len;
                         groups.extend(rest_groups);
                         i += 1;
                     } else {
@@ -290,8 +290,9 @@ impl Regex {
                     }
 
                     if let Some((matched, rest_groups)) = best_match {
-                        result = matched;
-                        pos += matched.len();
+                        let matched_len = matched.len();
+                        result = matched.clone();
+                        pos += matched_len;
                         groups.extend(rest_groups);
                         i += 1;
                     } else {
@@ -359,8 +360,9 @@ impl Regex {
                     }
 
                     if let Some((matched, rest_groups)) = best_match {
-                        result = matched;
-                        pos += matched.len();
+                        let matched_len = matched.len();
+                        result = matched.clone();
+                        pos += matched_len;
                         groups.extend(rest_groups);
                     } else {
                         return None;
@@ -377,7 +379,7 @@ impl Regex {
                     }
 
                     // Try second alternative
-                    let second_alt = &pat_chars[i + 1..];
+                    let second_alt: String = pat_chars[i + 1..].iter().collect();
                     if let Some(result) = self.match_pattern(&second_alt, input) {
                         return Some(result);
                     }
@@ -434,7 +436,7 @@ impl Regex {
         Some((i + 1, class))
     }
 
-    fn match_char_class(&self, c: char, class_pattern: &str, start: usize) -> bool {
+    fn match_char_class(&self, c: char, class_pattern: &str, _start: usize) -> bool {
         let chars: Vec<char> = class_pattern.chars().collect();
         let mut i = 0;
 
@@ -445,21 +447,15 @@ impl Regex {
                 // Negated class
                 i += 1;
                 let negated = true;
-                if self.match_char_class_inner(c, &chars[i..], start) == negated {
+                if self.match_char_class_inner(c, &chars[i..], _start) == negated {
                     return true;
                 }
                 return false;
             }
 
             if p == '[' && i + 1 < chars.len() && chars[i + 1] == '^' {
-                // Intersection
+                // Intersection - skip this for now as it requires nested extraction
                 i += 2;
-                let (end_bracket, inner) = self.extract_char_class(&chars, i)?;
-                i = end_bracket;
-
-                if self.match_char_class_inner(c, &inner, start) {
-                    return true;
-                }
                 continue;
             }
 
@@ -484,7 +480,7 @@ impl Regex {
         false
     }
 
-    fn match_char_class_inner(&self, c: char, chars: &[char], start: usize) -> bool {
+    fn match_char_class_inner(&self, c: char, chars: &[char], _start: usize) -> bool {
         let mut i = 0;
         while i < chars.len() {
             let p = chars[i];

@@ -47,6 +47,7 @@ enum Node {
     },
     Group {
         index: Option<usize>,
+        #[allow(dead_code)]
         name: Option<String>,
         inner: Pattern,
     },
@@ -405,9 +406,9 @@ impl Parser {
             }
 
             // Octal (1-3 digits starting with 0-3 for 3-digit, or 0-7 for 2-digit)
-            ch if ch >= '1' && ch <= '3' && self.remaining() >= 2
-                && self.chars.get(self.pos).map_or(false, |c| *c >= '0' && *c <= '7')
-                && self.chars.get(self.pos + 1).map_or(false, |c| *c >= '0' && *c <= '7')
+            ch if ('1'..='3').contains(&ch) && self.remaining() >= 2
+                && self.chars.get(self.pos).is_some_and(|c| ('0'..='7').contains(c))
+                && self.chars.get(self.pos + 1).is_some_and(|c| ('0'..='7').contains(c))
                 && (ch as u32 - '0' as u32) * 64
                     + (self.chars[self.pos] as u32 - '0' as u32) * 8
                     + (self.chars[self.pos + 1] as u32 - '0' as u32) <= 0o377 => {
@@ -566,7 +567,7 @@ impl Parser {
         let mut oct = String::new();
         for i in 0..3 {
             if let Some(c) = self.peek() {
-                if c >= '0' && c <= '7' {
+                if ('0'..='7').contains(&c) {
                     if i == 0 && c > '3' {
                         // First digit can be 0-3 for 3-digit octal
                         oct.push(c);
@@ -1104,7 +1105,7 @@ impl Parser {
                         let mut oct = String::new();
                         for _ in 0..3 {
                             if let Some(c) = self.peek() {
-                                if c >= '0' && c <= '7' { oct.push(c); self.advance(); }
+                                if ('0'..='7').contains(&c) { oct.push(c); self.advance(); }
                                 else { break; }
                             }
                         }
@@ -1235,7 +1236,8 @@ impl Engine {
     }
 
     /// Try to match pattern at position pos.
-    /// Returns (matched, end_pos, captures) if successful.
+    /// Returns (end_pos, captures) if successful.
+    #[allow(clippy::type_complexity)]
     fn try_match_at(&mut self, pattern: &Pattern, pos: usize) -> Option<(usize, Vec<Option<(usize, usize)>>)> {
         let mut state = State::new(self.group_count);
         if self.match_pattern(pattern, &[], pos, &mut state) {
@@ -1442,7 +1444,7 @@ impl Engine {
                 if !result {
                     self.flags = old_flags;
                 }
-                return result;
+                result
             }
 
             Node::FlagGroup { flags, inner } => {
@@ -1460,12 +1462,12 @@ impl Engine {
                     state.captures = saved;
                 }
                 self.flags = old_flags;
-                return false;
+                false
             }
 
             Node::RestoreFlags(flags) => {
                 self.flags = *flags;
-                return self.match_nodes(&nodes[1..], pos, state);
+                self.match_nodes(&nodes[1..], pos, state)
             }
 
             Node::GraphemeCluster => {
@@ -1489,6 +1491,7 @@ impl Engine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn match_greedy(
         &mut self,
         atom: &Node,
@@ -1522,6 +1525,7 @@ impl Engine {
         false
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn try_match_atom_greedy(
         &mut self,
         atom: &Node,
@@ -1628,7 +1632,7 @@ impl Engine {
             _ => {
                 // For other node types, use the generic approach
                 let mut temp_state = state.clone();
-                if self.match_nodes(&[atom.clone()], pos, &mut temp_state) {
+                if self.match_nodes(std::slice::from_ref(atom), pos, &mut temp_state) {
                     let new_pos = temp_state.match_end;
                     if new_pos > pos {
                         state.captures = temp_state.captures;
@@ -1643,6 +1647,7 @@ impl Engine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn match_reluctant(
         &mut self,
         atom: &Node,
@@ -1674,6 +1679,7 @@ impl Engine {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn try_match_atom_reluctant(
         &mut self,
         atom: &Node,
@@ -1736,13 +1742,11 @@ impl Engine {
             }
             _ => {
                 let mut temp_state = state.clone();
-                if self.match_nodes(&[atom.clone()], pos, &mut temp_state) {
+                if self.match_nodes(std::slice::from_ref(atom), pos, &mut temp_state) {
                     let new_pos = temp_state.match_end;
                     if new_pos > pos {
                         state.captures = temp_state.captures;
                         self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state)
-                    } else if new_pos == pos && count >= min {
-                        false
                     } else {
                         false
                     }
@@ -1768,7 +1772,7 @@ impl Engine {
 
         while count < max {
             let mut temp_state = state.clone();
-            if self.match_nodes(&[atom.clone()], current_pos, &mut temp_state) {
+            if self.match_nodes(std::slice::from_ref(atom), current_pos, &mut temp_state) {
                 let new_pos = temp_state.match_end;
                 if new_pos <= current_pos {
                     break; // no progress
@@ -1837,12 +1841,11 @@ impl Engine {
         for start in (0..=pos).rev() {
             let mut temp_state = State::new(self.group_count);
             temp_state.captures = state.captures.clone();
-            if self.match_pattern(inner, &[], start, &mut temp_state) {
-                if temp_state.match_end == pos {
-                    // Copy captures from lookbehind
-                    state.captures = temp_state.captures;
-                    return true;
-                }
+            if self.match_pattern(inner, &[], start, &mut temp_state)
+                && temp_state.match_end == pos {
+                // Copy captures from lookbehind
+                state.captures = temp_state.captures;
+                return true;
             }
         }
         false
@@ -1989,7 +1992,7 @@ fn match_predefined_class(pc: PredefinedClass, ch: char, unicode: bool) -> bool 
 
 fn match_unicode_property(name: &str, ch: char) -> bool {
     // Handle "Is" prefix for script names
-    let name = if name.starts_with("Is") { &name[2..] } else { name };
+    let name = name.strip_prefix("Is").unwrap_or(name);
     // Handle "In" prefix for block names
     let name_lower = name.to_lowercase();
 
@@ -2110,8 +2113,8 @@ fn is_script_greek(ch: char) -> bool {
 }
 
 fn is_script_latin(ch: char) -> bool {
-    ('\u{0041}'..='\u{005A}').contains(&ch) ||
-    ('\u{0061}'..='\u{007A}').contains(&ch) ||
+    ch.is_ascii_uppercase() ||
+    ch.is_ascii_lowercase() ||
     ('\u{00C0}'..='\u{00FF}').contains(&ch) ||
     ('\u{0100}'..='\u{024F}').contains(&ch) ||
     ('\u{1E00}'..='\u{1EFF}').contains(&ch)
@@ -2150,9 +2153,7 @@ fn unicode_general_category(ch: char) -> UnicodeCategory {
         UnicodeCategory::Lu
     } else if ch.is_ascii_lowercase() || (ch.is_lowercase() && !ch.is_ascii()) {
         UnicodeCategory::Ll
-    } else if ch.is_ascii_digit() {
-        UnicodeCategory::Nd
-    } else if ch.is_numeric() && !ch.is_ascii_digit() {
+    } else if ch.is_ascii_digit() || ch.is_numeric() {
         UnicodeCategory::Nd
     } else if ch.is_alphabetic() && !ch.is_uppercase() && !ch.is_lowercase() {
         UnicodeCategory::Lo
@@ -2179,7 +2180,7 @@ fn unicode_general_category(ch: char) -> UnicodeCategory {
             UnicodeCategory::Pd
         } else if ch == '`' {
             UnicodeCategory::Sk
-        } else if cp >= 0xE000 && cp <= 0xF8FF {
+        } else if (0xE000..=0xF8FF).contains(&cp) {
             UnicodeCategory::Co
         } else if (0x0300..=0x036F).contains(&cp) || (0x0483..=0x0489).contains(&cp) ||
                   (0x0591..=0x05BD).contains(&cp) || (0x0610..=0x061A).contains(&cp) ||
@@ -2452,7 +2453,7 @@ impl Regex {
         parts.push(input_chars[last_end..].iter().collect());
 
         // Java: remove trailing empty strings
-        while parts.last().map_or(false, |s: &String| s.is_empty()) {
+        while parts.last().is_some_and(|s: &String| s.is_empty()) {
             parts.pop();
         }
 

@@ -1,6 +1,5 @@
 use java_regex::Regex;
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::fs;
 
 #[derive(Deserialize, Debug)]
@@ -20,6 +19,7 @@ struct TestCase {
 struct FindMatch {
     m: String,
     #[serde(default)]
+    #[allow(dead_code)]
     g: Option<Vec<serde_json::Value>>,
 }
 
@@ -112,7 +112,7 @@ fn run_test(test: &TestCase) -> Result<bool, String> {
 }
 
 fn run_test_file(path: &str) -> (usize, usize, Vec<String>) {
-    let content = fs::read_to_string(path).expect(&format!("Failed to read {}", path));
+    let content = fs::read_to_string(path).unwrap_or_else(|_| panic!("Failed to read {}", path));
     let mut passed = 0;
     let mut total = 0;
     let mut failures = Vec::new();

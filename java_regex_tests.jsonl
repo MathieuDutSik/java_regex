@@ -1,0 +1,105 @@
+{"id": "T0001", "pattern": "abc", "input": "abc", "op": "matches", "expect": true}
+{"id": "T0002", "pattern": "abc", "input": "zabc", "op": "find", "expect": [{"m": "abc"}]}
+{"id": "T0003", "pattern": "\\.", "input": ".", "op": "matches", "expect": true}
+{"id": "T0004", "pattern": "\\\\", "input": "\\ ", "op": "find", "expect": [{"m": "\\"}], "note": "match a single backslash in input '\\ ' (backslash then space)"}
+{"id": "T0005", "pattern": "\\Q.*+?^$()[]{}|\\E", "input": ".*+?^$()[]{}|", "op": "matches", "expect": true}
+{"id": "T0006", "pattern": "\\Q\\w+\\E", "input": "\\w+", "op": "matches", "expect": true}
+{"id": "T0007", "pattern": "^abc$", "input": "abc", "op": "matches", "expect": true}
+{"id": "T0008", "pattern": "^abc$", "input": "xabc", "op": "matches", "expect": false}
+{"id": "T0009", "pattern": "^abc", "input": "abc\nabc", "op": "find", "flags": "m", "expect": [{"m": "abc"}, {"m": "abc"}], "note": "MULTILINE"}
+{"id": "T0010", "pattern": "abc$", "input": "abc\nabc", "op": "find", "flags": "m", "expect": [{"m": "abc"}, {"m": "abc"}], "note": "MULTILINE"}
+{"id": "T0011", "pattern": "\\Aabc", "input": "abc\nxabc", "op": "find", "expect": [{"m": "abc"}]}
+{"id": "T0012", "pattern": "abc\\z", "input": "xabc", "op": "find", "expect": [{"m": "abc"}]}
+{"id": "T0013", "pattern": "abc\\z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\z is absolute end"}
+{"id": "T0014", "pattern": "abc\\Z", "input": "abc\n", "op": "matches", "expect": true, "note": "\\Z allows final newline"}
+{"id": "T0015", "pattern": "\\bcat\\b", "input": "a cat! bobcat cat_", "op": "find", "expect": [{"m": "cat"}], "note": "cat_ is word char '_' so boundary fails at end"}
+{"id": "T0016", "pattern": "\\Bcat\\B", "input": "bobcat", "op": "find", "expect": [{"m": "cat"}]}
+{"id": "T0017", "pattern": "[abc]+", "input": "abac", "op": "matches", "expect": true}
+{"id": "T0018", "pattern": "[^abc]+", "input": "def", "op": "matches", "expect": true}
+{"id": "T0019", "pattern": "[a-z]+", "input": "azby", "op": "matches", "expect": true}
+{"id": "T0020", "pattern": "[a-z&&[^aeiou]]+", "input": "rhythm", "op": "matches", "expect": true, "note": "class intersection/subtraction"}
+{"id": "T0021", "pattern": "[a-z&&[^aeiou]]+", "input": "aei", "op": "matches", "expect": false}
+{"id": "T0022", "pattern": "[\\d]+", "input": "123", "op": "matches", "expect": true}
+{"id": "T0023", "pattern": "\\d+", "input": "12a34", "op": "find", "expect": [{"m": "12"}, {"m": "34"}]}
+{"id": "T0024", "pattern": "\\D+", "input": "12a34", "op": "find", "expect": [{"m": "a"}]}
+{"id": "T0025", "pattern": "\\w+", "input": "hi_there-42", "op": "find", "expect": [{"m": "hi_there"}, {"m": "42"}]}
+{"id": "T0026", "pattern": "\\W+", "input": "hi_there-42", "op": "find", "expect": [{"m": "-"}]}
+{"id": "T0027", "pattern": "\\s+", "input": "a \t \n b", "op": "find", "expect": [{"m": " \t \n "}]}
+{"id": "T0028", "pattern": "a.*b", "input": "a\nb", "op": "matches", "expect": false}
+{"id": "T0029", "pattern": "a.*b", "input": "a\nb", "op": "matches", "flags": "s", "expect": true, "note": "DOTALL"}
+{"id": "T0030", "pattern": ".+", "input": "", "op": "matches", "expect": false}
+{"id": "T0031", "pattern": ".*", "input": "", "op": "matches", "expect": true}
+{"id": "T0032", "pattern": "a.*b", "input": "a123b456b", "op": "find", "expect": [{"m": "a123b456b"}], "note": "greedy"}
+{"id": "T0033", "pattern": "a.*?b", "input": "a123b456b", "op": "find", "expect": [{"m": "a123b"}], "note": "reluctant"}
+{"id": "T0034", "pattern": "a.++b", "input": "a123b", "op": "matches", "expect": false, "note": "possessive prevents backtracking; fails because .++ eats '123b'"}
+{"id": "T0035", "pattern": "a(?:.++)b", "input": "a123b", "op": "matches", "expect": false, "note": "same with explicit group"}
+{"id": "T0036", "pattern": "a(?:.*+)b", "input": "a123b", "op": "matches", "expect": false}
+{"id": "T0037", "pattern": "a(?:.*)b", "input": "a123b", "op": "matches", "expect": true}
+{"id": "T0038", "pattern": "a{3}", "input": "aaab", "op": "find", "expect": [{"m": "aaa"}]}
+{"id": "T0039", "pattern": "a{3,}", "input": "aaaa", "op": "matches", "expect": true}
+{"id": "T0040", "pattern": "a{3,5}", "input": "aaaaaa", "op": "matches", "expect": false}
+{"id": "T0041", "pattern": "(ab){2,3}", "input": "ababab", "op": "matches", "expect": true}
+{"id": "T0042", "pattern": "(ab)+", "input": "abab", "op": "matches", "expect": true}
+{"id": "T0043", "pattern": "(ab)+", "input": "ababa", "op": "matches", "expect": false}
+{"id": "T0044", "pattern": "(a)(b)(c)", "input": "abc", "op": "find", "expect": [{"m": "abc", "groups": ["a", "b", "c"]}]}
+{"id": "T0045", "pattern": "(?:a)(b)(?:c)", "input": "abc", "op": "find", "expect": [{"m": "abc", "groups": ["b"]}], "note": "non-capturing groups don't count"}
+{"id": "T0046", "pattern": "cat|dog", "input": "dog", "op": "matches", "expect": true}
+{"id": "T0047", "pattern": "(cat|dog)s?", "input": "cats dog cat", "op": "find", "expect": [{"m": "cats", "groups": ["cat"]}, {"m": "dog", "groups": ["dog"]}, {"m": "cat", "groups": ["cat"]}]}
+{"id": "T0048", "pattern": "(\\w+)\\s+\\1", "input": "go go stop", "op": "find", "expect": [{"m": "go go", "groups": ["go"]}], "note": "backreference"}
+{"id": "T0049", "pattern": "(?<w>\\w+)\\s+\\k<w>", "input": "hey hey", "op": "matches", "expect": true, "note": "named group backref (\\k<name>)"}
+{"id": "T0050", "pattern": "(?<w>\\w+)\\s+\\k<w>", "input": "hey ho", "op": "matches", "expect": false}
+{"id": "T0051", "pattern": "\\w+(?=:)", "input": "key:value", "op": "find", "expect": [{"m": "key"}], "note": "positive lookahead"}
+{"id": "T0052", "pattern": "\\w+(?!:)", "input": "key:value", "op": "find", "expect": [{"m": "key"}, {"m": "value"}], "note": "negative lookahead (substrings)"}
+{"id": "T0053", "pattern": "(?<=\\$)\\d+", "input": "cost $123 and $7", "op": "find", "expect": [{"m": "123"}, {"m": "7"}], "note": "lookbehind"}
+{"id": "T0054", "pattern": "(?<!\\$)\\d+", "input": "cost $123 and 7", "op": "find", "expect": [{"m": "7"}], "note": "negative lookbehind still matches digits in $123 after '$'? No, because first digit preceded by '$' so 123 should not match; but '7' should."}
+{"id": "T0055", "pattern": "(?<=\\w+)\\d+", "input": "a1", "op": "compile_error", "expect": "PatternSyntaxException", "note": "variable-length lookbehind not allowed"}
+{"id": "T0056", "pattern": "(?>a|ab)c", "input": "abc", "op": "matches", "expect": false, "note": "atomic group prevents backtracking from 'ab' alternative; picks 'a' then fails on 'c' with remaining 'bc'"}
+{"id": "T0057", "pattern": "(a|ab)c", "input": "abc", "op": "matches", "expect": true, "note": "non-atomic allows backtracking to 'ab'"}
+{"id": "T0058", "pattern": "abc", "input": "ABC", "op": "matches", "flags": "i", "expect": true}
+{"id": "T0059", "pattern": "(?i)abc", "input": "ABC", "op": "matches", "expect": true}
+{"id": "T0060", "pattern": "(?i:abc)", "input": "ABC", "op": "matches", "expect": true, "note": "scoped flag"}
+{"id": "T0061", "pattern": "abc", "input": "ABC", "op": "matches", "expect": false}
+{"id": "T0062", "pattern": "^a.c$", "input": "a\nc", "op": "matches", "flags": "ms", "expect": true, "note": "MULTILINE+DOTALL"}
+{"id": "T0063", "pattern": "(?x)a \\s+ b", "input": "a   b", "op": "matches", "expect": true, "note": "COMMENTS mode ignores spaces"}
+{"id": "T0064", "pattern": "(?x)a \\s+ b # comment", "input": "a   b", "op": "matches", "expect": true}
+{"id": "T0065", "pattern": "\\p{L}+", "input": "Grüße", "op": "find", "expect": [{"m": "Grüße"}], "note": "letters incl umlaut/ß"}
+{"id": "T0066", "pattern": "\\p{Lu}+", "input": "ABCäÖ", "op": "find", "expect": [{"m": "ABC"}], "note": "uppercase letters"}
+{"id": "T0067", "pattern": "\\p{IsGreek}+", "input": "αβγ delta", "op": "find", "expect": [{"m": "αβγ"}]}
+{"id": "T0068", "pattern": "\\X", "input": "🇭🇷", "op": "find", "expect": [{"m": "🇭🇷"}], "note": "\\X (Unicode extended grapheme cluster) supported since Java 9"}
+{"id": "T0069", "pattern": "(?U)\\w+", "input": "čćžšđ_123", "op": "matches", "expect": true, "note": "UNICODE_CHARACTER_CLASS via (?U) expands \\w"}
+{"id": "T0070", "pattern": "\\u0041+", "input": "AAA", "op": "matches", "expect": true}
+{"id": "T0071", "pattern": "\\x41+", "input": "AAA", "op": "matches", "expect": true, "note": "hex escape"}
+{"id": "T0072", "pattern": "\\012", "input": "\n", "op": "matches", "expect": true, "note": "octal newline"}
+{"id": "T0073", "pattern": "\\cJ", "input": "\n", "op": "matches", "expect": true, "note": "control escape"}
+{"id": "T0074", "pattern": "\\R", "input": "a\r\nb\nc\rd", "op": "find", "expect": [{"m": "\r\n"}, {"m": "\n"}, {"m": "\r"}], "note": "any linebreak sequence"}
+{"id": "T0075", "pattern": "(?x) a b c ", "input": "abc", "op": "matches", "expect": true}
+{"id": "T0076", "pattern": "(?x) a\\ b ", "input": "a b", "op": "matches", "expect": true, "note": "escaped space in COMMENTS mode"}
+{"id": "T0077", "pattern": "[[:digit:]]+", "input": "123", "op": "matches", "expect": true}
+{"id": "T0078", "pattern": "[[:alpha:]]+", "input": "abcXYZ", "op": "matches", "expect": true}
+{"id": "T0079", "pattern": "\\d+", "input": "a1b22c333", "op": "replaceAll", "expect": "a#b#c#", "note": "replace all digits with #", "replacement": "#"}
+{"id": "T0080", "pattern": "(\\w+),(\\w+)", "input": "Doe,John", "op": "replaceAll", "expect": "John Doe", "note": "swap with $2 $1", "replacement": "$2 $1"}
+{"id": "T0081", "pattern": "(?<last>\\w+),(?<first>\\w+)", "input": "Doe,John", "op": "replaceAll", "expect": "John Doe", "note": "named groups in replacement ${name}", "replacement": "${first} ${last}"}
+{"id": "T0082", "pattern": "\\s*,\\s*", "input": "a, b,  c", "op": "split", "expect": ["a", "b", "c"]}
+{"id": "T0083", "pattern": "\\s+", "input": " a  b \t c ", "op": "split", "expect": ["", "a", "b", "c"], "note": "Java String.split(regex) drops trailing empty strings; leading empty remains. This expect assumes default split()."}
+{"id": "T0084", "pattern": "(\\d{4})-(\\d{2})-(\\d{2})", "input": "Dates: 2026-02-21 and 1999-12-31", "op": "find", "expect": [{"m": "2026-02-21", "groups": ["2026", "02", "21"]}, {"m": "1999-12-31", "groups": ["1999", "12", "31"]}]}
+{"id": "T0085", "pattern": "(a+)+b", "input": "aaaaab", "op": "matches", "expect": true, "note": "classic backtracking; should still match"}
+{"id": "T0086", "pattern": "(a+)+b", "input": "aaaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": false, "note": "may be slow; keep input moderate in runner"}
+{"id": "T0087", "pattern": "(a++)+b", "input": "aaaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": false, "note": "possessive mitigates"}
+{"id": "T0089", "pattern": "\\X", "input": "😀", "op": "matches", "expect": true, "note": "grapheme cluster for emoji"}
+{"id": "T0090", "pattern": "(?i)istanbul", "input": "İSTANBUL", "op": "matches", "expect": true, "note": "Unicode case folding; depends on Unicode; Java uses Unicode case insensitivity"}
+{"id": "T0091", "pattern": "\\G\\d{2}", "input": "12-34-56", "op": "find", "expect": [{"m": "12"}], "note": "\\G matches at end of previous match; typical tokenizer"}
+{"id": "T0092", "pattern": "<.*?>", "input": "<b>bold</b><i>it</i>", "op": "find", "expect": [{"m": "<b>"}, {"m": "</b>"}, {"m": "<i>"}, {"m": "</i>"}]}
+{"id": "T0093", "pattern": "(?U)\\bGrüße\\b", "input": "xx Grüße yy", "op": "find", "expect": [{"m": "Grüße"}], "note": "word boundary uses \\w definition; may vary with UNICODE_CHARACTER_CLASS. Keep as find in ASCII context; could fail. We'll use (?U) to ensure Unicode word chars."}
+{"id": "T0094", "pattern": "(?i)ab(?-i)c", "input": "ABc", "op": "matches", "expect": true}
+{"id": "T0095", "pattern": "(?i)ab(?-i)c", "input": "ABC", "op": "matches", "expect": false}
+{"id": "T0096", "pattern": "(?<x>a)(?<y>b)", "input": "ab", "op": "matches", "expect": true}
+{"id": "T0097", "pattern": "(?<x>a)(?<x>b)", "input": "ab", "op": "compile_error", "expect": "PatternSyntaxException", "note": "duplicate group name"}
+{"id": "T0098", "pattern": "[\\-\\]]+", "input": "-]-", "op": "matches", "expect": true}
+{"id": "T0099", "pattern": "(?U)\\w+", "input": "東京123", "op": "find", "expect": [{"m": "東京123"}], "note": "Japanese letters counted as word chars with (?U)"}
+{"id": "T0100", "pattern": "^(a|aa)+$", "input": "aaaa", "op": "matches", "expect": true}
+{"id": "T0101", "pattern": "^(a|aa)++$", "input": "aaaa", "op": "matches", "expect": true, "note": "possessive on group repetition still matches if it can"}
+{"id": "T0102", "pattern": "\\k<nope>", "input": "x", "op": "compile_error", "expect": "PatternSyntaxException", "note": "backref to unknown named group"}
+{"id": "T0103", "pattern": "(?<a>a", "input": "a", "op": "compile_error", "expect": "PatternSyntaxException", "note": "unclosed group"}
+{"id": "T0104", "pattern": "[z-a]", "input": "a", "op": "compile_error", "expect": "PatternSyntaxException", "note": "bad range"}
+{"id": "T0105", "pattern": "(?m)^\\s*$", "input": "a\n\nb\n \n", "op": "find", "expect": [{"m": ""}, {"m": " "}], "note": "blank lines"}
+{"id": "T0106", "pattern": "^(\\d++)\\d$", "input": "1234", "op": "matches", "expect": false, "note": "possessive eats all digits; cannot backtrack to leave last digit"}

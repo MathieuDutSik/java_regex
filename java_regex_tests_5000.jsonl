@@ -3520,664 +3520,664 @@
 {"id": "T003520", "pattern": "(\\p{L}+),(\\p{L}+)", "input": "Gllfpniyjx,Ofzlvvz", "op": "replaceAll", "expect": "Ofzlvvz Gllfpniyjx", "replacement": "$2 $1"}
 {"id": "T003521", "pattern": "\\w+(?=:)", "input": "qghgaj:be", "op": "find", "expect": [{"m": "qghgaj"}], "note": "lookahead before ':'"}
 {"id": "T003522", "pattern": "(?<=:)\\w+", "input": "qghgaj:be", "op": "find", "expect": [{"m": "be"}], "note": "lookbehind after ':'"}
-{"id": "T003523", "pattern": "\\w+(?!X)", "input": "qghgajX qghgajY", "op": "find", "expect": [{"m": "qghgaj"}, {"m": "qghgaj"}], "note": "negative lookahead at each position"}
+{"id": "T003523", "pattern": "\\w+(?!X)", "input": "qghgajX qghgajY", "op": "find", "expect": [{"m": "qghgajX"}, {"m": "qghgajY"}], "note": "negative lookahead at each position"}
 {"id": "T003524", "pattern": "\\w+(?=:)", "input": "dow:fvxdotc", "op": "find", "expect": [{"m": "dow"}], "note": "lookahead before ':'"}
 {"id": "T003525", "pattern": "(?<=:)\\w+", "input": "dow:fvxdotc", "op": "find", "expect": [{"m": "fvxdotc"}], "note": "lookbehind after ':'"}
-{"id": "T003526", "pattern": "\\w+(?!X)", "input": "dowX dowY", "op": "find", "expect": [{"m": "dow"}, {"m": "dow"}], "note": "negative lookahead at each position"}
+{"id": "T003526", "pattern": "\\w+(?!X)", "input": "dowX dowY", "op": "find", "expect": [{"m": "dowX"}, {"m": "dowY"}], "note": "negative lookahead at each position"}
 {"id": "T003527", "pattern": "\\w+(?=:)", "input": "pfbbejis:bsrirvrz", "op": "find", "expect": [{"m": "pfbbejis"}], "note": "lookahead before ':'"}
 {"id": "T003528", "pattern": "(?<=:)\\w+", "input": "pfbbejis:bsrirvrz", "op": "find", "expect": [{"m": "bsrirvrz"}], "note": "lookbehind after ':'"}
-{"id": "T003529", "pattern": "\\w+(?!X)", "input": "pfbbejisX pfbbejisY", "op": "find", "expect": [{"m": "pfbbejis"}, {"m": "pfbbejis"}], "note": "negative lookahead at each position"}
+{"id": "T003529", "pattern": "\\w+(?!X)", "input": "pfbbejisX pfbbejisY", "op": "find", "expect": [{"m": "pfbbejisX"}, {"m": "pfbbejisY"}], "note": "negative lookahead at each position"}
 {"id": "T003530", "pattern": "\\w+(?=:)", "input": "eeptk:hlpw", "op": "find", "expect": [{"m": "eeptk"}], "note": "lookahead before ':'"}
 {"id": "T003531", "pattern": "(?<=:)\\w+", "input": "eeptk:hlpw", "op": "find", "expect": [{"m": "hlpw"}], "note": "lookbehind after ':'"}
-{"id": "T003532", "pattern": "\\w+(?!X)", "input": "eeptkX eeptkY", "op": "find", "expect": [{"m": "eeptk"}, {"m": "eeptk"}], "note": "negative lookahead at each position"}
+{"id": "T003532", "pattern": "\\w+(?!X)", "input": "eeptkX eeptkY", "op": "find", "expect": [{"m": "eeptkX"}, {"m": "eeptkY"}], "note": "negative lookahead at each position"}
 {"id": "T003533", "pattern": "\\w+(?=:)", "input": "nbz:xjvr", "op": "find", "expect": [{"m": "nbz"}], "note": "lookahead before ':'"}
 {"id": "T003534", "pattern": "(?<=:)\\w+", "input": "nbz:xjvr", "op": "find", "expect": [{"m": "xjvr"}], "note": "lookbehind after ':'"}
-{"id": "T003535", "pattern": "\\w+(?!X)", "input": "nbzX nbzY", "op": "find", "expect": [{"m": "nbz"}, {"m": "nbz"}], "note": "negative lookahead at each position"}
+{"id": "T003535", "pattern": "\\w+(?!X)", "input": "nbzX nbzY", "op": "find", "expect": [{"m": "nbzX"}, {"m": "nbzY"}], "note": "negative lookahead at each position"}
 {"id": "T003536", "pattern": "\\w+(?=:)", "input": "bndc:ckebmsm", "op": "find", "expect": [{"m": "bndc"}], "note": "lookahead before ':'"}
 {"id": "T003537", "pattern": "(?<=:)\\w+", "input": "bndc:ckebmsm", "op": "find", "expect": [{"m": "ckebmsm"}], "note": "lookbehind after ':'"}
-{"id": "T003538", "pattern": "\\w+(?!X)", "input": "bndcX bndcY", "op": "find", "expect": [{"m": "bndc"}, {"m": "bndc"}], "note": "negative lookahead at each position"}
+{"id": "T003538", "pattern": "\\w+(?!X)", "input": "bndcX bndcY", "op": "find", "expect": [{"m": "bndcX"}, {"m": "bndcY"}], "note": "negative lookahead at each position"}
 {"id": "T003539", "pattern": "\\w+(?=:)", "input": "qyjczj:zwrkqan", "op": "find", "expect": [{"m": "qyjczj"}], "note": "lookahead before ':'"}
 {"id": "T003540", "pattern": "(?<=:)\\w+", "input": "qyjczj:zwrkqan", "op": "find", "expect": [{"m": "zwrkqan"}], "note": "lookbehind after ':'"}
-{"id": "T003541", "pattern": "\\w+(?!X)", "input": "qyjczjX qyjczjY", "op": "find", "expect": [{"m": "qyjczj"}, {"m": "qyjczj"}], "note": "negative lookahead at each position"}
+{"id": "T003541", "pattern": "\\w+(?!X)", "input": "qyjczjX qyjczjY", "op": "find", "expect": [{"m": "qyjczjX"}, {"m": "qyjczjY"}], "note": "negative lookahead at each position"}
 {"id": "T003542", "pattern": "\\w+(?=:)", "input": "fqrxae:advdhnb", "op": "find", "expect": [{"m": "fqrxae"}], "note": "lookahead before ':'"}
 {"id": "T003543", "pattern": "(?<=:)\\w+", "input": "fqrxae:advdhnb", "op": "find", "expect": [{"m": "advdhnb"}], "note": "lookbehind after ':'"}
-{"id": "T003544", "pattern": "\\w+(?!X)", "input": "fqrxaeX fqrxaeY", "op": "find", "expect": [{"m": "fqrxae"}, {"m": "fqrxae"}], "note": "negative lookahead at each position"}
+{"id": "T003544", "pattern": "\\w+(?!X)", "input": "fqrxaeX fqrxaeY", "op": "find", "expect": [{"m": "fqrxaeX"}, {"m": "fqrxaeY"}], "note": "negative lookahead at each position"}
 {"id": "T003545", "pattern": "\\w+(?=:)", "input": "omiukk:kzr", "op": "find", "expect": [{"m": "omiukk"}], "note": "lookahead before ':'"}
 {"id": "T003546", "pattern": "(?<=:)\\w+", "input": "omiukk:kzr", "op": "find", "expect": [{"m": "kzr"}], "note": "lookbehind after ':'"}
-{"id": "T003547", "pattern": "\\w+(?!X)", "input": "omiukkX omiukkY", "op": "find", "expect": [{"m": "omiukk"}, {"m": "omiukk"}], "note": "negative lookahead at each position"}
+{"id": "T003547", "pattern": "\\w+(?!X)", "input": "omiukkX omiukkY", "op": "find", "expect": [{"m": "omiukkX"}, {"m": "omiukkY"}], "note": "negative lookahead at each position"}
 {"id": "T003548", "pattern": "\\w+(?=:)", "input": "infea:ljvvqxtt", "op": "find", "expect": [{"m": "infea"}], "note": "lookahead before ':'"}
 {"id": "T003549", "pattern": "(?<=:)\\w+", "input": "infea:ljvvqxtt", "op": "find", "expect": [{"m": "ljvvqxtt"}], "note": "lookbehind after ':'"}
-{"id": "T003550", "pattern": "\\w+(?!X)", "input": "infeaX infeaY", "op": "find", "expect": [{"m": "infea"}, {"m": "infea"}], "note": "negative lookahead at each position"}
+{"id": "T003550", "pattern": "\\w+(?!X)", "input": "infeaX infeaY", "op": "find", "expect": [{"m": "infeaX"}, {"m": "infeaY"}], "note": "negative lookahead at each position"}
 {"id": "T003551", "pattern": "\\w+(?=:)", "input": "qwobpk:ymlqvn", "op": "find", "expect": [{"m": "qwobpk"}], "note": "lookahead before ':'"}
 {"id": "T003552", "pattern": "(?<=:)\\w+", "input": "qwobpk:ymlqvn", "op": "find", "expect": [{"m": "ymlqvn"}], "note": "lookbehind after ':'"}
-{"id": "T003553", "pattern": "\\w+(?!X)", "input": "qwobpkX qwobpkY", "op": "find", "expect": [{"m": "qwobpk"}, {"m": "qwobpk"}], "note": "negative lookahead at each position"}
+{"id": "T003553", "pattern": "\\w+(?!X)", "input": "qwobpkX qwobpkY", "op": "find", "expect": [{"m": "qwobpkX"}, {"m": "qwobpkY"}], "note": "negative lookahead at each position"}
 {"id": "T003554", "pattern": "\\w+(?=:)", "input": "feuil:mawb", "op": "find", "expect": [{"m": "feuil"}], "note": "lookahead before ':'"}
 {"id": "T003555", "pattern": "(?<=:)\\w+", "input": "feuil:mawb", "op": "find", "expect": [{"m": "mawb"}], "note": "lookbehind after ':'"}
-{"id": "T003556", "pattern": "\\w+(?!X)", "input": "feuilX feuilY", "op": "find", "expect": [{"m": "feuil"}, {"m": "feuil"}], "note": "negative lookahead at each position"}
+{"id": "T003556", "pattern": "\\w+(?!X)", "input": "feuilX feuilY", "op": "find", "expect": [{"m": "feuilX"}, {"m": "feuilY"}], "note": "negative lookahead at each position"}
 {"id": "T003557", "pattern": "\\w+(?=:)", "input": "oafhrdu:tcltzu", "op": "find", "expect": [{"m": "oafhrdu"}], "note": "lookahead before ':'"}
 {"id": "T003558", "pattern": "(?<=:)\\w+", "input": "oafhrdu:tcltzu", "op": "find", "expect": [{"m": "tcltzu"}], "note": "lookbehind after ':'"}
-{"id": "T003559", "pattern": "\\w+(?!X)", "input": "oafhrduX oafhrduY", "op": "find", "expect": [{"m": "oafhrdu"}, {"m": "oafhrdu"}], "note": "negative lookahead at each position"}
+{"id": "T003559", "pattern": "\\w+(?!X)", "input": "oafhrduX oafhrduY", "op": "find", "expect": [{"m": "oafhrduX"}, {"m": "oafhrduY"}], "note": "negative lookahead at each position"}
 {"id": "T003560", "pattern": "\\w+(?=:)", "input": "rwcqn:vzzol", "op": "find", "expect": [{"m": "rwcqn"}], "note": "lookahead before ':'"}
 {"id": "T003561", "pattern": "(?<=:)\\w+", "input": "rwcqn:vzzol", "op": "find", "expect": [{"m": "vzzol"}], "note": "lookbehind after ':'"}
-{"id": "T003562", "pattern": "\\w+(?!X)", "input": "rwcqnX rwcqnY", "op": "find", "expect": [{"m": "rwcqn"}, {"m": "rwcqn"}], "note": "negative lookahead at each position"}
+{"id": "T003562", "pattern": "\\w+(?!X)", "input": "rwcqnX rwcqnY", "op": "find", "expect": [{"m": "rwcqnX"}, {"m": "rwcqnY"}], "note": "negative lookahead at each position"}
 {"id": "T003563", "pattern": "\\w+(?=:)", "input": "rhyt:xz", "op": "find", "expect": [{"m": "rhyt"}], "note": "lookahead before ':'"}
 {"id": "T003564", "pattern": "(?<=:)\\w+", "input": "rhyt:xz", "op": "find", "expect": [{"m": "xz"}], "note": "lookbehind after ':'"}
-{"id": "T003565", "pattern": "\\w+(?!X)", "input": "rhytX rhytY", "op": "find", "expect": [{"m": "rhyt"}, {"m": "rhyt"}], "note": "negative lookahead at each position"}
+{"id": "T003565", "pattern": "\\w+(?!X)", "input": "rhytX rhytY", "op": "find", "expect": [{"m": "rhytX"}, {"m": "rhytY"}], "note": "negative lookahead at each position"}
 {"id": "T003566", "pattern": "\\w+(?=:)", "input": "slj:zapl", "op": "find", "expect": [{"m": "slj"}], "note": "lookahead before ':'"}
 {"id": "T003567", "pattern": "(?<=:)\\w+", "input": "slj:zapl", "op": "find", "expect": [{"m": "zapl"}], "note": "lookbehind after ':'"}
-{"id": "T003568", "pattern": "\\w+(?!X)", "input": "sljX sljY", "op": "find", "expect": [{"m": "slj"}, {"m": "slj"}], "note": "negative lookahead at each position"}
+{"id": "T003568", "pattern": "\\w+(?!X)", "input": "sljX sljY", "op": "find", "expect": [{"m": "sljX"}, {"m": "sljY"}], "note": "negative lookahead at each position"}
 {"id": "T003569", "pattern": "\\w+(?=:)", "input": "emqcex:fgjvmvto", "op": "find", "expect": [{"m": "emqcex"}], "note": "lookahead before ':'"}
 {"id": "T003570", "pattern": "(?<=:)\\w+", "input": "emqcex:fgjvmvto", "op": "find", "expect": [{"m": "fgjvmvto"}], "note": "lookbehind after ':'"}
-{"id": "T003571", "pattern": "\\w+(?!X)", "input": "emqcexX emqcexY", "op": "find", "expect": [{"m": "emqcex"}, {"m": "emqcex"}], "note": "negative lookahead at each position"}
+{"id": "T003571", "pattern": "\\w+(?!X)", "input": "emqcexX emqcexY", "op": "find", "expect": [{"m": "emqcexX"}, {"m": "emqcexY"}], "note": "negative lookahead at each position"}
 {"id": "T003572", "pattern": "\\w+(?=:)", "input": "xqfef:dpefac", "op": "find", "expect": [{"m": "xqfef"}], "note": "lookahead before ':'"}
 {"id": "T003573", "pattern": "(?<=:)\\w+", "input": "xqfef:dpefac", "op": "find", "expect": [{"m": "dpefac"}], "note": "lookbehind after ':'"}
-{"id": "T003574", "pattern": "\\w+(?!X)", "input": "xqfefX xqfefY", "op": "find", "expect": [{"m": "xqfef"}, {"m": "xqfef"}], "note": "negative lookahead at each position"}
+{"id": "T003574", "pattern": "\\w+(?!X)", "input": "xqfefX xqfefY", "op": "find", "expect": [{"m": "xqfefX"}, {"m": "xqfefY"}], "note": "negative lookahead at each position"}
 {"id": "T003575", "pattern": "\\w+(?=:)", "input": "zriimbvp:znsqisef", "op": "find", "expect": [{"m": "zriimbvp"}], "note": "lookahead before ':'"}
 {"id": "T003576", "pattern": "(?<=:)\\w+", "input": "zriimbvp:znsqisef", "op": "find", "expect": [{"m": "znsqisef"}], "note": "lookbehind after ':'"}
-{"id": "T003577", "pattern": "\\w+(?!X)", "input": "zriimbvpX zriimbvpY", "op": "find", "expect": [{"m": "zriimbvp"}, {"m": "zriimbvp"}], "note": "negative lookahead at each position"}
+{"id": "T003577", "pattern": "\\w+(?!X)", "input": "zriimbvpX zriimbvpY", "op": "find", "expect": [{"m": "zriimbvpX"}, {"m": "zriimbvpY"}], "note": "negative lookahead at each position"}
 {"id": "T003578", "pattern": "\\w+(?=:)", "input": "gsa:ckmtduqj", "op": "find", "expect": [{"m": "gsa"}], "note": "lookahead before ':'"}
 {"id": "T003579", "pattern": "(?<=:)\\w+", "input": "gsa:ckmtduqj", "op": "find", "expect": [{"m": "ckmtduqj"}], "note": "lookbehind after ':'"}
-{"id": "T003580", "pattern": "\\w+(?!X)", "input": "gsaX gsaY", "op": "find", "expect": [{"m": "gsa"}, {"m": "gsa"}], "note": "negative lookahead at each position"}
+{"id": "T003580", "pattern": "\\w+(?!X)", "input": "gsaX gsaY", "op": "find", "expect": [{"m": "gsaX"}, {"m": "gsaY"}], "note": "negative lookahead at each position"}
 {"id": "T003581", "pattern": "\\w+(?=:)", "input": "loqwlk:vty", "op": "find", "expect": [{"m": "loqwlk"}], "note": "lookahead before ':'"}
 {"id": "T003582", "pattern": "(?<=:)\\w+", "input": "loqwlk:vty", "op": "find", "expect": [{"m": "vty"}], "note": "lookbehind after ':'"}
-{"id": "T003583", "pattern": "\\w+(?!X)", "input": "loqwlkX loqwlkY", "op": "find", "expect": [{"m": "loqwlk"}, {"m": "loqwlk"}], "note": "negative lookahead at each position"}
+{"id": "T003583", "pattern": "\\w+(?!X)", "input": "loqwlkX loqwlkY", "op": "find", "expect": [{"m": "loqwlkX"}, {"m": "loqwlkY"}], "note": "negative lookahead at each position"}
 {"id": "T003584", "pattern": "\\w+(?=:)", "input": "asqscu:qqbzz", "op": "find", "expect": [{"m": "asqscu"}], "note": "lookahead before ':'"}
 {"id": "T003585", "pattern": "(?<=:)\\w+", "input": "asqscu:qqbzz", "op": "find", "expect": [{"m": "qqbzz"}], "note": "lookbehind after ':'"}
-{"id": "T003586", "pattern": "\\w+(?!X)", "input": "asqscuX asqscuY", "op": "find", "expect": [{"m": "asqscu"}, {"m": "asqscu"}], "note": "negative lookahead at each position"}
+{"id": "T003586", "pattern": "\\w+(?!X)", "input": "asqscuX asqscuY", "op": "find", "expect": [{"m": "asqscuX"}, {"m": "asqscuY"}], "note": "negative lookahead at each position"}
 {"id": "T003587", "pattern": "\\w+(?=:)", "input": "zei:agmeek", "op": "find", "expect": [{"m": "zei"}], "note": "lookahead before ':'"}
 {"id": "T003588", "pattern": "(?<=:)\\w+", "input": "zei:agmeek", "op": "find", "expect": [{"m": "agmeek"}], "note": "lookbehind after ':'"}
-{"id": "T003589", "pattern": "\\w+(?!X)", "input": "zeiX zeiY", "op": "find", "expect": [{"m": "zei"}, {"m": "zei"}], "note": "negative lookahead at each position"}
+{"id": "T003589", "pattern": "\\w+(?!X)", "input": "zeiX zeiY", "op": "find", "expect": [{"m": "zeiX"}, {"m": "zeiY"}], "note": "negative lookahead at each position"}
 {"id": "T003590", "pattern": "\\w+(?=:)", "input": "bhkl:iy", "op": "find", "expect": [{"m": "bhkl"}], "note": "lookahead before ':'"}
 {"id": "T003591", "pattern": "(?<=:)\\w+", "input": "bhkl:iy", "op": "find", "expect": [{"m": "iy"}], "note": "lookbehind after ':'"}
-{"id": "T003592", "pattern": "\\w+(?!X)", "input": "bhklX bhklY", "op": "find", "expect": [{"m": "bhkl"}, {"m": "bhkl"}], "note": "negative lookahead at each position"}
+{"id": "T003592", "pattern": "\\w+(?!X)", "input": "bhklX bhklY", "op": "find", "expect": [{"m": "bhklX"}, {"m": "bhklY"}], "note": "negative lookahead at each position"}
 {"id": "T003593", "pattern": "\\w+(?=:)", "input": "xnsbpdp:bydgshpu", "op": "find", "expect": [{"m": "xnsbpdp"}], "note": "lookahead before ':'"}
 {"id": "T003594", "pattern": "(?<=:)\\w+", "input": "xnsbpdp:bydgshpu", "op": "find", "expect": [{"m": "bydgshpu"}], "note": "lookbehind after ':'"}
-{"id": "T003595", "pattern": "\\w+(?!X)", "input": "xnsbpdpX xnsbpdpY", "op": "find", "expect": [{"m": "xnsbpdp"}, {"m": "xnsbpdp"}], "note": "negative lookahead at each position"}
+{"id": "T003595", "pattern": "\\w+(?!X)", "input": "xnsbpdpX xnsbpdpY", "op": "find", "expect": [{"m": "xnsbpdpX"}, {"m": "xnsbpdpY"}], "note": "negative lookahead at each position"}
 {"id": "T003596", "pattern": "\\w+(?=:)", "input": "rkf:brptu", "op": "find", "expect": [{"m": "rkf"}], "note": "lookahead before ':'"}
 {"id": "T003597", "pattern": "(?<=:)\\w+", "input": "rkf:brptu", "op": "find", "expect": [{"m": "brptu"}], "note": "lookbehind after ':'"}
-{"id": "T003598", "pattern": "\\w+(?!X)", "input": "rkfX rkfY", "op": "find", "expect": [{"m": "rkf"}, {"m": "rkf"}], "note": "negative lookahead at each position"}
+{"id": "T003598", "pattern": "\\w+(?!X)", "input": "rkfX rkfY", "op": "find", "expect": [{"m": "rkfX"}, {"m": "rkfY"}], "note": "negative lookahead at each position"}
 {"id": "T003599", "pattern": "\\w+(?=:)", "input": "lrx:eak", "op": "find", "expect": [{"m": "lrx"}], "note": "lookahead before ':'"}
 {"id": "T003600", "pattern": "(?<=:)\\w+", "input": "lrx:eak", "op": "find", "expect": [{"m": "eak"}], "note": "lookbehind after ':'"}
-{"id": "T003601", "pattern": "\\w+(?!X)", "input": "lrxX lrxY", "op": "find", "expect": [{"m": "lrx"}, {"m": "lrx"}], "note": "negative lookahead at each position"}
+{"id": "T003601", "pattern": "\\w+(?!X)", "input": "lrxX lrxY", "op": "find", "expect": [{"m": "lrxX"}, {"m": "lrxY"}], "note": "negative lookahead at each position"}
 {"id": "T003602", "pattern": "\\w+(?=:)", "input": "bazieo:sqbn", "op": "find", "expect": [{"m": "bazieo"}], "note": "lookahead before ':'"}
 {"id": "T003603", "pattern": "(?<=:)\\w+", "input": "bazieo:sqbn", "op": "find", "expect": [{"m": "sqbn"}], "note": "lookbehind after ':'"}
-{"id": "T003604", "pattern": "\\w+(?!X)", "input": "bazieoX bazieoY", "op": "find", "expect": [{"m": "bazieo"}, {"m": "bazieo"}], "note": "negative lookahead at each position"}
+{"id": "T003604", "pattern": "\\w+(?!X)", "input": "bazieoX bazieoY", "op": "find", "expect": [{"m": "bazieoX"}, {"m": "bazieoY"}], "note": "negative lookahead at each position"}
 {"id": "T003605", "pattern": "\\w+(?=:)", "input": "agwnj:pxtjbiys", "op": "find", "expect": [{"m": "agwnj"}], "note": "lookahead before ':'"}
 {"id": "T003606", "pattern": "(?<=:)\\w+", "input": "agwnj:pxtjbiys", "op": "find", "expect": [{"m": "pxtjbiys"}], "note": "lookbehind after ':'"}
-{"id": "T003607", "pattern": "\\w+(?!X)", "input": "agwnjX agwnjY", "op": "find", "expect": [{"m": "agwnj"}, {"m": "agwnj"}], "note": "negative lookahead at each position"}
+{"id": "T003607", "pattern": "\\w+(?!X)", "input": "agwnjX agwnjY", "op": "find", "expect": [{"m": "agwnjX"}, {"m": "agwnjY"}], "note": "negative lookahead at each position"}
 {"id": "T003608", "pattern": "\\w+(?=:)", "input": "kmruhzb:lbvy", "op": "find", "expect": [{"m": "kmruhzb"}], "note": "lookahead before ':'"}
 {"id": "T003609", "pattern": "(?<=:)\\w+", "input": "kmruhzb:lbvy", "op": "find", "expect": [{"m": "lbvy"}], "note": "lookbehind after ':'"}
-{"id": "T003610", "pattern": "\\w+(?!X)", "input": "kmruhzbX kmruhzbY", "op": "find", "expect": [{"m": "kmruhzb"}, {"m": "kmruhzb"}], "note": "negative lookahead at each position"}
+{"id": "T003610", "pattern": "\\w+(?!X)", "input": "kmruhzbX kmruhzbY", "op": "find", "expect": [{"m": "kmruhzbX"}, {"m": "kmruhzbY"}], "note": "negative lookahead at each position"}
 {"id": "T003611", "pattern": "\\w+(?=:)", "input": "lrwubgf:oz", "op": "find", "expect": [{"m": "lrwubgf"}], "note": "lookahead before ':'"}
 {"id": "T003612", "pattern": "(?<=:)\\w+", "input": "lrwubgf:oz", "op": "find", "expect": [{"m": "oz"}], "note": "lookbehind after ':'"}
-{"id": "T003613", "pattern": "\\w+(?!X)", "input": "lrwubgfX lrwubgfY", "op": "find", "expect": [{"m": "lrwubgf"}, {"m": "lrwubgf"}], "note": "negative lookahead at each position"}
+{"id": "T003613", "pattern": "\\w+(?!X)", "input": "lrwubgfX lrwubgfY", "op": "find", "expect": [{"m": "lrwubgfX"}, {"m": "lrwubgfY"}], "note": "negative lookahead at each position"}
 {"id": "T003614", "pattern": "\\w+(?=:)", "input": "jlh:dsjubrd", "op": "find", "expect": [{"m": "jlh"}], "note": "lookahead before ':'"}
 {"id": "T003615", "pattern": "(?<=:)\\w+", "input": "jlh:dsjubrd", "op": "find", "expect": [{"m": "dsjubrd"}], "note": "lookbehind after ':'"}
-{"id": "T003616", "pattern": "\\w+(?!X)", "input": "jlhX jlhY", "op": "find", "expect": [{"m": "jlh"}, {"m": "jlh"}], "note": "negative lookahead at each position"}
+{"id": "T003616", "pattern": "\\w+(?!X)", "input": "jlhX jlhY", "op": "find", "expect": [{"m": "jlhX"}, {"m": "jlhY"}], "note": "negative lookahead at each position"}
 {"id": "T003617", "pattern": "\\w+(?=:)", "input": "hldxeph:gnis", "op": "find", "expect": [{"m": "hldxeph"}], "note": "lookahead before ':'"}
 {"id": "T003618", "pattern": "(?<=:)\\w+", "input": "hldxeph:gnis", "op": "find", "expect": [{"m": "gnis"}], "note": "lookbehind after ':'"}
-{"id": "T003619", "pattern": "\\w+(?!X)", "input": "hldxephX hldxephY", "op": "find", "expect": [{"m": "hldxeph"}, {"m": "hldxeph"}], "note": "negative lookahead at each position"}
+{"id": "T003619", "pattern": "\\w+(?!X)", "input": "hldxephX hldxephY", "op": "find", "expect": [{"m": "hldxephX"}, {"m": "hldxephY"}], "note": "negative lookahead at each position"}
 {"id": "T003620", "pattern": "\\w+(?=:)", "input": "iymejoyg:nask", "op": "find", "expect": [{"m": "iymejoyg"}], "note": "lookahead before ':'"}
 {"id": "T003621", "pattern": "(?<=:)\\w+", "input": "iymejoyg:nask", "op": "find", "expect": [{"m": "nask"}], "note": "lookbehind after ':'"}
-{"id": "T003622", "pattern": "\\w+(?!X)", "input": "iymejoygX iymejoygY", "op": "find", "expect": [{"m": "iymejoyg"}, {"m": "iymejoyg"}], "note": "negative lookahead at each position"}
+{"id": "T003622", "pattern": "\\w+(?!X)", "input": "iymejoygX iymejoygY", "op": "find", "expect": [{"m": "iymejoygX"}, {"m": "iymejoygY"}], "note": "negative lookahead at each position"}
 {"id": "T003623", "pattern": "\\w+(?=:)", "input": "uveut:spt", "op": "find", "expect": [{"m": "uveut"}], "note": "lookahead before ':'"}
 {"id": "T003624", "pattern": "(?<=:)\\w+", "input": "uveut:spt", "op": "find", "expect": [{"m": "spt"}], "note": "lookbehind after ':'"}
-{"id": "T003625", "pattern": "\\w+(?!X)", "input": "uveutX uveutY", "op": "find", "expect": [{"m": "uveut"}, {"m": "uveut"}], "note": "negative lookahead at each position"}
+{"id": "T003625", "pattern": "\\w+(?!X)", "input": "uveutX uveutY", "op": "find", "expect": [{"m": "uveutX"}, {"m": "uveutY"}], "note": "negative lookahead at each position"}
 {"id": "T003626", "pattern": "\\w+(?=:)", "input": "epbp:yw", "op": "find", "expect": [{"m": "epbp"}], "note": "lookahead before ':'"}
 {"id": "T003627", "pattern": "(?<=:)\\w+", "input": "epbp:yw", "op": "find", "expect": [{"m": "yw"}], "note": "lookbehind after ':'"}
-{"id": "T003628", "pattern": "\\w+(?!X)", "input": "epbpX epbpY", "op": "find", "expect": [{"m": "epbp"}, {"m": "epbp"}], "note": "negative lookahead at each position"}
+{"id": "T003628", "pattern": "\\w+(?!X)", "input": "epbpX epbpY", "op": "find", "expect": [{"m": "epbpX"}, {"m": "epbpY"}], "note": "negative lookahead at each position"}
 {"id": "T003629", "pattern": "\\w+(?=:)", "input": "rumk:rvrxnt", "op": "find", "expect": [{"m": "rumk"}], "note": "lookahead before ':'"}
 {"id": "T003630", "pattern": "(?<=:)\\w+", "input": "rumk:rvrxnt", "op": "find", "expect": [{"m": "rvrxnt"}], "note": "lookbehind after ':'"}
-{"id": "T003631", "pattern": "\\w+(?!X)", "input": "rumkX rumkY", "op": "find", "expect": [{"m": "rumk"}, {"m": "rumk"}], "note": "negative lookahead at each position"}
+{"id": "T003631", "pattern": "\\w+(?!X)", "input": "rumkX rumkY", "op": "find", "expect": [{"m": "rumkX"}, {"m": "rumkY"}], "note": "negative lookahead at each position"}
 {"id": "T003632", "pattern": "\\w+(?=:)", "input": "bczkh:wbhmpfe", "op": "find", "expect": [{"m": "bczkh"}], "note": "lookahead before ':'"}
 {"id": "T003633", "pattern": "(?<=:)\\w+", "input": "bczkh:wbhmpfe", "op": "find", "expect": [{"m": "wbhmpfe"}], "note": "lookbehind after ':'"}
-{"id": "T003634", "pattern": "\\w+(?!X)", "input": "bczkhX bczkhY", "op": "find", "expect": [{"m": "bczkh"}, {"m": "bczkh"}], "note": "negative lookahead at each position"}
+{"id": "T003634", "pattern": "\\w+(?!X)", "input": "bczkhX bczkhY", "op": "find", "expect": [{"m": "bczkhX"}, {"m": "bczkhY"}], "note": "negative lookahead at each position"}
 {"id": "T003635", "pattern": "\\w+(?=:)", "input": "tfvgcltp:iuoznzln", "op": "find", "expect": [{"m": "tfvgcltp"}], "note": "lookahead before ':'"}
 {"id": "T003636", "pattern": "(?<=:)\\w+", "input": "tfvgcltp:iuoznzln", "op": "find", "expect": [{"m": "iuoznzln"}], "note": "lookbehind after ':'"}
-{"id": "T003637", "pattern": "\\w+(?!X)", "input": "tfvgcltpX tfvgcltpY", "op": "find", "expect": [{"m": "tfvgcltp"}, {"m": "tfvgcltp"}], "note": "negative lookahead at each position"}
+{"id": "T003637", "pattern": "\\w+(?!X)", "input": "tfvgcltpX tfvgcltpY", "op": "find", "expect": [{"m": "tfvgcltpX"}, {"m": "tfvgcltpY"}], "note": "negative lookahead at each position"}
 {"id": "T003638", "pattern": "\\w+(?=:)", "input": "wdh:bsuotmdx", "op": "find", "expect": [{"m": "wdh"}], "note": "lookahead before ':'"}
 {"id": "T003639", "pattern": "(?<=:)\\w+", "input": "wdh:bsuotmdx", "op": "find", "expect": [{"m": "bsuotmdx"}], "note": "lookbehind after ':'"}
-{"id": "T003640", "pattern": "\\w+(?!X)", "input": "wdhX wdhY", "op": "find", "expect": [{"m": "wdh"}, {"m": "wdh"}], "note": "negative lookahead at each position"}
+{"id": "T003640", "pattern": "\\w+(?!X)", "input": "wdhX wdhY", "op": "find", "expect": [{"m": "wdhX"}, {"m": "wdhY"}], "note": "negative lookahead at each position"}
 {"id": "T003641", "pattern": "\\w+(?=:)", "input": "kvxj:nd", "op": "find", "expect": [{"m": "kvxj"}], "note": "lookahead before ':'"}
 {"id": "T003642", "pattern": "(?<=:)\\w+", "input": "kvxj:nd", "op": "find", "expect": [{"m": "nd"}], "note": "lookbehind after ':'"}
-{"id": "T003643", "pattern": "\\w+(?!X)", "input": "kvxjX kvxjY", "op": "find", "expect": [{"m": "kvxj"}, {"m": "kvxj"}], "note": "negative lookahead at each position"}
+{"id": "T003643", "pattern": "\\w+(?!X)", "input": "kvxjX kvxjY", "op": "find", "expect": [{"m": "kvxjX"}, {"m": "kvxjY"}], "note": "negative lookahead at each position"}
 {"id": "T003644", "pattern": "\\w+(?=:)", "input": "hwy:grcw", "op": "find", "expect": [{"m": "hwy"}], "note": "lookahead before ':'"}
 {"id": "T003645", "pattern": "(?<=:)\\w+", "input": "hwy:grcw", "op": "find", "expect": [{"m": "grcw"}], "note": "lookbehind after ':'"}
-{"id": "T003646", "pattern": "\\w+(?!X)", "input": "hwyX hwyY", "op": "find", "expect": [{"m": "hwy"}, {"m": "hwy"}], "note": "negative lookahead at each position"}
+{"id": "T003646", "pattern": "\\w+(?!X)", "input": "hwyX hwyY", "op": "find", "expect": [{"m": "hwyX"}, {"m": "hwyY"}], "note": "negative lookahead at each position"}
 {"id": "T003647", "pattern": "\\w+(?=:)", "input": "fjxdbo:vmludb", "op": "find", "expect": [{"m": "fjxdbo"}], "note": "lookahead before ':'"}
 {"id": "T003648", "pattern": "(?<=:)\\w+", "input": "fjxdbo:vmludb", "op": "find", "expect": [{"m": "vmludb"}], "note": "lookbehind after ':'"}
-{"id": "T003649", "pattern": "\\w+(?!X)", "input": "fjxdboX fjxdboY", "op": "find", "expect": [{"m": "fjxdbo"}, {"m": "fjxdbo"}], "note": "negative lookahead at each position"}
+{"id": "T003649", "pattern": "\\w+(?!X)", "input": "fjxdboX fjxdboY", "op": "find", "expect": [{"m": "fjxdboX"}, {"m": "fjxdboY"}], "note": "negative lookahead at each position"}
 {"id": "T003650", "pattern": "\\w+(?=:)", "input": "yaawhquz:rcyypdl", "op": "find", "expect": [{"m": "yaawhquz"}], "note": "lookahead before ':'"}
 {"id": "T003651", "pattern": "(?<=:)\\w+", "input": "yaawhquz:rcyypdl", "op": "find", "expect": [{"m": "rcyypdl"}], "note": "lookbehind after ':'"}
-{"id": "T003652", "pattern": "\\w+(?!X)", "input": "yaawhquzX yaawhquzY", "op": "find", "expect": [{"m": "yaawhquz"}, {"m": "yaawhquz"}], "note": "negative lookahead at each position"}
+{"id": "T003652", "pattern": "\\w+(?!X)", "input": "yaawhquzX yaawhquzY", "op": "find", "expect": [{"m": "yaawhquzX"}, {"m": "yaawhquzY"}], "note": "negative lookahead at each position"}
 {"id": "T003653", "pattern": "\\w+(?=:)", "input": "oatvnjl:iopmi", "op": "find", "expect": [{"m": "oatvnjl"}], "note": "lookahead before ':'"}
 {"id": "T003654", "pattern": "(?<=:)\\w+", "input": "oatvnjl:iopmi", "op": "find", "expect": [{"m": "iopmi"}], "note": "lookbehind after ':'"}
-{"id": "T003655", "pattern": "\\w+(?!X)", "input": "oatvnjlX oatvnjlY", "op": "find", "expect": [{"m": "oatvnjl"}, {"m": "oatvnjl"}], "note": "negative lookahead at each position"}
+{"id": "T003655", "pattern": "\\w+(?!X)", "input": "oatvnjlX oatvnjlY", "op": "find", "expect": [{"m": "oatvnjlX"}, {"m": "oatvnjlY"}], "note": "negative lookahead at each position"}
 {"id": "T003656", "pattern": "\\w+(?=:)", "input": "yuxg:emznokof", "op": "find", "expect": [{"m": "yuxg"}], "note": "lookahead before ':'"}
 {"id": "T003657", "pattern": "(?<=:)\\w+", "input": "yuxg:emznokof", "op": "find", "expect": [{"m": "emznokof"}], "note": "lookbehind after ':'"}
-{"id": "T003658", "pattern": "\\w+(?!X)", "input": "yuxgX yuxgY", "op": "find", "expect": [{"m": "yuxg"}, {"m": "yuxg"}], "note": "negative lookahead at each position"}
+{"id": "T003658", "pattern": "\\w+(?!X)", "input": "yuxgX yuxgY", "op": "find", "expect": [{"m": "yuxgX"}, {"m": "yuxgY"}], "note": "negative lookahead at each position"}
 {"id": "T003659", "pattern": "\\w+(?=:)", "input": "uudzzjj:fzziwdes", "op": "find", "expect": [{"m": "uudzzjj"}], "note": "lookahead before ':'"}
 {"id": "T003660", "pattern": "(?<=:)\\w+", "input": "uudzzjj:fzziwdes", "op": "find", "expect": [{"m": "fzziwdes"}], "note": "lookbehind after ':'"}
-{"id": "T003661", "pattern": "\\w+(?!X)", "input": "uudzzjjX uudzzjjY", "op": "find", "expect": [{"m": "uudzzjj"}, {"m": "uudzzjj"}], "note": "negative lookahead at each position"}
+{"id": "T003661", "pattern": "\\w+(?!X)", "input": "uudzzjjX uudzzjjY", "op": "find", "expect": [{"m": "uudzzjjX"}, {"m": "uudzzjjY"}], "note": "negative lookahead at each position"}
 {"id": "T003662", "pattern": "\\w+(?=:)", "input": "fsv:efkg", "op": "find", "expect": [{"m": "fsv"}], "note": "lookahead before ':'"}
 {"id": "T003663", "pattern": "(?<=:)\\w+", "input": "fsv:efkg", "op": "find", "expect": [{"m": "efkg"}], "note": "lookbehind after ':'"}
-{"id": "T003664", "pattern": "\\w+(?!X)", "input": "fsvX fsvY", "op": "find", "expect": [{"m": "fsv"}, {"m": "fsv"}], "note": "negative lookahead at each position"}
+{"id": "T003664", "pattern": "\\w+(?!X)", "input": "fsvX fsvY", "op": "find", "expect": [{"m": "fsvX"}, {"m": "fsvY"}], "note": "negative lookahead at each position"}
 {"id": "T003665", "pattern": "\\w+(?=:)", "input": "wrywbag:frgohrw", "op": "find", "expect": [{"m": "wrywbag"}], "note": "lookahead before ':'"}
 {"id": "T003666", "pattern": "(?<=:)\\w+", "input": "wrywbag:frgohrw", "op": "find", "expect": [{"m": "frgohrw"}], "note": "lookbehind after ':'"}
-{"id": "T003667", "pattern": "\\w+(?!X)", "input": "wrywbagX wrywbagY", "op": "find", "expect": [{"m": "wrywbag"}, {"m": "wrywbag"}], "note": "negative lookahead at each position"}
+{"id": "T003667", "pattern": "\\w+(?!X)", "input": "wrywbagX wrywbagY", "op": "find", "expect": [{"m": "wrywbagX"}, {"m": "wrywbagY"}], "note": "negative lookahead at each position"}
 {"id": "T003668", "pattern": "\\w+(?=:)", "input": "oclsx:gbxinnn", "op": "find", "expect": [{"m": "oclsx"}], "note": "lookahead before ':'"}
 {"id": "T003669", "pattern": "(?<=:)\\w+", "input": "oclsx:gbxinnn", "op": "find", "expect": [{"m": "gbxinnn"}], "note": "lookbehind after ':'"}
-{"id": "T003670", "pattern": "\\w+(?!X)", "input": "oclsxX oclsxY", "op": "find", "expect": [{"m": "oclsx"}, {"m": "oclsx"}], "note": "negative lookahead at each position"}
+{"id": "T003670", "pattern": "\\w+(?!X)", "input": "oclsxX oclsxY", "op": "find", "expect": [{"m": "oclsxX"}, {"m": "oclsxY"}], "note": "negative lookahead at each position"}
 {"id": "T003671", "pattern": "\\w+(?=:)", "input": "uha:af", "op": "find", "expect": [{"m": "uha"}], "note": "lookahead before ':'"}
 {"id": "T003672", "pattern": "(?<=:)\\w+", "input": "uha:af", "op": "find", "expect": [{"m": "af"}], "note": "lookbehind after ':'"}
-{"id": "T003673", "pattern": "\\w+(?!X)", "input": "uhaX uhaY", "op": "find", "expect": [{"m": "uha"}, {"m": "uha"}], "note": "negative lookahead at each position"}
+{"id": "T003673", "pattern": "\\w+(?!X)", "input": "uhaX uhaY", "op": "find", "expect": [{"m": "uhaX"}, {"m": "uhaY"}], "note": "negative lookahead at each position"}
 {"id": "T003674", "pattern": "\\w+(?=:)", "input": "nce:pdxcasxx", "op": "find", "expect": [{"m": "nce"}], "note": "lookahead before ':'"}
 {"id": "T003675", "pattern": "(?<=:)\\w+", "input": "nce:pdxcasxx", "op": "find", "expect": [{"m": "pdxcasxx"}], "note": "lookbehind after ':'"}
-{"id": "T003676", "pattern": "\\w+(?!X)", "input": "nceX nceY", "op": "find", "expect": [{"m": "nce"}, {"m": "nce"}], "note": "negative lookahead at each position"}
+{"id": "T003676", "pattern": "\\w+(?!X)", "input": "nceX nceY", "op": "find", "expect": [{"m": "nceX"}, {"m": "nceY"}], "note": "negative lookahead at each position"}
 {"id": "T003677", "pattern": "\\w+(?=:)", "input": "kvfexm:msp", "op": "find", "expect": [{"m": "kvfexm"}], "note": "lookahead before ':'"}
 {"id": "T003678", "pattern": "(?<=:)\\w+", "input": "kvfexm:msp", "op": "find", "expect": [{"m": "msp"}], "note": "lookbehind after ':'"}
-{"id": "T003679", "pattern": "\\w+(?!X)", "input": "kvfexmX kvfexmY", "op": "find", "expect": [{"m": "kvfexm"}, {"m": "kvfexm"}], "note": "negative lookahead at each position"}
+{"id": "T003679", "pattern": "\\w+(?!X)", "input": "kvfexmX kvfexmY", "op": "find", "expect": [{"m": "kvfexmX"}, {"m": "kvfexmY"}], "note": "negative lookahead at each position"}
 {"id": "T003680", "pattern": "\\w+(?=:)", "input": "bwtiqhn:td", "op": "find", "expect": [{"m": "bwtiqhn"}], "note": "lookahead before ':'"}
 {"id": "T003681", "pattern": "(?<=:)\\w+", "input": "bwtiqhn:td", "op": "find", "expect": [{"m": "td"}], "note": "lookbehind after ':'"}
-{"id": "T003682", "pattern": "\\w+(?!X)", "input": "bwtiqhnX bwtiqhnY", "op": "find", "expect": [{"m": "bwtiqhn"}, {"m": "bwtiqhn"}], "note": "negative lookahead at each position"}
+{"id": "T003682", "pattern": "\\w+(?!X)", "input": "bwtiqhnX bwtiqhnY", "op": "find", "expect": [{"m": "bwtiqhnX"}, {"m": "bwtiqhnY"}], "note": "negative lookahead at each position"}
 {"id": "T003683", "pattern": "\\w+(?=:)", "input": "frjqenif:yxcka", "op": "find", "expect": [{"m": "frjqenif"}], "note": "lookahead before ':'"}
 {"id": "T003684", "pattern": "(?<=:)\\w+", "input": "frjqenif:yxcka", "op": "find", "expect": [{"m": "yxcka"}], "note": "lookbehind after ':'"}
-{"id": "T003685", "pattern": "\\w+(?!X)", "input": "frjqenifX frjqenifY", "op": "find", "expect": [{"m": "frjqenif"}, {"m": "frjqenif"}], "note": "negative lookahead at each position"}
+{"id": "T003685", "pattern": "\\w+(?!X)", "input": "frjqenifX frjqenifY", "op": "find", "expect": [{"m": "frjqenifX"}, {"m": "frjqenifY"}], "note": "negative lookahead at each position"}
 {"id": "T003686", "pattern": "\\w+(?=:)", "input": "rpvacaia:faqiop", "op": "find", "expect": [{"m": "rpvacaia"}], "note": "lookahead before ':'"}
 {"id": "T003687", "pattern": "(?<=:)\\w+", "input": "rpvacaia:faqiop", "op": "find", "expect": [{"m": "faqiop"}], "note": "lookbehind after ':'"}
-{"id": "T003688", "pattern": "\\w+(?!X)", "input": "rpvacaiaX rpvacaiaY", "op": "find", "expect": [{"m": "rpvacaia"}, {"m": "rpvacaia"}], "note": "negative lookahead at each position"}
+{"id": "T003688", "pattern": "\\w+(?!X)", "input": "rpvacaiaX rpvacaiaY", "op": "find", "expect": [{"m": "rpvacaiaX"}, {"m": "rpvacaiaY"}], "note": "negative lookahead at each position"}
 {"id": "T003689", "pattern": "\\w+(?=:)", "input": "art:qxheuuz", "op": "find", "expect": [{"m": "art"}], "note": "lookahead before ':'"}
 {"id": "T003690", "pattern": "(?<=:)\\w+", "input": "art:qxheuuz", "op": "find", "expect": [{"m": "qxheuuz"}], "note": "lookbehind after ':'"}
-{"id": "T003691", "pattern": "\\w+(?!X)", "input": "artX artY", "op": "find", "expect": [{"m": "art"}, {"m": "art"}], "note": "negative lookahead at each position"}
+{"id": "T003691", "pattern": "\\w+(?!X)", "input": "artX artY", "op": "find", "expect": [{"m": "artX"}, {"m": "artY"}], "note": "negative lookahead at each position"}
 {"id": "T003692", "pattern": "\\w+(?=:)", "input": "usyodov:rvamxf", "op": "find", "expect": [{"m": "usyodov"}], "note": "lookahead before ':'"}
 {"id": "T003693", "pattern": "(?<=:)\\w+", "input": "usyodov:rvamxf", "op": "find", "expect": [{"m": "rvamxf"}], "note": "lookbehind after ':'"}
-{"id": "T003694", "pattern": "\\w+(?!X)", "input": "usyodovX usyodovY", "op": "find", "expect": [{"m": "usyodov"}, {"m": "usyodov"}], "note": "negative lookahead at each position"}
+{"id": "T003694", "pattern": "\\w+(?!X)", "input": "usyodovX usyodovY", "op": "find", "expect": [{"m": "usyodovX"}, {"m": "usyodovY"}], "note": "negative lookahead at each position"}
 {"id": "T003695", "pattern": "\\w+(?=:)", "input": "ezboac:mwbez", "op": "find", "expect": [{"m": "ezboac"}], "note": "lookahead before ':'"}
 {"id": "T003696", "pattern": "(?<=:)\\w+", "input": "ezboac:mwbez", "op": "find", "expect": [{"m": "mwbez"}], "note": "lookbehind after ':'"}
-{"id": "T003697", "pattern": "\\w+(?!X)", "input": "ezboacX ezboacY", "op": "find", "expect": [{"m": "ezboac"}, {"m": "ezboac"}], "note": "negative lookahead at each position"}
+{"id": "T003697", "pattern": "\\w+(?!X)", "input": "ezboacX ezboacY", "op": "find", "expect": [{"m": "ezboacX"}, {"m": "ezboacY"}], "note": "negative lookahead at each position"}
 {"id": "T003698", "pattern": "\\w+(?=:)", "input": "digxj:jbma", "op": "find", "expect": [{"m": "digxj"}], "note": "lookahead before ':'"}
 {"id": "T003699", "pattern": "(?<=:)\\w+", "input": "digxj:jbma", "op": "find", "expect": [{"m": "jbma"}], "note": "lookbehind after ':'"}
-{"id": "T003700", "pattern": "\\w+(?!X)", "input": "digxjX digxjY", "op": "find", "expect": [{"m": "digxj"}, {"m": "digxj"}], "note": "negative lookahead at each position"}
+{"id": "T003700", "pattern": "\\w+(?!X)", "input": "digxjX digxjY", "op": "find", "expect": [{"m": "digxjX"}, {"m": "digxjY"}], "note": "negative lookahead at each position"}
 {"id": "T003701", "pattern": "\\w+(?=:)", "input": "emme:stwdut", "op": "find", "expect": [{"m": "emme"}], "note": "lookahead before ':'"}
 {"id": "T003702", "pattern": "(?<=:)\\w+", "input": "emme:stwdut", "op": "find", "expect": [{"m": "stwdut"}], "note": "lookbehind after ':'"}
-{"id": "T003703", "pattern": "\\w+(?!X)", "input": "emmeX emmeY", "op": "find", "expect": [{"m": "emme"}, {"m": "emme"}], "note": "negative lookahead at each position"}
+{"id": "T003703", "pattern": "\\w+(?!X)", "input": "emmeX emmeY", "op": "find", "expect": [{"m": "emmeX"}, {"m": "emmeY"}], "note": "negative lookahead at each position"}
 {"id": "T003704", "pattern": "\\w+(?=:)", "input": "fqnwedh:nweaxlgw", "op": "find", "expect": [{"m": "fqnwedh"}], "note": "lookahead before ':'"}
 {"id": "T003705", "pattern": "(?<=:)\\w+", "input": "fqnwedh:nweaxlgw", "op": "find", "expect": [{"m": "nweaxlgw"}], "note": "lookbehind after ':'"}
-{"id": "T003706", "pattern": "\\w+(?!X)", "input": "fqnwedhX fqnwedhY", "op": "find", "expect": [{"m": "fqnwedh"}, {"m": "fqnwedh"}], "note": "negative lookahead at each position"}
+{"id": "T003706", "pattern": "\\w+(?!X)", "input": "fqnwedhX fqnwedhY", "op": "find", "expect": [{"m": "fqnwedhX"}, {"m": "fqnwedhY"}], "note": "negative lookahead at each position"}
 {"id": "T003707", "pattern": "\\w+(?=:)", "input": "pqzlolb:fgwix", "op": "find", "expect": [{"m": "pqzlolb"}], "note": "lookahead before ':'"}
 {"id": "T003708", "pattern": "(?<=:)\\w+", "input": "pqzlolb:fgwix", "op": "find", "expect": [{"m": "fgwix"}], "note": "lookbehind after ':'"}
-{"id": "T003709", "pattern": "\\w+(?!X)", "input": "pqzlolbX pqzlolbY", "op": "find", "expect": [{"m": "pqzlolb"}, {"m": "pqzlolb"}], "note": "negative lookahead at each position"}
+{"id": "T003709", "pattern": "\\w+(?!X)", "input": "pqzlolbX pqzlolbY", "op": "find", "expect": [{"m": "pqzlolbX"}, {"m": "pqzlolbY"}], "note": "negative lookahead at each position"}
 {"id": "T003710", "pattern": "\\w+(?=:)", "input": "amklg:bvaeafbu", "op": "find", "expect": [{"m": "amklg"}], "note": "lookahead before ':'"}
 {"id": "T003711", "pattern": "(?<=:)\\w+", "input": "amklg:bvaeafbu", "op": "find", "expect": [{"m": "bvaeafbu"}], "note": "lookbehind after ':'"}
-{"id": "T003712", "pattern": "\\w+(?!X)", "input": "amklgX amklgY", "op": "find", "expect": [{"m": "amklg"}, {"m": "amklg"}], "note": "negative lookahead at each position"}
+{"id": "T003712", "pattern": "\\w+(?!X)", "input": "amklgX amklgY", "op": "find", "expect": [{"m": "amklgX"}, {"m": "amklgY"}], "note": "negative lookahead at each position"}
 {"id": "T003713", "pattern": "\\w+(?=:)", "input": "hujgq:yvflgi", "op": "find", "expect": [{"m": "hujgq"}], "note": "lookahead before ':'"}
 {"id": "T003714", "pattern": "(?<=:)\\w+", "input": "hujgq:yvflgi", "op": "find", "expect": [{"m": "yvflgi"}], "note": "lookbehind after ':'"}
-{"id": "T003715", "pattern": "\\w+(?!X)", "input": "hujgqX hujgqY", "op": "find", "expect": [{"m": "hujgq"}, {"m": "hujgq"}], "note": "negative lookahead at each position"}
+{"id": "T003715", "pattern": "\\w+(?!X)", "input": "hujgqX hujgqY", "op": "find", "expect": [{"m": "hujgqX"}, {"m": "hujgqY"}], "note": "negative lookahead at each position"}
 {"id": "T003716", "pattern": "\\w+(?=:)", "input": "bvvqzbaj:yug", "op": "find", "expect": [{"m": "bvvqzbaj"}], "note": "lookahead before ':'"}
 {"id": "T003717", "pattern": "(?<=:)\\w+", "input": "bvvqzbaj:yug", "op": "find", "expect": [{"m": "yug"}], "note": "lookbehind after ':'"}
-{"id": "T003718", "pattern": "\\w+(?!X)", "input": "bvvqzbajX bvvqzbajY", "op": "find", "expect": [{"m": "bvvqzbaj"}, {"m": "bvvqzbaj"}], "note": "negative lookahead at each position"}
+{"id": "T003718", "pattern": "\\w+(?!X)", "input": "bvvqzbajX bvvqzbajY", "op": "find", "expect": [{"m": "bvvqzbajX"}, {"m": "bvvqzbajY"}], "note": "negative lookahead at each position"}
 {"id": "T003719", "pattern": "\\w+(?=:)", "input": "hxvyvhz:mpnmmlwd", "op": "find", "expect": [{"m": "hxvyvhz"}], "note": "lookahead before ':'"}
 {"id": "T003720", "pattern": "(?<=:)\\w+", "input": "hxvyvhz:mpnmmlwd", "op": "find", "expect": [{"m": "mpnmmlwd"}], "note": "lookbehind after ':'"}
-{"id": "T003721", "pattern": "\\w+(?!X)", "input": "hxvyvhzX hxvyvhzY", "op": "find", "expect": [{"m": "hxvyvhz"}, {"m": "hxvyvhz"}], "note": "negative lookahead at each position"}
+{"id": "T003721", "pattern": "\\w+(?!X)", "input": "hxvyvhzX hxvyvhzY", "op": "find", "expect": [{"m": "hxvyvhzX"}, {"m": "hxvyvhzY"}], "note": "negative lookahead at each position"}
 {"id": "T003722", "pattern": "\\w+(?=:)", "input": "ugpd:pfoyolgn", "op": "find", "expect": [{"m": "ugpd"}], "note": "lookahead before ':'"}
 {"id": "T003723", "pattern": "(?<=:)\\w+", "input": "ugpd:pfoyolgn", "op": "find", "expect": [{"m": "pfoyolgn"}], "note": "lookbehind after ':'"}
-{"id": "T003724", "pattern": "\\w+(?!X)", "input": "ugpdX ugpdY", "op": "find", "expect": [{"m": "ugpd"}, {"m": "ugpd"}], "note": "negative lookahead at each position"}
+{"id": "T003724", "pattern": "\\w+(?!X)", "input": "ugpdX ugpdY", "op": "find", "expect": [{"m": "ugpdX"}, {"m": "ugpdY"}], "note": "negative lookahead at each position"}
 {"id": "T003725", "pattern": "\\w+(?=:)", "input": "dcldiq:mwxrh", "op": "find", "expect": [{"m": "dcldiq"}], "note": "lookahead before ':'"}
 {"id": "T003726", "pattern": "(?<=:)\\w+", "input": "dcldiq:mwxrh", "op": "find", "expect": [{"m": "mwxrh"}], "note": "lookbehind after ':'"}
-{"id": "T003727", "pattern": "\\w+(?!X)", "input": "dcldiqX dcldiqY", "op": "find", "expect": [{"m": "dcldiq"}, {"m": "dcldiq"}], "note": "negative lookahead at each position"}
+{"id": "T003727", "pattern": "\\w+(?!X)", "input": "dcldiqX dcldiqY", "op": "find", "expect": [{"m": "dcldiqX"}, {"m": "dcldiqY"}], "note": "negative lookahead at each position"}
 {"id": "T003728", "pattern": "\\w+(?=:)", "input": "hjyvgwe:cll", "op": "find", "expect": [{"m": "hjyvgwe"}], "note": "lookahead before ':'"}
 {"id": "T003729", "pattern": "(?<=:)\\w+", "input": "hjyvgwe:cll", "op": "find", "expect": [{"m": "cll"}], "note": "lookbehind after ':'"}
-{"id": "T003730", "pattern": "\\w+(?!X)", "input": "hjyvgweX hjyvgweY", "op": "find", "expect": [{"m": "hjyvgwe"}, {"m": "hjyvgwe"}], "note": "negative lookahead at each position"}
+{"id": "T003730", "pattern": "\\w+(?!X)", "input": "hjyvgweX hjyvgweY", "op": "find", "expect": [{"m": "hjyvgweX"}, {"m": "hjyvgweY"}], "note": "negative lookahead at each position"}
 {"id": "T003731", "pattern": "\\w+(?=:)", "input": "bve:pigft", "op": "find", "expect": [{"m": "bve"}], "note": "lookahead before ':'"}
 {"id": "T003732", "pattern": "(?<=:)\\w+", "input": "bve:pigft", "op": "find", "expect": [{"m": "pigft"}], "note": "lookbehind after ':'"}
-{"id": "T003733", "pattern": "\\w+(?!X)", "input": "bveX bveY", "op": "find", "expect": [{"m": "bve"}, {"m": "bve"}], "note": "negative lookahead at each position"}
+{"id": "T003733", "pattern": "\\w+(?!X)", "input": "bveX bveY", "op": "find", "expect": [{"m": "bveX"}, {"m": "bveY"}], "note": "negative lookahead at each position"}
 {"id": "T003734", "pattern": "\\w+(?=:)", "input": "oddsmjek:osmpqz", "op": "find", "expect": [{"m": "oddsmjek"}], "note": "lookahead before ':'"}
 {"id": "T003735", "pattern": "(?<=:)\\w+", "input": "oddsmjek:osmpqz", "op": "find", "expect": [{"m": "osmpqz"}], "note": "lookbehind after ':'"}
-{"id": "T003736", "pattern": "\\w+(?!X)", "input": "oddsmjekX oddsmjekY", "op": "find", "expect": [{"m": "oddsmjek"}, {"m": "oddsmjek"}], "note": "negative lookahead at each position"}
+{"id": "T003736", "pattern": "\\w+(?!X)", "input": "oddsmjekX oddsmjekY", "op": "find", "expect": [{"m": "oddsmjekX"}, {"m": "oddsmjekY"}], "note": "negative lookahead at each position"}
 {"id": "T003737", "pattern": "\\w+(?=:)", "input": "gcybfrdl:rfzjhp", "op": "find", "expect": [{"m": "gcybfrdl"}], "note": "lookahead before ':'"}
 {"id": "T003738", "pattern": "(?<=:)\\w+", "input": "gcybfrdl:rfzjhp", "op": "find", "expect": [{"m": "rfzjhp"}], "note": "lookbehind after ':'"}
-{"id": "T003739", "pattern": "\\w+(?!X)", "input": "gcybfrdlX gcybfrdlY", "op": "find", "expect": [{"m": "gcybfrdl"}, {"m": "gcybfrdl"}], "note": "negative lookahead at each position"}
+{"id": "T003739", "pattern": "\\w+(?!X)", "input": "gcybfrdlX gcybfrdlY", "op": "find", "expect": [{"m": "gcybfrdlX"}, {"m": "gcybfrdlY"}], "note": "negative lookahead at each position"}
 {"id": "T003740", "pattern": "\\w+(?=:)", "input": "ovat:fautumu", "op": "find", "expect": [{"m": "ovat"}], "note": "lookahead before ':'"}
 {"id": "T003741", "pattern": "(?<=:)\\w+", "input": "ovat:fautumu", "op": "find", "expect": [{"m": "fautumu"}], "note": "lookbehind after ':'"}
-{"id": "T003742", "pattern": "\\w+(?!X)", "input": "ovatX ovatY", "op": "find", "expect": [{"m": "ovat"}, {"m": "ovat"}], "note": "negative lookahead at each position"}
+{"id": "T003742", "pattern": "\\w+(?!X)", "input": "ovatX ovatY", "op": "find", "expect": [{"m": "ovatX"}, {"m": "ovatY"}], "note": "negative lookahead at each position"}
 {"id": "T003743", "pattern": "\\w+(?=:)", "input": "bnrq:fxtuc", "op": "find", "expect": [{"m": "bnrq"}], "note": "lookahead before ':'"}
 {"id": "T003744", "pattern": "(?<=:)\\w+", "input": "bnrq:fxtuc", "op": "find", "expect": [{"m": "fxtuc"}], "note": "lookbehind after ':'"}
-{"id": "T003745", "pattern": "\\w+(?!X)", "input": "bnrqX bnrqY", "op": "find", "expect": [{"m": "bnrq"}, {"m": "bnrq"}], "note": "negative lookahead at each position"}
+{"id": "T003745", "pattern": "\\w+(?!X)", "input": "bnrqX bnrqY", "op": "find", "expect": [{"m": "bnrqX"}, {"m": "bnrqY"}], "note": "negative lookahead at each position"}
 {"id": "T003746", "pattern": "\\w+(?=:)", "input": "jeg:uu", "op": "find", "expect": [{"m": "jeg"}], "note": "lookahead before ':'"}
 {"id": "T003747", "pattern": "(?<=:)\\w+", "input": "jeg:uu", "op": "find", "expect": [{"m": "uu"}], "note": "lookbehind after ':'"}
-{"id": "T003748", "pattern": "\\w+(?!X)", "input": "jegX jegY", "op": "find", "expect": [{"m": "jeg"}, {"m": "jeg"}], "note": "negative lookahead at each position"}
+{"id": "T003748", "pattern": "\\w+(?!X)", "input": "jegX jegY", "op": "find", "expect": [{"m": "jegX"}, {"m": "jegY"}], "note": "negative lookahead at each position"}
 {"id": "T003749", "pattern": "\\w+(?=:)", "input": "ggf:ww", "op": "find", "expect": [{"m": "ggf"}], "note": "lookahead before ':'"}
 {"id": "T003750", "pattern": "(?<=:)\\w+", "input": "ggf:ww", "op": "find", "expect": [{"m": "ww"}], "note": "lookbehind after ':'"}
-{"id": "T003751", "pattern": "\\w+(?!X)", "input": "ggfX ggfY", "op": "find", "expect": [{"m": "ggf"}, {"m": "ggf"}], "note": "negative lookahead at each position"}
+{"id": "T003751", "pattern": "\\w+(?!X)", "input": "ggfX ggfY", "op": "find", "expect": [{"m": "ggfX"}, {"m": "ggfY"}], "note": "negative lookahead at each position"}
 {"id": "T003752", "pattern": "\\w+(?=:)", "input": "axgyu:govbck", "op": "find", "expect": [{"m": "axgyu"}], "note": "lookahead before ':'"}
 {"id": "T003753", "pattern": "(?<=:)\\w+", "input": "axgyu:govbck", "op": "find", "expect": [{"m": "govbck"}], "note": "lookbehind after ':'"}
-{"id": "T003754", "pattern": "\\w+(?!X)", "input": "axgyuX axgyuY", "op": "find", "expect": [{"m": "axgyu"}, {"m": "axgyu"}], "note": "negative lookahead at each position"}
+{"id": "T003754", "pattern": "\\w+(?!X)", "input": "axgyuX axgyuY", "op": "find", "expect": [{"m": "axgyuX"}, {"m": "axgyuY"}], "note": "negative lookahead at each position"}
 {"id": "T003755", "pattern": "\\w+(?=:)", "input": "oswhxgep:gtmm", "op": "find", "expect": [{"m": "oswhxgep"}], "note": "lookahead before ':'"}
 {"id": "T003756", "pattern": "(?<=:)\\w+", "input": "oswhxgep:gtmm", "op": "find", "expect": [{"m": "gtmm"}], "note": "lookbehind after ':'"}
-{"id": "T003757", "pattern": "\\w+(?!X)", "input": "oswhxgepX oswhxgepY", "op": "find", "expect": [{"m": "oswhxgep"}, {"m": "oswhxgep"}], "note": "negative lookahead at each position"}
+{"id": "T003757", "pattern": "\\w+(?!X)", "input": "oswhxgepX oswhxgepY", "op": "find", "expect": [{"m": "oswhxgepX"}, {"m": "oswhxgepY"}], "note": "negative lookahead at each position"}
 {"id": "T003758", "pattern": "\\w+(?=:)", "input": "zzrnhm:jhfgjk", "op": "find", "expect": [{"m": "zzrnhm"}], "note": "lookahead before ':'"}
 {"id": "T003759", "pattern": "(?<=:)\\w+", "input": "zzrnhm:jhfgjk", "op": "find", "expect": [{"m": "jhfgjk"}], "note": "lookbehind after ':'"}
-{"id": "T003760", "pattern": "\\w+(?!X)", "input": "zzrnhmX zzrnhmY", "op": "find", "expect": [{"m": "zzrnhm"}, {"m": "zzrnhm"}], "note": "negative lookahead at each position"}
+{"id": "T003760", "pattern": "\\w+(?!X)", "input": "zzrnhmX zzrnhmY", "op": "find", "expect": [{"m": "zzrnhmX"}, {"m": "zzrnhmY"}], "note": "negative lookahead at each position"}
 {"id": "T003761", "pattern": "\\w+(?=:)", "input": "tto:viyh", "op": "find", "expect": [{"m": "tto"}], "note": "lookahead before ':'"}
 {"id": "T003762", "pattern": "(?<=:)\\w+", "input": "tto:viyh", "op": "find", "expect": [{"m": "viyh"}], "note": "lookbehind after ':'"}
-{"id": "T003763", "pattern": "\\w+(?!X)", "input": "ttoX ttoY", "op": "find", "expect": [{"m": "tto"}, {"m": "tto"}], "note": "negative lookahead at each position"}
+{"id": "T003763", "pattern": "\\w+(?!X)", "input": "ttoX ttoY", "op": "find", "expect": [{"m": "ttoX"}, {"m": "ttoY"}], "note": "negative lookahead at each position"}
 {"id": "T003764", "pattern": "\\w+(?=:)", "input": "qqwdkey:bthuxakt", "op": "find", "expect": [{"m": "qqwdkey"}], "note": "lookahead before ':'"}
 {"id": "T003765", "pattern": "(?<=:)\\w+", "input": "qqwdkey:bthuxakt", "op": "find", "expect": [{"m": "bthuxakt"}], "note": "lookbehind after ':'"}
-{"id": "T003766", "pattern": "\\w+(?!X)", "input": "qqwdkeyX qqwdkeyY", "op": "find", "expect": [{"m": "qqwdkey"}, {"m": "qqwdkey"}], "note": "negative lookahead at each position"}
+{"id": "T003766", "pattern": "\\w+(?!X)", "input": "qqwdkeyX qqwdkeyY", "op": "find", "expect": [{"m": "qqwdkeyX"}, {"m": "qqwdkeyY"}], "note": "negative lookahead at each position"}
 {"id": "T003767", "pattern": "\\w+(?=:)", "input": "ilqopfzx:thzk", "op": "find", "expect": [{"m": "ilqopfzx"}], "note": "lookahead before ':'"}
 {"id": "T003768", "pattern": "(?<=:)\\w+", "input": "ilqopfzx:thzk", "op": "find", "expect": [{"m": "thzk"}], "note": "lookbehind after ':'"}
-{"id": "T003769", "pattern": "\\w+(?!X)", "input": "ilqopfzxX ilqopfzxY", "op": "find", "expect": [{"m": "ilqopfzx"}, {"m": "ilqopfzx"}], "note": "negative lookahead at each position"}
+{"id": "T003769", "pattern": "\\w+(?!X)", "input": "ilqopfzxX ilqopfzxY", "op": "find", "expect": [{"m": "ilqopfzxX"}, {"m": "ilqopfzxY"}], "note": "negative lookahead at each position"}
 {"id": "T003770", "pattern": "\\w+(?=:)", "input": "sqczpxw:glp", "op": "find", "expect": [{"m": "sqczpxw"}], "note": "lookahead before ':'"}
 {"id": "T003771", "pattern": "(?<=:)\\w+", "input": "sqczpxw:glp", "op": "find", "expect": [{"m": "glp"}], "note": "lookbehind after ':'"}
-{"id": "T003772", "pattern": "\\w+(?!X)", "input": "sqczpxwX sqczpxwY", "op": "find", "expect": [{"m": "sqczpxw"}, {"m": "sqczpxw"}], "note": "negative lookahead at each position"}
+{"id": "T003772", "pattern": "\\w+(?!X)", "input": "sqczpxwX sqczpxwY", "op": "find", "expect": [{"m": "sqczpxwX"}, {"m": "sqczpxwY"}], "note": "negative lookahead at each position"}
 {"id": "T003773", "pattern": "\\w+(?=:)", "input": "ehbcpti:bm", "op": "find", "expect": [{"m": "ehbcpti"}], "note": "lookahead before ':'"}
 {"id": "T003774", "pattern": "(?<=:)\\w+", "input": "ehbcpti:bm", "op": "find", "expect": [{"m": "bm"}], "note": "lookbehind after ':'"}
-{"id": "T003775", "pattern": "\\w+(?!X)", "input": "ehbcptiX ehbcptiY", "op": "find", "expect": [{"m": "ehbcpti"}, {"m": "ehbcpti"}], "note": "negative lookahead at each position"}
+{"id": "T003775", "pattern": "\\w+(?!X)", "input": "ehbcptiX ehbcptiY", "op": "find", "expect": [{"m": "ehbcptiX"}, {"m": "ehbcptiY"}], "note": "negative lookahead at each position"}
 {"id": "T003776", "pattern": "\\w+(?=:)", "input": "nmeix:sz", "op": "find", "expect": [{"m": "nmeix"}], "note": "lookahead before ':'"}
 {"id": "T003777", "pattern": "(?<=:)\\w+", "input": "nmeix:sz", "op": "find", "expect": [{"m": "sz"}], "note": "lookbehind after ':'"}
-{"id": "T003778", "pattern": "\\w+(?!X)", "input": "nmeixX nmeixY", "op": "find", "expect": [{"m": "nmeix"}, {"m": "nmeix"}], "note": "negative lookahead at each position"}
+{"id": "T003778", "pattern": "\\w+(?!X)", "input": "nmeixX nmeixY", "op": "find", "expect": [{"m": "nmeixX"}, {"m": "nmeixY"}], "note": "negative lookahead at each position"}
 {"id": "T003779", "pattern": "\\w+(?=:)", "input": "bymicwya:cmrzerme", "op": "find", "expect": [{"m": "bymicwya"}], "note": "lookahead before ':'"}
 {"id": "T003780", "pattern": "(?<=:)\\w+", "input": "bymicwya:cmrzerme", "op": "find", "expect": [{"m": "cmrzerme"}], "note": "lookbehind after ':'"}
-{"id": "T003781", "pattern": "\\w+(?!X)", "input": "bymicwyaX bymicwyaY", "op": "find", "expect": [{"m": "bymicwya"}, {"m": "bymicwya"}], "note": "negative lookahead at each position"}
+{"id": "T003781", "pattern": "\\w+(?!X)", "input": "bymicwyaX bymicwyaY", "op": "find", "expect": [{"m": "bymicwyaX"}, {"m": "bymicwyaY"}], "note": "negative lookahead at each position"}
 {"id": "T003782", "pattern": "\\w+(?=:)", "input": "mkjud:mnpgnle", "op": "find", "expect": [{"m": "mkjud"}], "note": "lookahead before ':'"}
 {"id": "T003783", "pattern": "(?<=:)\\w+", "input": "mkjud:mnpgnle", "op": "find", "expect": [{"m": "mnpgnle"}], "note": "lookbehind after ':'"}
-{"id": "T003784", "pattern": "\\w+(?!X)", "input": "mkjudX mkjudY", "op": "find", "expect": [{"m": "mkjud"}, {"m": "mkjud"}], "note": "negative lookahead at each position"}
+{"id": "T003784", "pattern": "\\w+(?!X)", "input": "mkjudX mkjudY", "op": "find", "expect": [{"m": "mkjudX"}, {"m": "mkjudY"}], "note": "negative lookahead at each position"}
 {"id": "T003785", "pattern": "\\w+(?=:)", "input": "tnivaq:tah", "op": "find", "expect": [{"m": "tnivaq"}], "note": "lookahead before ':'"}
 {"id": "T003786", "pattern": "(?<=:)\\w+", "input": "tnivaq:tah", "op": "find", "expect": [{"m": "tah"}], "note": "lookbehind after ':'"}
-{"id": "T003787", "pattern": "\\w+(?!X)", "input": "tnivaqX tnivaqY", "op": "find", "expect": [{"m": "tnivaq"}, {"m": "tnivaq"}], "note": "negative lookahead at each position"}
+{"id": "T003787", "pattern": "\\w+(?!X)", "input": "tnivaqX tnivaqY", "op": "find", "expect": [{"m": "tnivaqX"}, {"m": "tnivaqY"}], "note": "negative lookahead at each position"}
 {"id": "T003788", "pattern": "\\w+(?=:)", "input": "febuc:xqmodd", "op": "find", "expect": [{"m": "febuc"}], "note": "lookahead before ':'"}
 {"id": "T003789", "pattern": "(?<=:)\\w+", "input": "febuc:xqmodd", "op": "find", "expect": [{"m": "xqmodd"}], "note": "lookbehind after ':'"}
-{"id": "T003790", "pattern": "\\w+(?!X)", "input": "febucX febucY", "op": "find", "expect": [{"m": "febuc"}, {"m": "febuc"}], "note": "negative lookahead at each position"}
+{"id": "T003790", "pattern": "\\w+(?!X)", "input": "febucX febucY", "op": "find", "expect": [{"m": "febucX"}, {"m": "febucY"}], "note": "negative lookahead at each position"}
 {"id": "T003791", "pattern": "\\w+(?=:)", "input": "xff:bas", "op": "find", "expect": [{"m": "xff"}], "note": "lookahead before ':'"}
 {"id": "T003792", "pattern": "(?<=:)\\w+", "input": "xff:bas", "op": "find", "expect": [{"m": "bas"}], "note": "lookbehind after ':'"}
-{"id": "T003793", "pattern": "\\w+(?!X)", "input": "xffX xffY", "op": "find", "expect": [{"m": "xff"}, {"m": "xff"}], "note": "negative lookahead at each position"}
+{"id": "T003793", "pattern": "\\w+(?!X)", "input": "xffX xffY", "op": "find", "expect": [{"m": "xffX"}, {"m": "xffY"}], "note": "negative lookahead at each position"}
 {"id": "T003794", "pattern": "\\w+(?=:)", "input": "jxzcf:jh", "op": "find", "expect": [{"m": "jxzcf"}], "note": "lookahead before ':'"}
 {"id": "T003795", "pattern": "(?<=:)\\w+", "input": "jxzcf:jh", "op": "find", "expect": [{"m": "jh"}], "note": "lookbehind after ':'"}
-{"id": "T003796", "pattern": "\\w+(?!X)", "input": "jxzcfX jxzcfY", "op": "find", "expect": [{"m": "jxzcf"}, {"m": "jxzcf"}], "note": "negative lookahead at each position"}
+{"id": "T003796", "pattern": "\\w+(?!X)", "input": "jxzcfX jxzcfY", "op": "find", "expect": [{"m": "jxzcfX"}, {"m": "jxzcfY"}], "note": "negative lookahead at each position"}
 {"id": "T003797", "pattern": "\\w+(?=:)", "input": "bqiybso:hdbfxpye", "op": "find", "expect": [{"m": "bqiybso"}], "note": "lookahead before ':'"}
 {"id": "T003798", "pattern": "(?<=:)\\w+", "input": "bqiybso:hdbfxpye", "op": "find", "expect": [{"m": "hdbfxpye"}], "note": "lookbehind after ':'"}
-{"id": "T003799", "pattern": "\\w+(?!X)", "input": "bqiybsoX bqiybsoY", "op": "find", "expect": [{"m": "bqiybso"}, {"m": "bqiybso"}], "note": "negative lookahead at each position"}
+{"id": "T003799", "pattern": "\\w+(?!X)", "input": "bqiybsoX bqiybsoY", "op": "find", "expect": [{"m": "bqiybsoX"}, {"m": "bqiybsoY"}], "note": "negative lookahead at each position"}
 {"id": "T003800", "pattern": "\\w+(?=:)", "input": "yzbklcn:ver", "op": "find", "expect": [{"m": "yzbklcn"}], "note": "lookahead before ':'"}
 {"id": "T003801", "pattern": "(?<=:)\\w+", "input": "yzbklcn:ver", "op": "find", "expect": [{"m": "ver"}], "note": "lookbehind after ':'"}
-{"id": "T003802", "pattern": "\\w+(?!X)", "input": "yzbklcnX yzbklcnY", "op": "find", "expect": [{"m": "yzbklcn"}, {"m": "yzbklcn"}], "note": "negative lookahead at each position"}
+{"id": "T003802", "pattern": "\\w+(?!X)", "input": "yzbklcnX yzbklcnY", "op": "find", "expect": [{"m": "yzbklcnX"}, {"m": "yzbklcnY"}], "note": "negative lookahead at each position"}
 {"id": "T003803", "pattern": "\\w+(?=:)", "input": "pytfe:hxtwyr", "op": "find", "expect": [{"m": "pytfe"}], "note": "lookahead before ':'"}
 {"id": "T003804", "pattern": "(?<=:)\\w+", "input": "pytfe:hxtwyr", "op": "find", "expect": [{"m": "hxtwyr"}], "note": "lookbehind after ':'"}
-{"id": "T003805", "pattern": "\\w+(?!X)", "input": "pytfeX pytfeY", "op": "find", "expect": [{"m": "pytfe"}, {"m": "pytfe"}], "note": "negative lookahead at each position"}
+{"id": "T003805", "pattern": "\\w+(?!X)", "input": "pytfeX pytfeY", "op": "find", "expect": [{"m": "pytfeX"}, {"m": "pytfeY"}], "note": "negative lookahead at each position"}
 {"id": "T003806", "pattern": "\\w+(?=:)", "input": "xkf:eiitbuih", "op": "find", "expect": [{"m": "xkf"}], "note": "lookahead before ':'"}
 {"id": "T003807", "pattern": "(?<=:)\\w+", "input": "xkf:eiitbuih", "op": "find", "expect": [{"m": "eiitbuih"}], "note": "lookbehind after ':'"}
-{"id": "T003808", "pattern": "\\w+(?!X)", "input": "xkfX xkfY", "op": "find", "expect": [{"m": "xkf"}, {"m": "xkf"}], "note": "negative lookahead at each position"}
+{"id": "T003808", "pattern": "\\w+(?!X)", "input": "xkfX xkfY", "op": "find", "expect": [{"m": "xkfX"}, {"m": "xkfY"}], "note": "negative lookahead at each position"}
 {"id": "T003809", "pattern": "\\w+(?=:)", "input": "gsfvipn:osi", "op": "find", "expect": [{"m": "gsfvipn"}], "note": "lookahead before ':'"}
 {"id": "T003810", "pattern": "(?<=:)\\w+", "input": "gsfvipn:osi", "op": "find", "expect": [{"m": "osi"}], "note": "lookbehind after ':'"}
-{"id": "T003811", "pattern": "\\w+(?!X)", "input": "gsfvipnX gsfvipnY", "op": "find", "expect": [{"m": "gsfvipn"}, {"m": "gsfvipn"}], "note": "negative lookahead at each position"}
+{"id": "T003811", "pattern": "\\w+(?!X)", "input": "gsfvipnX gsfvipnY", "op": "find", "expect": [{"m": "gsfvipnX"}, {"m": "gsfvipnY"}], "note": "negative lookahead at each position"}
 {"id": "T003812", "pattern": "\\w+(?=:)", "input": "wikx:cblaskf", "op": "find", "expect": [{"m": "wikx"}], "note": "lookahead before ':'"}
 {"id": "T003813", "pattern": "(?<=:)\\w+", "input": "wikx:cblaskf", "op": "find", "expect": [{"m": "cblaskf"}], "note": "lookbehind after ':'"}
-{"id": "T003814", "pattern": "\\w+(?!X)", "input": "wikxX wikxY", "op": "find", "expect": [{"m": "wikx"}, {"m": "wikx"}], "note": "negative lookahead at each position"}
+{"id": "T003814", "pattern": "\\w+(?!X)", "input": "wikxX wikxY", "op": "find", "expect": [{"m": "wikxX"}, {"m": "wikxY"}], "note": "negative lookahead at each position"}
 {"id": "T003815", "pattern": "\\w+(?=:)", "input": "qcuibmtb:tfhjg", "op": "find", "expect": [{"m": "qcuibmtb"}], "note": "lookahead before ':'"}
 {"id": "T003816", "pattern": "(?<=:)\\w+", "input": "qcuibmtb:tfhjg", "op": "find", "expect": [{"m": "tfhjg"}], "note": "lookbehind after ':'"}
-{"id": "T003817", "pattern": "\\w+(?!X)", "input": "qcuibmtbX qcuibmtbY", "op": "find", "expect": [{"m": "qcuibmtb"}, {"m": "qcuibmtb"}], "note": "negative lookahead at each position"}
+{"id": "T003817", "pattern": "\\w+(?!X)", "input": "qcuibmtbX qcuibmtbY", "op": "find", "expect": [{"m": "qcuibmtbX"}, {"m": "qcuibmtbY"}], "note": "negative lookahead at each position"}
 {"id": "T003818", "pattern": "\\w+(?=:)", "input": "pryps:kurg", "op": "find", "expect": [{"m": "pryps"}], "note": "lookahead before ':'"}
 {"id": "T003819", "pattern": "(?<=:)\\w+", "input": "pryps:kurg", "op": "find", "expect": [{"m": "kurg"}], "note": "lookbehind after ':'"}
-{"id": "T003820", "pattern": "\\w+(?!X)", "input": "prypsX prypsY", "op": "find", "expect": [{"m": "pryps"}, {"m": "pryps"}], "note": "negative lookahead at each position"}
+{"id": "T003820", "pattern": "\\w+(?!X)", "input": "prypsX prypsY", "op": "find", "expect": [{"m": "prypsX"}, {"m": "prypsY"}], "note": "negative lookahead at each position"}
 {"id": "T003821", "pattern": "\\w+(?=:)", "input": "uvq:ukro", "op": "find", "expect": [{"m": "uvq"}], "note": "lookahead before ':'"}
 {"id": "T003822", "pattern": "(?<=:)\\w+", "input": "uvq:ukro", "op": "find", "expect": [{"m": "ukro"}], "note": "lookbehind after ':'"}
-{"id": "T003823", "pattern": "\\w+(?!X)", "input": "uvqX uvqY", "op": "find", "expect": [{"m": "uvq"}, {"m": "uvq"}], "note": "negative lookahead at each position"}
+{"id": "T003823", "pattern": "\\w+(?!X)", "input": "uvqX uvqY", "op": "find", "expect": [{"m": "uvqX"}, {"m": "uvqY"}], "note": "negative lookahead at each position"}
 {"id": "T003824", "pattern": "\\w+(?=:)", "input": "msh:eejrhrg", "op": "find", "expect": [{"m": "msh"}], "note": "lookahead before ':'"}
 {"id": "T003825", "pattern": "(?<=:)\\w+", "input": "msh:eejrhrg", "op": "find", "expect": [{"m": "eejrhrg"}], "note": "lookbehind after ':'"}
-{"id": "T003826", "pattern": "\\w+(?!X)", "input": "mshX mshY", "op": "find", "expect": [{"m": "msh"}, {"m": "msh"}], "note": "negative lookahead at each position"}
+{"id": "T003826", "pattern": "\\w+(?!X)", "input": "mshX mshY", "op": "find", "expect": [{"m": "mshX"}, {"m": "mshY"}], "note": "negative lookahead at each position"}
 {"id": "T003827", "pattern": "\\w+(?=:)", "input": "kpraw:ztlbndvp", "op": "find", "expect": [{"m": "kpraw"}], "note": "lookahead before ':'"}
 {"id": "T003828", "pattern": "(?<=:)\\w+", "input": "kpraw:ztlbndvp", "op": "find", "expect": [{"m": "ztlbndvp"}], "note": "lookbehind after ':'"}
-{"id": "T003829", "pattern": "\\w+(?!X)", "input": "kprawX kprawY", "op": "find", "expect": [{"m": "kpraw"}, {"m": "kpraw"}], "note": "negative lookahead at each position"}
+{"id": "T003829", "pattern": "\\w+(?!X)", "input": "kprawX kprawY", "op": "find", "expect": [{"m": "kprawX"}, {"m": "kprawY"}], "note": "negative lookahead at each position"}
 {"id": "T003830", "pattern": "\\w+(?=:)", "input": "ydrllv:xgx", "op": "find", "expect": [{"m": "ydrllv"}], "note": "lookahead before ':'"}
 {"id": "T003831", "pattern": "(?<=:)\\w+", "input": "ydrllv:xgx", "op": "find", "expect": [{"m": "xgx"}], "note": "lookbehind after ':'"}
-{"id": "T003832", "pattern": "\\w+(?!X)", "input": "ydrllvX ydrllvY", "op": "find", "expect": [{"m": "ydrllv"}, {"m": "ydrllv"}], "note": "negative lookahead at each position"}
+{"id": "T003832", "pattern": "\\w+(?!X)", "input": "ydrllvX ydrllvY", "op": "find", "expect": [{"m": "ydrllvX"}, {"m": "ydrllvY"}], "note": "negative lookahead at each position"}
 {"id": "T003833", "pattern": "\\w+(?=:)", "input": "geexpp:vzdih", "op": "find", "expect": [{"m": "geexpp"}], "note": "lookahead before ':'"}
 {"id": "T003834", "pattern": "(?<=:)\\w+", "input": "geexpp:vzdih", "op": "find", "expect": [{"m": "vzdih"}], "note": "lookbehind after ':'"}
-{"id": "T003835", "pattern": "\\w+(?!X)", "input": "geexppX geexppY", "op": "find", "expect": [{"m": "geexpp"}, {"m": "geexpp"}], "note": "negative lookahead at each position"}
+{"id": "T003835", "pattern": "\\w+(?!X)", "input": "geexppX geexppY", "op": "find", "expect": [{"m": "geexppX"}, {"m": "geexppY"}], "note": "negative lookahead at each position"}
 {"id": "T003836", "pattern": "\\w+(?=:)", "input": "ehi:am", "op": "find", "expect": [{"m": "ehi"}], "note": "lookahead before ':'"}
 {"id": "T003837", "pattern": "(?<=:)\\w+", "input": "ehi:am", "op": "find", "expect": [{"m": "am"}], "note": "lookbehind after ':'"}
-{"id": "T003838", "pattern": "\\w+(?!X)", "input": "ehiX ehiY", "op": "find", "expect": [{"m": "ehi"}, {"m": "ehi"}], "note": "negative lookahead at each position"}
+{"id": "T003838", "pattern": "\\w+(?!X)", "input": "ehiX ehiY", "op": "find", "expect": [{"m": "ehiX"}, {"m": "ehiY"}], "note": "negative lookahead at each position"}
 {"id": "T003839", "pattern": "\\w+(?=:)", "input": "zjyawmmw:ihzhq", "op": "find", "expect": [{"m": "zjyawmmw"}], "note": "lookahead before ':'"}
 {"id": "T003840", "pattern": "(?<=:)\\w+", "input": "zjyawmmw:ihzhq", "op": "find", "expect": [{"m": "ihzhq"}], "note": "lookbehind after ':'"}
-{"id": "T003841", "pattern": "\\w+(?!X)", "input": "zjyawmmwX zjyawmmwY", "op": "find", "expect": [{"m": "zjyawmmw"}, {"m": "zjyawmmw"}], "note": "negative lookahead at each position"}
+{"id": "T003841", "pattern": "\\w+(?!X)", "input": "zjyawmmwX zjyawmmwY", "op": "find", "expect": [{"m": "zjyawmmwX"}, {"m": "zjyawmmwY"}], "note": "negative lookahead at each position"}
 {"id": "T003842", "pattern": "\\w+(?=:)", "input": "nfpqglt:urfzg", "op": "find", "expect": [{"m": "nfpqglt"}], "note": "lookahead before ':'"}
 {"id": "T003843", "pattern": "(?<=:)\\w+", "input": "nfpqglt:urfzg", "op": "find", "expect": [{"m": "urfzg"}], "note": "lookbehind after ':'"}
-{"id": "T003844", "pattern": "\\w+(?!X)", "input": "nfpqgltX nfpqgltY", "op": "find", "expect": [{"m": "nfpqglt"}, {"m": "nfpqglt"}], "note": "negative lookahead at each position"}
+{"id": "T003844", "pattern": "\\w+(?!X)", "input": "nfpqgltX nfpqgltY", "op": "find", "expect": [{"m": "nfpqgltX"}, {"m": "nfpqgltY"}], "note": "negative lookahead at each position"}
 {"id": "T003845", "pattern": "\\w+(?=:)", "input": "iijy:xsqlq", "op": "find", "expect": [{"m": "iijy"}], "note": "lookahead before ':'"}
 {"id": "T003846", "pattern": "(?<=:)\\w+", "input": "iijy:xsqlq", "op": "find", "expect": [{"m": "xsqlq"}], "note": "lookbehind after ':'"}
-{"id": "T003847", "pattern": "\\w+(?!X)", "input": "iijyX iijyY", "op": "find", "expect": [{"m": "iijy"}, {"m": "iijy"}], "note": "negative lookahead at each position"}
+{"id": "T003847", "pattern": "\\w+(?!X)", "input": "iijyX iijyY", "op": "find", "expect": [{"m": "iijyX"}, {"m": "iijyY"}], "note": "negative lookahead at each position"}
 {"id": "T003848", "pattern": "\\w+(?=:)", "input": "qctzrjag:qe", "op": "find", "expect": [{"m": "qctzrjag"}], "note": "lookahead before ':'"}
 {"id": "T003849", "pattern": "(?<=:)\\w+", "input": "qctzrjag:qe", "op": "find", "expect": [{"m": "qe"}], "note": "lookbehind after ':'"}
-{"id": "T003850", "pattern": "\\w+(?!X)", "input": "qctzrjagX qctzrjagY", "op": "find", "expect": [{"m": "qctzrjag"}, {"m": "qctzrjag"}], "note": "negative lookahead at each position"}
+{"id": "T003850", "pattern": "\\w+(?!X)", "input": "qctzrjagX qctzrjagY", "op": "find", "expect": [{"m": "qctzrjagX"}, {"m": "qctzrjagY"}], "note": "negative lookahead at each position"}
 {"id": "T003851", "pattern": "\\w+(?=:)", "input": "qaa:tyam", "op": "find", "expect": [{"m": "qaa"}], "note": "lookahead before ':'"}
 {"id": "T003852", "pattern": "(?<=:)\\w+", "input": "qaa:tyam", "op": "find", "expect": [{"m": "tyam"}], "note": "lookbehind after ':'"}
-{"id": "T003853", "pattern": "\\w+(?!X)", "input": "qaaX qaaY", "op": "find", "expect": [{"m": "qaa"}, {"m": "qaa"}], "note": "negative lookahead at each position"}
+{"id": "T003853", "pattern": "\\w+(?!X)", "input": "qaaX qaaY", "op": "find", "expect": [{"m": "qaaX"}, {"m": "qaaY"}], "note": "negative lookahead at each position"}
 {"id": "T003854", "pattern": "\\w+(?=:)", "input": "lktrmo:bnz", "op": "find", "expect": [{"m": "lktrmo"}], "note": "lookahead before ':'"}
 {"id": "T003855", "pattern": "(?<=:)\\w+", "input": "lktrmo:bnz", "op": "find", "expect": [{"m": "bnz"}], "note": "lookbehind after ':'"}
-{"id": "T003856", "pattern": "\\w+(?!X)", "input": "lktrmoX lktrmoY", "op": "find", "expect": [{"m": "lktrmo"}, {"m": "lktrmo"}], "note": "negative lookahead at each position"}
+{"id": "T003856", "pattern": "\\w+(?!X)", "input": "lktrmoX lktrmoY", "op": "find", "expect": [{"m": "lktrmoX"}, {"m": "lktrmoY"}], "note": "negative lookahead at each position"}
 {"id": "T003857", "pattern": "\\w+(?=:)", "input": "lduu:juxdp", "op": "find", "expect": [{"m": "lduu"}], "note": "lookahead before ':'"}
 {"id": "T003858", "pattern": "(?<=:)\\w+", "input": "lduu:juxdp", "op": "find", "expect": [{"m": "juxdp"}], "note": "lookbehind after ':'"}
-{"id": "T003859", "pattern": "\\w+(?!X)", "input": "lduuX lduuY", "op": "find", "expect": [{"m": "lduu"}, {"m": "lduu"}], "note": "negative lookahead at each position"}
+{"id": "T003859", "pattern": "\\w+(?!X)", "input": "lduuX lduuY", "op": "find", "expect": [{"m": "lduuX"}, {"m": "lduuY"}], "note": "negative lookahead at each position"}
 {"id": "T003860", "pattern": "\\w+(?=:)", "input": "dbayx:srvhqwg", "op": "find", "expect": [{"m": "dbayx"}], "note": "lookahead before ':'"}
 {"id": "T003861", "pattern": "(?<=:)\\w+", "input": "dbayx:srvhqwg", "op": "find", "expect": [{"m": "srvhqwg"}], "note": "lookbehind after ':'"}
-{"id": "T003862", "pattern": "\\w+(?!X)", "input": "dbayxX dbayxY", "op": "find", "expect": [{"m": "dbayx"}, {"m": "dbayx"}], "note": "negative lookahead at each position"}
+{"id": "T003862", "pattern": "\\w+(?!X)", "input": "dbayxX dbayxY", "op": "find", "expect": [{"m": "dbayxX"}, {"m": "dbayxY"}], "note": "negative lookahead at each position"}
 {"id": "T003863", "pattern": "\\w+(?=:)", "input": "vrhwc:dppqp", "op": "find", "expect": [{"m": "vrhwc"}], "note": "lookahead before ':'"}
 {"id": "T003864", "pattern": "(?<=:)\\w+", "input": "vrhwc:dppqp", "op": "find", "expect": [{"m": "dppqp"}], "note": "lookbehind after ':'"}
-{"id": "T003865", "pattern": "\\w+(?!X)", "input": "vrhwcX vrhwcY", "op": "find", "expect": [{"m": "vrhwc"}, {"m": "vrhwc"}], "note": "negative lookahead at each position"}
+{"id": "T003865", "pattern": "\\w+(?!X)", "input": "vrhwcX vrhwcY", "op": "find", "expect": [{"m": "vrhwcX"}, {"m": "vrhwcY"}], "note": "negative lookahead at each position"}
 {"id": "T003866", "pattern": "\\w+(?=:)", "input": "qrjhekd:uod", "op": "find", "expect": [{"m": "qrjhekd"}], "note": "lookahead before ':'"}
 {"id": "T003867", "pattern": "(?<=:)\\w+", "input": "qrjhekd:uod", "op": "find", "expect": [{"m": "uod"}], "note": "lookbehind after ':'"}
-{"id": "T003868", "pattern": "\\w+(?!X)", "input": "qrjhekdX qrjhekdY", "op": "find", "expect": [{"m": "qrjhekd"}, {"m": "qrjhekd"}], "note": "negative lookahead at each position"}
+{"id": "T003868", "pattern": "\\w+(?!X)", "input": "qrjhekdX qrjhekdY", "op": "find", "expect": [{"m": "qrjhekdX"}, {"m": "qrjhekdY"}], "note": "negative lookahead at each position"}
 {"id": "T003869", "pattern": "\\w+(?=:)", "input": "sru:ypvmvtfx", "op": "find", "expect": [{"m": "sru"}], "note": "lookahead before ':'"}
 {"id": "T003870", "pattern": "(?<=:)\\w+", "input": "sru:ypvmvtfx", "op": "find", "expect": [{"m": "ypvmvtfx"}], "note": "lookbehind after ':'"}
-{"id": "T003871", "pattern": "\\w+(?!X)", "input": "sruX sruY", "op": "find", "expect": [{"m": "sru"}, {"m": "sru"}], "note": "negative lookahead at each position"}
+{"id": "T003871", "pattern": "\\w+(?!X)", "input": "sruX sruY", "op": "find", "expect": [{"m": "sruX"}, {"m": "sruY"}], "note": "negative lookahead at each position"}
 {"id": "T003872", "pattern": "\\w+(?=:)", "input": "xpohtq:loceuv", "op": "find", "expect": [{"m": "xpohtq"}], "note": "lookahead before ':'"}
 {"id": "T003873", "pattern": "(?<=:)\\w+", "input": "xpohtq:loceuv", "op": "find", "expect": [{"m": "loceuv"}], "note": "lookbehind after ':'"}
-{"id": "T003874", "pattern": "\\w+(?!X)", "input": "xpohtqX xpohtqY", "op": "find", "expect": [{"m": "xpohtq"}, {"m": "xpohtq"}], "note": "negative lookahead at each position"}
+{"id": "T003874", "pattern": "\\w+(?!X)", "input": "xpohtqX xpohtqY", "op": "find", "expect": [{"m": "xpohtqX"}, {"m": "xpohtqY"}], "note": "negative lookahead at each position"}
 {"id": "T003875", "pattern": "\\w+(?=:)", "input": "ewawuh:dlabwoxw", "op": "find", "expect": [{"m": "ewawuh"}], "note": "lookahead before ':'"}
 {"id": "T003876", "pattern": "(?<=:)\\w+", "input": "ewawuh:dlabwoxw", "op": "find", "expect": [{"m": "dlabwoxw"}], "note": "lookbehind after ':'"}
-{"id": "T003877", "pattern": "\\w+(?!X)", "input": "ewawuhX ewawuhY", "op": "find", "expect": [{"m": "ewawuh"}, {"m": "ewawuh"}], "note": "negative lookahead at each position"}
+{"id": "T003877", "pattern": "\\w+(?!X)", "input": "ewawuhX ewawuhY", "op": "find", "expect": [{"m": "ewawuhX"}, {"m": "ewawuhY"}], "note": "negative lookahead at each position"}
 {"id": "T003878", "pattern": "\\w+(?=:)", "input": "cddmu:wuotbb", "op": "find", "expect": [{"m": "cddmu"}], "note": "lookahead before ':'"}
 {"id": "T003879", "pattern": "(?<=:)\\w+", "input": "cddmu:wuotbb", "op": "find", "expect": [{"m": "wuotbb"}], "note": "lookbehind after ':'"}
-{"id": "T003880", "pattern": "\\w+(?!X)", "input": "cddmuX cddmuY", "op": "find", "expect": [{"m": "cddmu"}, {"m": "cddmu"}], "note": "negative lookahead at each position"}
+{"id": "T003880", "pattern": "\\w+(?!X)", "input": "cddmuX cddmuY", "op": "find", "expect": [{"m": "cddmuX"}, {"m": "cddmuY"}], "note": "negative lookahead at each position"}
 {"id": "T003881", "pattern": "\\w+(?=:)", "input": "yld:lenfuwia", "op": "find", "expect": [{"m": "yld"}], "note": "lookahead before ':'"}
 {"id": "T003882", "pattern": "(?<=:)\\w+", "input": "yld:lenfuwia", "op": "find", "expect": [{"m": "lenfuwia"}], "note": "lookbehind after ':'"}
-{"id": "T003883", "pattern": "\\w+(?!X)", "input": "yldX yldY", "op": "find", "expect": [{"m": "yld"}, {"m": "yld"}], "note": "negative lookahead at each position"}
+{"id": "T003883", "pattern": "\\w+(?!X)", "input": "yldX yldY", "op": "find", "expect": [{"m": "yldX"}, {"m": "yldY"}], "note": "negative lookahead at each position"}
 {"id": "T003884", "pattern": "\\w+(?=:)", "input": "qdkcev:ayqwc", "op": "find", "expect": [{"m": "qdkcev"}], "note": "lookahead before ':'"}
 {"id": "T003885", "pattern": "(?<=:)\\w+", "input": "qdkcev:ayqwc", "op": "find", "expect": [{"m": "ayqwc"}], "note": "lookbehind after ':'"}
-{"id": "T003886", "pattern": "\\w+(?!X)", "input": "qdkcevX qdkcevY", "op": "find", "expect": [{"m": "qdkcev"}, {"m": "qdkcev"}], "note": "negative lookahead at each position"}
+{"id": "T003886", "pattern": "\\w+(?!X)", "input": "qdkcevX qdkcevY", "op": "find", "expect": [{"m": "qdkcevX"}, {"m": "qdkcevY"}], "note": "negative lookahead at each position"}
 {"id": "T003887", "pattern": "\\w+(?=:)", "input": "vemhpmt:raubl", "op": "find", "expect": [{"m": "vemhpmt"}], "note": "lookahead before ':'"}
 {"id": "T003888", "pattern": "(?<=:)\\w+", "input": "vemhpmt:raubl", "op": "find", "expect": [{"m": "raubl"}], "note": "lookbehind after ':'"}
-{"id": "T003889", "pattern": "\\w+(?!X)", "input": "vemhpmtX vemhpmtY", "op": "find", "expect": [{"m": "vemhpmt"}, {"m": "vemhpmt"}], "note": "negative lookahead at each position"}
+{"id": "T003889", "pattern": "\\w+(?!X)", "input": "vemhpmtX vemhpmtY", "op": "find", "expect": [{"m": "vemhpmtX"}, {"m": "vemhpmtY"}], "note": "negative lookahead at each position"}
 {"id": "T003890", "pattern": "\\w+(?=:)", "input": "iywaoeda:ucae", "op": "find", "expect": [{"m": "iywaoeda"}], "note": "lookahead before ':'"}
 {"id": "T003891", "pattern": "(?<=:)\\w+", "input": "iywaoeda:ucae", "op": "find", "expect": [{"m": "ucae"}], "note": "lookbehind after ':'"}
-{"id": "T003892", "pattern": "\\w+(?!X)", "input": "iywaoedaX iywaoedaY", "op": "find", "expect": [{"m": "iywaoeda"}, {"m": "iywaoeda"}], "note": "negative lookahead at each position"}
+{"id": "T003892", "pattern": "\\w+(?!X)", "input": "iywaoedaX iywaoedaY", "op": "find", "expect": [{"m": "iywaoedaX"}, {"m": "iywaoedaY"}], "note": "negative lookahead at each position"}
 {"id": "T003893", "pattern": "\\w+(?=:)", "input": "bozft:jmjy", "op": "find", "expect": [{"m": "bozft"}], "note": "lookahead before ':'"}
 {"id": "T003894", "pattern": "(?<=:)\\w+", "input": "bozft:jmjy", "op": "find", "expect": [{"m": "jmjy"}], "note": "lookbehind after ':'"}
-{"id": "T003895", "pattern": "\\w+(?!X)", "input": "bozftX bozftY", "op": "find", "expect": [{"m": "bozft"}, {"m": "bozft"}], "note": "negative lookahead at each position"}
+{"id": "T003895", "pattern": "\\w+(?!X)", "input": "bozftX bozftY", "op": "find", "expect": [{"m": "bozftX"}, {"m": "bozftY"}], "note": "negative lookahead at each position"}
 {"id": "T003896", "pattern": "\\w+(?=:)", "input": "ntkxmw:kszcbvq", "op": "find", "expect": [{"m": "ntkxmw"}], "note": "lookahead before ':'"}
 {"id": "T003897", "pattern": "(?<=:)\\w+", "input": "ntkxmw:kszcbvq", "op": "find", "expect": [{"m": "kszcbvq"}], "note": "lookbehind after ':'"}
-{"id": "T003898", "pattern": "\\w+(?!X)", "input": "ntkxmwX ntkxmwY", "op": "find", "expect": [{"m": "ntkxmw"}, {"m": "ntkxmw"}], "note": "negative lookahead at each position"}
+{"id": "T003898", "pattern": "\\w+(?!X)", "input": "ntkxmwX ntkxmwY", "op": "find", "expect": [{"m": "ntkxmwX"}, {"m": "ntkxmwY"}], "note": "negative lookahead at each position"}
 {"id": "T003899", "pattern": "\\w+(?=:)", "input": "mrawoju:pozrrkq", "op": "find", "expect": [{"m": "mrawoju"}], "note": "lookahead before ':'"}
 {"id": "T003900", "pattern": "(?<=:)\\w+", "input": "mrawoju:pozrrkq", "op": "find", "expect": [{"m": "pozrrkq"}], "note": "lookbehind after ':'"}
-{"id": "T003901", "pattern": "\\w+(?!X)", "input": "mrawojuX mrawojuY", "op": "find", "expect": [{"m": "mrawoju"}, {"m": "mrawoju"}], "note": "negative lookahead at each position"}
+{"id": "T003901", "pattern": "\\w+(?!X)", "input": "mrawojuX mrawojuY", "op": "find", "expect": [{"m": "mrawojuX"}, {"m": "mrawojuY"}], "note": "negative lookahead at each position"}
 {"id": "T003902", "pattern": "\\w+(?=:)", "input": "wtmmaanf:iylitlk", "op": "find", "expect": [{"m": "wtmmaanf"}], "note": "lookahead before ':'"}
 {"id": "T003903", "pattern": "(?<=:)\\w+", "input": "wtmmaanf:iylitlk", "op": "find", "expect": [{"m": "iylitlk"}], "note": "lookbehind after ':'"}
-{"id": "T003904", "pattern": "\\w+(?!X)", "input": "wtmmaanfX wtmmaanfY", "op": "find", "expect": [{"m": "wtmmaanf"}, {"m": "wtmmaanf"}], "note": "negative lookahead at each position"}
+{"id": "T003904", "pattern": "\\w+(?!X)", "input": "wtmmaanfX wtmmaanfY", "op": "find", "expect": [{"m": "wtmmaanfX"}, {"m": "wtmmaanfY"}], "note": "negative lookahead at each position"}
 {"id": "T003905", "pattern": "\\w+(?=:)", "input": "ayza:akn", "op": "find", "expect": [{"m": "ayza"}], "note": "lookahead before ':'"}
 {"id": "T003906", "pattern": "(?<=:)\\w+", "input": "ayza:akn", "op": "find", "expect": [{"m": "akn"}], "note": "lookbehind after ':'"}
-{"id": "T003907", "pattern": "\\w+(?!X)", "input": "ayzaX ayzaY", "op": "find", "expect": [{"m": "ayza"}, {"m": "ayza"}], "note": "negative lookahead at each position"}
+{"id": "T003907", "pattern": "\\w+(?!X)", "input": "ayzaX ayzaY", "op": "find", "expect": [{"m": "ayzaX"}, {"m": "ayzaY"}], "note": "negative lookahead at each position"}
 {"id": "T003908", "pattern": "\\w+(?=:)", "input": "ivqzfcu:iss", "op": "find", "expect": [{"m": "ivqzfcu"}], "note": "lookahead before ':'"}
 {"id": "T003909", "pattern": "(?<=:)\\w+", "input": "ivqzfcu:iss", "op": "find", "expect": [{"m": "iss"}], "note": "lookbehind after ':'"}
-{"id": "T003910", "pattern": "\\w+(?!X)", "input": "ivqzfcuX ivqzfcuY", "op": "find", "expect": [{"m": "ivqzfcu"}, {"m": "ivqzfcu"}], "note": "negative lookahead at each position"}
+{"id": "T003910", "pattern": "\\w+(?!X)", "input": "ivqzfcuX ivqzfcuY", "op": "find", "expect": [{"m": "ivqzfcuX"}, {"m": "ivqzfcuY"}], "note": "negative lookahead at each position"}
 {"id": "T003911", "pattern": "\\w+(?=:)", "input": "rqx:nfry", "op": "find", "expect": [{"m": "rqx"}], "note": "lookahead before ':'"}
 {"id": "T003912", "pattern": "(?<=:)\\w+", "input": "rqx:nfry", "op": "find", "expect": [{"m": "nfry"}], "note": "lookbehind after ':'"}
-{"id": "T003913", "pattern": "\\w+(?!X)", "input": "rqxX rqxY", "op": "find", "expect": [{"m": "rqx"}, {"m": "rqx"}], "note": "negative lookahead at each position"}
+{"id": "T003913", "pattern": "\\w+(?!X)", "input": "rqxX rqxY", "op": "find", "expect": [{"m": "rqxX"}, {"m": "rqxY"}], "note": "negative lookahead at each position"}
 {"id": "T003914", "pattern": "\\w+(?=:)", "input": "slhsv:oi", "op": "find", "expect": [{"m": "slhsv"}], "note": "lookahead before ':'"}
 {"id": "T003915", "pattern": "(?<=:)\\w+", "input": "slhsv:oi", "op": "find", "expect": [{"m": "oi"}], "note": "lookbehind after ':'"}
-{"id": "T003916", "pattern": "\\w+(?!X)", "input": "slhsvX slhsvY", "op": "find", "expect": [{"m": "slhsv"}, {"m": "slhsv"}], "note": "negative lookahead at each position"}
+{"id": "T003916", "pattern": "\\w+(?!X)", "input": "slhsvX slhsvY", "op": "find", "expect": [{"m": "slhsvX"}, {"m": "slhsvY"}], "note": "negative lookahead at each position"}
 {"id": "T003917", "pattern": "\\w+(?=:)", "input": "votp:ywtm", "op": "find", "expect": [{"m": "votp"}], "note": "lookahead before ':'"}
 {"id": "T003918", "pattern": "(?<=:)\\w+", "input": "votp:ywtm", "op": "find", "expect": [{"m": "ywtm"}], "note": "lookbehind after ':'"}
-{"id": "T003919", "pattern": "\\w+(?!X)", "input": "votpX votpY", "op": "find", "expect": [{"m": "votp"}, {"m": "votp"}], "note": "negative lookahead at each position"}
+{"id": "T003919", "pattern": "\\w+(?!X)", "input": "votpX votpY", "op": "find", "expect": [{"m": "votpX"}, {"m": "votpY"}], "note": "negative lookahead at each position"}
 {"id": "T003920", "pattern": "\\w+(?=:)", "input": "hkyq:rakdv", "op": "find", "expect": [{"m": "hkyq"}], "note": "lookahead before ':'"}
 {"id": "T003921", "pattern": "(?<=:)\\w+", "input": "hkyq:rakdv", "op": "find", "expect": [{"m": "rakdv"}], "note": "lookbehind after ':'"}
-{"id": "T003922", "pattern": "\\w+(?!X)", "input": "hkyqX hkyqY", "op": "find", "expect": [{"m": "hkyq"}, {"m": "hkyq"}], "note": "negative lookahead at each position"}
+{"id": "T003922", "pattern": "\\w+(?!X)", "input": "hkyqX hkyqY", "op": "find", "expect": [{"m": "hkyqX"}, {"m": "hkyqY"}], "note": "negative lookahead at each position"}
 {"id": "T003923", "pattern": "\\w+(?=:)", "input": "ahozuet:wm", "op": "find", "expect": [{"m": "ahozuet"}], "note": "lookahead before ':'"}
 {"id": "T003924", "pattern": "(?<=:)\\w+", "input": "ahozuet:wm", "op": "find", "expect": [{"m": "wm"}], "note": "lookbehind after ':'"}
-{"id": "T003925", "pattern": "\\w+(?!X)", "input": "ahozuetX ahozuetY", "op": "find", "expect": [{"m": "ahozuet"}, {"m": "ahozuet"}], "note": "negative lookahead at each position"}
+{"id": "T003925", "pattern": "\\w+(?!X)", "input": "ahozuetX ahozuetY", "op": "find", "expect": [{"m": "ahozuetX"}, {"m": "ahozuetY"}], "note": "negative lookahead at each position"}
 {"id": "T003926", "pattern": "\\w+(?=:)", "input": "pxzmbb:uwopq", "op": "find", "expect": [{"m": "pxzmbb"}], "note": "lookahead before ':'"}
 {"id": "T003927", "pattern": "(?<=:)\\w+", "input": "pxzmbb:uwopq", "op": "find", "expect": [{"m": "uwopq"}], "note": "lookbehind after ':'"}
-{"id": "T003928", "pattern": "\\w+(?!X)", "input": "pxzmbbX pxzmbbY", "op": "find", "expect": [{"m": "pxzmbb"}, {"m": "pxzmbb"}], "note": "negative lookahead at each position"}
+{"id": "T003928", "pattern": "\\w+(?!X)", "input": "pxzmbbX pxzmbbY", "op": "find", "expect": [{"m": "pxzmbbX"}, {"m": "pxzmbbY"}], "note": "negative lookahead at each position"}
 {"id": "T003929", "pattern": "\\w+(?=:)", "input": "djwnn:fjdczim", "op": "find", "expect": [{"m": "djwnn"}], "note": "lookahead before ':'"}
 {"id": "T003930", "pattern": "(?<=:)\\w+", "input": "djwnn:fjdczim", "op": "find", "expect": [{"m": "fjdczim"}], "note": "lookbehind after ':'"}
-{"id": "T003931", "pattern": "\\w+(?!X)", "input": "djwnnX djwnnY", "op": "find", "expect": [{"m": "djwnn"}, {"m": "djwnn"}], "note": "negative lookahead at each position"}
+{"id": "T003931", "pattern": "\\w+(?!X)", "input": "djwnnX djwnnY", "op": "find", "expect": [{"m": "djwnnX"}, {"m": "djwnnY"}], "note": "negative lookahead at each position"}
 {"id": "T003932", "pattern": "\\w+(?=:)", "input": "gjwxwwdw:xwuoxowo", "op": "find", "expect": [{"m": "gjwxwwdw"}], "note": "lookahead before ':'"}
 {"id": "T003933", "pattern": "(?<=:)\\w+", "input": "gjwxwwdw:xwuoxowo", "op": "find", "expect": [{"m": "xwuoxowo"}], "note": "lookbehind after ':'"}
-{"id": "T003934", "pattern": "\\w+(?!X)", "input": "gjwxwwdwX gjwxwwdwY", "op": "find", "expect": [{"m": "gjwxwwdw"}, {"m": "gjwxwwdw"}], "note": "negative lookahead at each position"}
+{"id": "T003934", "pattern": "\\w+(?!X)", "input": "gjwxwwdwX gjwxwwdwY", "op": "find", "expect": [{"m": "gjwxwwdwX"}, {"m": "gjwxwwdwY"}], "note": "negative lookahead at each position"}
 {"id": "T003935", "pattern": "\\w+(?=:)", "input": "zoqc:knk", "op": "find", "expect": [{"m": "zoqc"}], "note": "lookahead before ':'"}
 {"id": "T003936", "pattern": "(?<=:)\\w+", "input": "zoqc:knk", "op": "find", "expect": [{"m": "knk"}], "note": "lookbehind after ':'"}
-{"id": "T003937", "pattern": "\\w+(?!X)", "input": "zoqcX zoqcY", "op": "find", "expect": [{"m": "zoqc"}, {"m": "zoqc"}], "note": "negative lookahead at each position"}
+{"id": "T003937", "pattern": "\\w+(?!X)", "input": "zoqcX zoqcY", "op": "find", "expect": [{"m": "zoqcX"}, {"m": "zoqcY"}], "note": "negative lookahead at each position"}
 {"id": "T003938", "pattern": "\\w+(?=:)", "input": "hwekumsl:kwogv", "op": "find", "expect": [{"m": "hwekumsl"}], "note": "lookahead before ':'"}
 {"id": "T003939", "pattern": "(?<=:)\\w+", "input": "hwekumsl:kwogv", "op": "find", "expect": [{"m": "kwogv"}], "note": "lookbehind after ':'"}
-{"id": "T003940", "pattern": "\\w+(?!X)", "input": "hwekumslX hwekumslY", "op": "find", "expect": [{"m": "hwekumsl"}, {"m": "hwekumsl"}], "note": "negative lookahead at each position"}
+{"id": "T003940", "pattern": "\\w+(?!X)", "input": "hwekumslX hwekumslY", "op": "find", "expect": [{"m": "hwekumslX"}, {"m": "hwekumslY"}], "note": "negative lookahead at each position"}
 {"id": "T003941", "pattern": "\\w+(?=:)", "input": "uvpaweoa:ewreuc", "op": "find", "expect": [{"m": "uvpaweoa"}], "note": "lookahead before ':'"}
 {"id": "T003942", "pattern": "(?<=:)\\w+", "input": "uvpaweoa:ewreuc", "op": "find", "expect": [{"m": "ewreuc"}], "note": "lookbehind after ':'"}
-{"id": "T003943", "pattern": "\\w+(?!X)", "input": "uvpaweoaX uvpaweoaY", "op": "find", "expect": [{"m": "uvpaweoa"}, {"m": "uvpaweoa"}], "note": "negative lookahead at each position"}
+{"id": "T003943", "pattern": "\\w+(?!X)", "input": "uvpaweoaX uvpaweoaY", "op": "find", "expect": [{"m": "uvpaweoaX"}, {"m": "uvpaweoaY"}], "note": "negative lookahead at each position"}
 {"id": "T003944", "pattern": "\\w+(?=:)", "input": "goenf:ajidxo", "op": "find", "expect": [{"m": "goenf"}], "note": "lookahead before ':'"}
 {"id": "T003945", "pattern": "(?<=:)\\w+", "input": "goenf:ajidxo", "op": "find", "expect": [{"m": "ajidxo"}], "note": "lookbehind after ':'"}
-{"id": "T003946", "pattern": "\\w+(?!X)", "input": "goenfX goenfY", "op": "find", "expect": [{"m": "goenf"}, {"m": "goenf"}], "note": "negative lookahead at each position"}
+{"id": "T003946", "pattern": "\\w+(?!X)", "input": "goenfX goenfY", "op": "find", "expect": [{"m": "goenfX"}, {"m": "goenfY"}], "note": "negative lookahead at each position"}
 {"id": "T003947", "pattern": "\\w+(?=:)", "input": "olulntax:rfhgool", "op": "find", "expect": [{"m": "olulntax"}], "note": "lookahead before ':'"}
 {"id": "T003948", "pattern": "(?<=:)\\w+", "input": "olulntax:rfhgool", "op": "find", "expect": [{"m": "rfhgool"}], "note": "lookbehind after ':'"}
-{"id": "T003949", "pattern": "\\w+(?!X)", "input": "olulntaxX olulntaxY", "op": "find", "expect": [{"m": "olulntax"}, {"m": "olulntax"}], "note": "negative lookahead at each position"}
+{"id": "T003949", "pattern": "\\w+(?!X)", "input": "olulntaxX olulntaxY", "op": "find", "expect": [{"m": "olulntaxX"}, {"m": "olulntaxY"}], "note": "negative lookahead at each position"}
 {"id": "T003950", "pattern": "\\w+(?=:)", "input": "cfuxas:qor", "op": "find", "expect": [{"m": "cfuxas"}], "note": "lookahead before ':'"}
 {"id": "T003951", "pattern": "(?<=:)\\w+", "input": "cfuxas:qor", "op": "find", "expect": [{"m": "qor"}], "note": "lookbehind after ':'"}
-{"id": "T003952", "pattern": "\\w+(?!X)", "input": "cfuxasX cfuxasY", "op": "find", "expect": [{"m": "cfuxas"}, {"m": "cfuxas"}], "note": "negative lookahead at each position"}
+{"id": "T003952", "pattern": "\\w+(?!X)", "input": "cfuxasX cfuxasY", "op": "find", "expect": [{"m": "cfuxasX"}, {"m": "cfuxasY"}], "note": "negative lookahead at each position"}
 {"id": "T003953", "pattern": "\\w+(?=:)", "input": "yandzn:nrlleve", "op": "find", "expect": [{"m": "yandzn"}], "note": "lookahead before ':'"}
 {"id": "T003954", "pattern": "(?<=:)\\w+", "input": "yandzn:nrlleve", "op": "find", "expect": [{"m": "nrlleve"}], "note": "lookbehind after ':'"}
-{"id": "T003955", "pattern": "\\w+(?!X)", "input": "yandznX yandznY", "op": "find", "expect": [{"m": "yandzn"}, {"m": "yandzn"}], "note": "negative lookahead at each position"}
+{"id": "T003955", "pattern": "\\w+(?!X)", "input": "yandznX yandznY", "op": "find", "expect": [{"m": "yandznX"}, {"m": "yandznY"}], "note": "negative lookahead at each position"}
 {"id": "T003956", "pattern": "\\w+(?=:)", "input": "dyakz:zoun", "op": "find", "expect": [{"m": "dyakz"}], "note": "lookahead before ':'"}
 {"id": "T003957", "pattern": "(?<=:)\\w+", "input": "dyakz:zoun", "op": "find", "expect": [{"m": "zoun"}], "note": "lookbehind after ':'"}
-{"id": "T003958", "pattern": "\\w+(?!X)", "input": "dyakzX dyakzY", "op": "find", "expect": [{"m": "dyakz"}, {"m": "dyakz"}], "note": "negative lookahead at each position"}
+{"id": "T003958", "pattern": "\\w+(?!X)", "input": "dyakzX dyakzY", "op": "find", "expect": [{"m": "dyakzX"}, {"m": "dyakzY"}], "note": "negative lookahead at each position"}
 {"id": "T003959", "pattern": "\\w+(?=:)", "input": "fvasikal:smwu", "op": "find", "expect": [{"m": "fvasikal"}], "note": "lookahead before ':'"}
 {"id": "T003960", "pattern": "(?<=:)\\w+", "input": "fvasikal:smwu", "op": "find", "expect": [{"m": "smwu"}], "note": "lookbehind after ':'"}
-{"id": "T003961", "pattern": "\\w+(?!X)", "input": "fvasikalX fvasikalY", "op": "find", "expect": [{"m": "fvasikal"}, {"m": "fvasikal"}], "note": "negative lookahead at each position"}
+{"id": "T003961", "pattern": "\\w+(?!X)", "input": "fvasikalX fvasikalY", "op": "find", "expect": [{"m": "fvasikalX"}, {"m": "fvasikalY"}], "note": "negative lookahead at each position"}
 {"id": "T003962", "pattern": "\\w+(?=:)", "input": "jiltooyg:lq", "op": "find", "expect": [{"m": "jiltooyg"}], "note": "lookahead before ':'"}
 {"id": "T003963", "pattern": "(?<=:)\\w+", "input": "jiltooyg:lq", "op": "find", "expect": [{"m": "lq"}], "note": "lookbehind after ':'"}
-{"id": "T003964", "pattern": "\\w+(?!X)", "input": "jiltooygX jiltooygY", "op": "find", "expect": [{"m": "jiltooyg"}, {"m": "jiltooyg"}], "note": "negative lookahead at each position"}
+{"id": "T003964", "pattern": "\\w+(?!X)", "input": "jiltooygX jiltooygY", "op": "find", "expect": [{"m": "jiltooygX"}, {"m": "jiltooygY"}], "note": "negative lookahead at each position"}
 {"id": "T003965", "pattern": "\\w+(?=:)", "input": "amirjljr:idntjau", "op": "find", "expect": [{"m": "amirjljr"}], "note": "lookahead before ':'"}
 {"id": "T003966", "pattern": "(?<=:)\\w+", "input": "amirjljr:idntjau", "op": "find", "expect": [{"m": "idntjau"}], "note": "lookbehind after ':'"}
-{"id": "T003967", "pattern": "\\w+(?!X)", "input": "amirjljrX amirjljrY", "op": "find", "expect": [{"m": "amirjljr"}, {"m": "amirjljr"}], "note": "negative lookahead at each position"}
+{"id": "T003967", "pattern": "\\w+(?!X)", "input": "amirjljrX amirjljrY", "op": "find", "expect": [{"m": "amirjljrX"}, {"m": "amirjljrY"}], "note": "negative lookahead at each position"}
 {"id": "T003968", "pattern": "\\w+(?=:)", "input": "oog:puwrhql", "op": "find", "expect": [{"m": "oog"}], "note": "lookahead before ':'"}
 {"id": "T003969", "pattern": "(?<=:)\\w+", "input": "oog:puwrhql", "op": "find", "expect": [{"m": "puwrhql"}], "note": "lookbehind after ':'"}
-{"id": "T003970", "pattern": "\\w+(?!X)", "input": "oogX oogY", "op": "find", "expect": [{"m": "oog"}, {"m": "oog"}], "note": "negative lookahead at each position"}
+{"id": "T003970", "pattern": "\\w+(?!X)", "input": "oogX oogY", "op": "find", "expect": [{"m": "oogX"}, {"m": "oogY"}], "note": "negative lookahead at each position"}
 {"id": "T003971", "pattern": "\\w+(?=:)", "input": "crpwik:aepglaei", "op": "find", "expect": [{"m": "crpwik"}], "note": "lookahead before ':'"}
 {"id": "T003972", "pattern": "(?<=:)\\w+", "input": "crpwik:aepglaei", "op": "find", "expect": [{"m": "aepglaei"}], "note": "lookbehind after ':'"}
-{"id": "T003973", "pattern": "\\w+(?!X)", "input": "crpwikX crpwikY", "op": "find", "expect": [{"m": "crpwik"}, {"m": "crpwik"}], "note": "negative lookahead at each position"}
+{"id": "T003973", "pattern": "\\w+(?!X)", "input": "crpwikX crpwikY", "op": "find", "expect": [{"m": "crpwikX"}, {"m": "crpwikY"}], "note": "negative lookahead at each position"}
 {"id": "T003974", "pattern": "\\w+(?=:)", "input": "zvl:tthxu", "op": "find", "expect": [{"m": "zvl"}], "note": "lookahead before ':'"}
 {"id": "T003975", "pattern": "(?<=:)\\w+", "input": "zvl:tthxu", "op": "find", "expect": [{"m": "tthxu"}], "note": "lookbehind after ':'"}
-{"id": "T003976", "pattern": "\\w+(?!X)", "input": "zvlX zvlY", "op": "find", "expect": [{"m": "zvl"}, {"m": "zvl"}], "note": "negative lookahead at each position"}
+{"id": "T003976", "pattern": "\\w+(?!X)", "input": "zvlX zvlY", "op": "find", "expect": [{"m": "zvlX"}, {"m": "zvlY"}], "note": "negative lookahead at each position"}
 {"id": "T003977", "pattern": "\\w+(?=:)", "input": "uxzt:movimaf", "op": "find", "expect": [{"m": "uxzt"}], "note": "lookahead before ':'"}
 {"id": "T003978", "pattern": "(?<=:)\\w+", "input": "uxzt:movimaf", "op": "find", "expect": [{"m": "movimaf"}], "note": "lookbehind after ':'"}
-{"id": "T003979", "pattern": "\\w+(?!X)", "input": "uxztX uxztY", "op": "find", "expect": [{"m": "uxzt"}, {"m": "uxzt"}], "note": "negative lookahead at each position"}
+{"id": "T003979", "pattern": "\\w+(?!X)", "input": "uxztX uxztY", "op": "find", "expect": [{"m": "uxztX"}, {"m": "uxztY"}], "note": "negative lookahead at each position"}
 {"id": "T003980", "pattern": "\\w+(?=:)", "input": "vmpfzsn:ncv", "op": "find", "expect": [{"m": "vmpfzsn"}], "note": "lookahead before ':'"}
 {"id": "T003981", "pattern": "(?<=:)\\w+", "input": "vmpfzsn:ncv", "op": "find", "expect": [{"m": "ncv"}], "note": "lookbehind after ':'"}
-{"id": "T003982", "pattern": "\\w+(?!X)", "input": "vmpfzsnX vmpfzsnY", "op": "find", "expect": [{"m": "vmpfzsn"}, {"m": "vmpfzsn"}], "note": "negative lookahead at each position"}
+{"id": "T003982", "pattern": "\\w+(?!X)", "input": "vmpfzsnX vmpfzsnY", "op": "find", "expect": [{"m": "vmpfzsnX"}, {"m": "vmpfzsnY"}], "note": "negative lookahead at each position"}
 {"id": "T003983", "pattern": "\\w+(?=:)", "input": "xgesf:chwdvzga", "op": "find", "expect": [{"m": "xgesf"}], "note": "lookahead before ':'"}
 {"id": "T003984", "pattern": "(?<=:)\\w+", "input": "xgesf:chwdvzga", "op": "find", "expect": [{"m": "chwdvzga"}], "note": "lookbehind after ':'"}
-{"id": "T003985", "pattern": "\\w+(?!X)", "input": "xgesfX xgesfY", "op": "find", "expect": [{"m": "xgesf"}, {"m": "xgesf"}], "note": "negative lookahead at each position"}
+{"id": "T003985", "pattern": "\\w+(?!X)", "input": "xgesfX xgesfY", "op": "find", "expect": [{"m": "xgesfX"}, {"m": "xgesfY"}], "note": "negative lookahead at each position"}
 {"id": "T003986", "pattern": "\\w+(?=:)", "input": "foa:vzjkc", "op": "find", "expect": [{"m": "foa"}], "note": "lookahead before ':'"}
 {"id": "T003987", "pattern": "(?<=:)\\w+", "input": "foa:vzjkc", "op": "find", "expect": [{"m": "vzjkc"}], "note": "lookbehind after ':'"}
-{"id": "T003988", "pattern": "\\w+(?!X)", "input": "foaX foaY", "op": "find", "expect": [{"m": "foa"}, {"m": "foa"}], "note": "negative lookahead at each position"}
+{"id": "T003988", "pattern": "\\w+(?!X)", "input": "foaX foaY", "op": "find", "expect": [{"m": "foaX"}, {"m": "foaY"}], "note": "negative lookahead at each position"}
 {"id": "T003989", "pattern": "\\w+(?=:)", "input": "rlruun:fsjvv", "op": "find", "expect": [{"m": "rlruun"}], "note": "lookahead before ':'"}
 {"id": "T003990", "pattern": "(?<=:)\\w+", "input": "rlruun:fsjvv", "op": "find", "expect": [{"m": "fsjvv"}], "note": "lookbehind after ':'"}
-{"id": "T003991", "pattern": "\\w+(?!X)", "input": "rlruunX rlruunY", "op": "find", "expect": [{"m": "rlruun"}, {"m": "rlruun"}], "note": "negative lookahead at each position"}
+{"id": "T003991", "pattern": "\\w+(?!X)", "input": "rlruunX rlruunY", "op": "find", "expect": [{"m": "rlruunX"}, {"m": "rlruunY"}], "note": "negative lookahead at each position"}
 {"id": "T003992", "pattern": "\\w+(?=:)", "input": "evdgvfeg:tf", "op": "find", "expect": [{"m": "evdgvfeg"}], "note": "lookahead before ':'"}
 {"id": "T003993", "pattern": "(?<=:)\\w+", "input": "evdgvfeg:tf", "op": "find", "expect": [{"m": "tf"}], "note": "lookbehind after ':'"}
-{"id": "T003994", "pattern": "\\w+(?!X)", "input": "evdgvfegX evdgvfegY", "op": "find", "expect": [{"m": "evdgvfeg"}, {"m": "evdgvfeg"}], "note": "negative lookahead at each position"}
+{"id": "T003994", "pattern": "\\w+(?!X)", "input": "evdgvfegX evdgvfegY", "op": "find", "expect": [{"m": "evdgvfegX"}, {"m": "evdgvfegY"}], "note": "negative lookahead at each position"}
 {"id": "T003995", "pattern": "\\w+(?=:)", "input": "yekq:tzjeu", "op": "find", "expect": [{"m": "yekq"}], "note": "lookahead before ':'"}
 {"id": "T003996", "pattern": "(?<=:)\\w+", "input": "yekq:tzjeu", "op": "find", "expect": [{"m": "tzjeu"}], "note": "lookbehind after ':'"}
-{"id": "T003997", "pattern": "\\w+(?!X)", "input": "yekqX yekqY", "op": "find", "expect": [{"m": "yekq"}, {"m": "yekq"}], "note": "negative lookahead at each position"}
+{"id": "T003997", "pattern": "\\w+(?!X)", "input": "yekqX yekqY", "op": "find", "expect": [{"m": "yekqX"}, {"m": "yekqY"}], "note": "negative lookahead at each position"}
 {"id": "T003998", "pattern": "\\w+(?=:)", "input": "ibgdmotx:gveu", "op": "find", "expect": [{"m": "ibgdmotx"}], "note": "lookahead before ':'"}
 {"id": "T003999", "pattern": "(?<=:)\\w+", "input": "ibgdmotx:gveu", "op": "find", "expect": [{"m": "gveu"}], "note": "lookbehind after ':'"}
-{"id": "T004000", "pattern": "\\w+(?!X)", "input": "ibgdmotxX ibgdmotxY", "op": "find", "expect": [{"m": "ibgdmotx"}, {"m": "ibgdmotx"}], "note": "negative lookahead at each position"}
+{"id": "T004000", "pattern": "\\w+(?!X)", "input": "ibgdmotxX ibgdmotxY", "op": "find", "expect": [{"m": "ibgdmotxX"}, {"m": "ibgdmotxY"}], "note": "negative lookahead at each position"}
 {"id": "T004001", "pattern": "\\w+(?=:)", "input": "tqvox:cigfqxp", "op": "find", "expect": [{"m": "tqvox"}], "note": "lookahead before ':'"}
 {"id": "T004002", "pattern": "(?<=:)\\w+", "input": "tqvox:cigfqxp", "op": "find", "expect": [{"m": "cigfqxp"}], "note": "lookbehind after ':'"}
-{"id": "T004003", "pattern": "\\w+(?!X)", "input": "tqvoxX tqvoxY", "op": "find", "expect": [{"m": "tqvox"}, {"m": "tqvox"}], "note": "negative lookahead at each position"}
+{"id": "T004003", "pattern": "\\w+(?!X)", "input": "tqvoxX tqvoxY", "op": "find", "expect": [{"m": "tqvoxX"}, {"m": "tqvoxY"}], "note": "negative lookahead at each position"}
 {"id": "T004004", "pattern": "\\w+(?=:)", "input": "qecrzx:aecgz", "op": "find", "expect": [{"m": "qecrzx"}], "note": "lookahead before ':'"}
 {"id": "T004005", "pattern": "(?<=:)\\w+", "input": "qecrzx:aecgz", "op": "find", "expect": [{"m": "aecgz"}], "note": "lookbehind after ':'"}
-{"id": "T004006", "pattern": "\\w+(?!X)", "input": "qecrzxX qecrzxY", "op": "find", "expect": [{"m": "qecrzx"}, {"m": "qecrzx"}], "note": "negative lookahead at each position"}
+{"id": "T004006", "pattern": "\\w+(?!X)", "input": "qecrzxX qecrzxY", "op": "find", "expect": [{"m": "qecrzxX"}, {"m": "qecrzxY"}], "note": "negative lookahead at each position"}
 {"id": "T004007", "pattern": "\\w+(?=:)", "input": "rogbicx:wewmuqf", "op": "find", "expect": [{"m": "rogbicx"}], "note": "lookahead before ':'"}
 {"id": "T004008", "pattern": "(?<=:)\\w+", "input": "rogbicx:wewmuqf", "op": "find", "expect": [{"m": "wewmuqf"}], "note": "lookbehind after ':'"}
-{"id": "T004009", "pattern": "\\w+(?!X)", "input": "rogbicxX rogbicxY", "op": "find", "expect": [{"m": "rogbicx"}, {"m": "rogbicx"}], "note": "negative lookahead at each position"}
+{"id": "T004009", "pattern": "\\w+(?!X)", "input": "rogbicxX rogbicxY", "op": "find", "expect": [{"m": "rogbicxX"}, {"m": "rogbicxY"}], "note": "negative lookahead at each position"}
 {"id": "T004010", "pattern": "\\w+(?=:)", "input": "unha:ij", "op": "find", "expect": [{"m": "unha"}], "note": "lookahead before ':'"}
 {"id": "T004011", "pattern": "(?<=:)\\w+", "input": "unha:ij", "op": "find", "expect": [{"m": "ij"}], "note": "lookbehind after ':'"}
-{"id": "T004012", "pattern": "\\w+(?!X)", "input": "unhaX unhaY", "op": "find", "expect": [{"m": "unha"}, {"m": "unha"}], "note": "negative lookahead at each position"}
+{"id": "T004012", "pattern": "\\w+(?!X)", "input": "unhaX unhaY", "op": "find", "expect": [{"m": "unhaX"}, {"m": "unhaY"}], "note": "negative lookahead at each position"}
 {"id": "T004013", "pattern": "\\w+(?=:)", "input": "naw:yghnto", "op": "find", "expect": [{"m": "naw"}], "note": "lookahead before ':'"}
 {"id": "T004014", "pattern": "(?<=:)\\w+", "input": "naw:yghnto", "op": "find", "expect": [{"m": "yghnto"}], "note": "lookbehind after ':'"}
-{"id": "T004015", "pattern": "\\w+(?!X)", "input": "nawX nawY", "op": "find", "expect": [{"m": "naw"}, {"m": "naw"}], "note": "negative lookahead at each position"}
+{"id": "T004015", "pattern": "\\w+(?!X)", "input": "nawX nawY", "op": "find", "expect": [{"m": "nawX"}, {"m": "nawY"}], "note": "negative lookahead at each position"}
 {"id": "T004016", "pattern": "\\w+(?=:)", "input": "vysbbm:kqk", "op": "find", "expect": [{"m": "vysbbm"}], "note": "lookahead before ':'"}
 {"id": "T004017", "pattern": "(?<=:)\\w+", "input": "vysbbm:kqk", "op": "find", "expect": [{"m": "kqk"}], "note": "lookbehind after ':'"}
-{"id": "T004018", "pattern": "\\w+(?!X)", "input": "vysbbmX vysbbmY", "op": "find", "expect": [{"m": "vysbbm"}, {"m": "vysbbm"}], "note": "negative lookahead at each position"}
+{"id": "T004018", "pattern": "\\w+(?!X)", "input": "vysbbmX vysbbmY", "op": "find", "expect": [{"m": "vysbbmX"}, {"m": "vysbbmY"}], "note": "negative lookahead at each position"}
 {"id": "T004019", "pattern": "\\w+(?=:)", "input": "prlahe:tiwvqb", "op": "find", "expect": [{"m": "prlahe"}], "note": "lookahead before ':'"}
 {"id": "T004020", "pattern": "(?<=:)\\w+", "input": "prlahe:tiwvqb", "op": "find", "expect": [{"m": "tiwvqb"}], "note": "lookbehind after ':'"}
-{"id": "T004021", "pattern": "\\w+(?!X)", "input": "prlaheX prlaheY", "op": "find", "expect": [{"m": "prlahe"}, {"m": "prlahe"}], "note": "negative lookahead at each position"}
+{"id": "T004021", "pattern": "\\w+(?!X)", "input": "prlaheX prlaheY", "op": "find", "expect": [{"m": "prlaheX"}, {"m": "prlaheY"}], "note": "negative lookahead at each position"}
 {"id": "T004022", "pattern": "\\w+(?=:)", "input": "qqffnui:qbpv", "op": "find", "expect": [{"m": "qqffnui"}], "note": "lookahead before ':'"}
 {"id": "T004023", "pattern": "(?<=:)\\w+", "input": "qqffnui:qbpv", "op": "find", "expect": [{"m": "qbpv"}], "note": "lookbehind after ':'"}
-{"id": "T004024", "pattern": "\\w+(?!X)", "input": "qqffnuiX qqffnuiY", "op": "find", "expect": [{"m": "qqffnui"}, {"m": "qqffnui"}], "note": "negative lookahead at each position"}
+{"id": "T004024", "pattern": "\\w+(?!X)", "input": "qqffnuiX qqffnuiY", "op": "find", "expect": [{"m": "qqffnuiX"}, {"m": "qqffnuiY"}], "note": "negative lookahead at each position"}
 {"id": "T004025", "pattern": "\\w+(?=:)", "input": "jstmihyt:dxtrf", "op": "find", "expect": [{"m": "jstmihyt"}], "note": "lookahead before ':'"}
 {"id": "T004026", "pattern": "(?<=:)\\w+", "input": "jstmihyt:dxtrf", "op": "find", "expect": [{"m": "dxtrf"}], "note": "lookbehind after ':'"}
-{"id": "T004027", "pattern": "\\w+(?!X)", "input": "jstmihytX jstmihytY", "op": "find", "expect": [{"m": "jstmihyt"}, {"m": "jstmihyt"}], "note": "negative lookahead at each position"}
+{"id": "T004027", "pattern": "\\w+(?!X)", "input": "jstmihytX jstmihytY", "op": "find", "expect": [{"m": "jstmihytX"}, {"m": "jstmihytY"}], "note": "negative lookahead at each position"}
 {"id": "T004028", "pattern": "\\w+(?=:)", "input": "haarn:kaallons", "op": "find", "expect": [{"m": "haarn"}], "note": "lookahead before ':'"}
 {"id": "T004029", "pattern": "(?<=:)\\w+", "input": "haarn:kaallons", "op": "find", "expect": [{"m": "kaallons"}], "note": "lookbehind after ':'"}
-{"id": "T004030", "pattern": "\\w+(?!X)", "input": "haarnX haarnY", "op": "find", "expect": [{"m": "haarn"}, {"m": "haarn"}], "note": "negative lookahead at each position"}
+{"id": "T004030", "pattern": "\\w+(?!X)", "input": "haarnX haarnY", "op": "find", "expect": [{"m": "haarnX"}, {"m": "haarnY"}], "note": "negative lookahead at each position"}
 {"id": "T004031", "pattern": "\\w+(?=:)", "input": "eqmchcvj:dtyfn", "op": "find", "expect": [{"m": "eqmchcvj"}], "note": "lookahead before ':'"}
 {"id": "T004032", "pattern": "(?<=:)\\w+", "input": "eqmchcvj:dtyfn", "op": "find", "expect": [{"m": "dtyfn"}], "note": "lookbehind after ':'"}
-{"id": "T004033", "pattern": "\\w+(?!X)", "input": "eqmchcvjX eqmchcvjY", "op": "find", "expect": [{"m": "eqmchcvj"}, {"m": "eqmchcvj"}], "note": "negative lookahead at each position"}
+{"id": "T004033", "pattern": "\\w+(?!X)", "input": "eqmchcvjX eqmchcvjY", "op": "find", "expect": [{"m": "eqmchcvjX"}, {"m": "eqmchcvjY"}], "note": "negative lookahead at each position"}
 {"id": "T004034", "pattern": "\\w+(?=:)", "input": "vqel:btp", "op": "find", "expect": [{"m": "vqel"}], "note": "lookahead before ':'"}
 {"id": "T004035", "pattern": "(?<=:)\\w+", "input": "vqel:btp", "op": "find", "expect": [{"m": "btp"}], "note": "lookbehind after ':'"}
-{"id": "T004036", "pattern": "\\w+(?!X)", "input": "vqelX vqelY", "op": "find", "expect": [{"m": "vqel"}, {"m": "vqel"}], "note": "negative lookahead at each position"}
+{"id": "T004036", "pattern": "\\w+(?!X)", "input": "vqelX vqelY", "op": "find", "expect": [{"m": "vqelX"}, {"m": "vqelY"}], "note": "negative lookahead at each position"}
 {"id": "T004037", "pattern": "\\w+(?=:)", "input": "shl:rkncl", "op": "find", "expect": [{"m": "shl"}], "note": "lookahead before ':'"}
 {"id": "T004038", "pattern": "(?<=:)\\w+", "input": "shl:rkncl", "op": "find", "expect": [{"m": "rkncl"}], "note": "lookbehind after ':'"}
-{"id": "T004039", "pattern": "\\w+(?!X)", "input": "shlX shlY", "op": "find", "expect": [{"m": "shl"}, {"m": "shl"}], "note": "negative lookahead at each position"}
+{"id": "T004039", "pattern": "\\w+(?!X)", "input": "shlX shlY", "op": "find", "expect": [{"m": "shlX"}, {"m": "shlY"}], "note": "negative lookahead at each position"}
 {"id": "T004040", "pattern": "\\w+(?=:)", "input": "osi:gp", "op": "find", "expect": [{"m": "osi"}], "note": "lookahead before ':'"}
 {"id": "T004041", "pattern": "(?<=:)\\w+", "input": "osi:gp", "op": "find", "expect": [{"m": "gp"}], "note": "lookbehind after ':'"}
-{"id": "T004042", "pattern": "\\w+(?!X)", "input": "osiX osiY", "op": "find", "expect": [{"m": "osi"}, {"m": "osi"}], "note": "negative lookahead at each position"}
+{"id": "T004042", "pattern": "\\w+(?!X)", "input": "osiX osiY", "op": "find", "expect": [{"m": "osiX"}, {"m": "osiY"}], "note": "negative lookahead at each position"}
 {"id": "T004043", "pattern": "\\w+(?=:)", "input": "zcrerwdz:wbcbcjko", "op": "find", "expect": [{"m": "zcrerwdz"}], "note": "lookahead before ':'"}
 {"id": "T004044", "pattern": "(?<=:)\\w+", "input": "zcrerwdz:wbcbcjko", "op": "find", "expect": [{"m": "wbcbcjko"}], "note": "lookbehind after ':'"}
-{"id": "T004045", "pattern": "\\w+(?!X)", "input": "zcrerwdzX zcrerwdzY", "op": "find", "expect": [{"m": "zcrerwdz"}, {"m": "zcrerwdz"}], "note": "negative lookahead at each position"}
+{"id": "T004045", "pattern": "\\w+(?!X)", "input": "zcrerwdzX zcrerwdzY", "op": "find", "expect": [{"m": "zcrerwdzX"}, {"m": "zcrerwdzY"}], "note": "negative lookahead at each position"}
 {"id": "T004046", "pattern": "\\w+(?=:)", "input": "gryylbka:zpzlkvi", "op": "find", "expect": [{"m": "gryylbka"}], "note": "lookahead before ':'"}
 {"id": "T004047", "pattern": "(?<=:)\\w+", "input": "gryylbka:zpzlkvi", "op": "find", "expect": [{"m": "zpzlkvi"}], "note": "lookbehind after ':'"}
-{"id": "T004048", "pattern": "\\w+(?!X)", "input": "gryylbkaX gryylbkaY", "op": "find", "expect": [{"m": "gryylbka"}, {"m": "gryylbka"}], "note": "negative lookahead at each position"}
+{"id": "T004048", "pattern": "\\w+(?!X)", "input": "gryylbkaX gryylbkaY", "op": "find", "expect": [{"m": "gryylbkaX"}, {"m": "gryylbkaY"}], "note": "negative lookahead at each position"}
 {"id": "T004049", "pattern": "\\w+(?=:)", "input": "yrmvmzmm:vmorr", "op": "find", "expect": [{"m": "yrmvmzmm"}], "note": "lookahead before ':'"}
 {"id": "T004050", "pattern": "(?<=:)\\w+", "input": "yrmvmzmm:vmorr", "op": "find", "expect": [{"m": "vmorr"}], "note": "lookbehind after ':'"}
-{"id": "T004051", "pattern": "\\w+(?!X)", "input": "yrmvmzmmX yrmvmzmmY", "op": "find", "expect": [{"m": "yrmvmzmm"}, {"m": "yrmvmzmm"}], "note": "negative lookahead at each position"}
+{"id": "T004051", "pattern": "\\w+(?!X)", "input": "yrmvmzmmX yrmvmzmmY", "op": "find", "expect": [{"m": "yrmvmzmmX"}, {"m": "yrmvmzmmY"}], "note": "negative lookahead at each position"}
 {"id": "T004052", "pattern": "\\w+(?=:)", "input": "xrm:wmkec", "op": "find", "expect": [{"m": "xrm"}], "note": "lookahead before ':'"}
 {"id": "T004053", "pattern": "(?<=:)\\w+", "input": "xrm:wmkec", "op": "find", "expect": [{"m": "wmkec"}], "note": "lookbehind after ':'"}
-{"id": "T004054", "pattern": "\\w+(?!X)", "input": "xrmX xrmY", "op": "find", "expect": [{"m": "xrm"}, {"m": "xrm"}], "note": "negative lookahead at each position"}
+{"id": "T004054", "pattern": "\\w+(?!X)", "input": "xrmX xrmY", "op": "find", "expect": [{"m": "xrmX"}, {"m": "xrmY"}], "note": "negative lookahead at each position"}
 {"id": "T004055", "pattern": "\\w+(?=:)", "input": "hxswk:ktcmkuj", "op": "find", "expect": [{"m": "hxswk"}], "note": "lookahead before ':'"}
 {"id": "T004056", "pattern": "(?<=:)\\w+", "input": "hxswk:ktcmkuj", "op": "find", "expect": [{"m": "ktcmkuj"}], "note": "lookbehind after ':'"}
-{"id": "T004057", "pattern": "\\w+(?!X)", "input": "hxswkX hxswkY", "op": "find", "expect": [{"m": "hxswk"}, {"m": "hxswk"}], "note": "negative lookahead at each position"}
+{"id": "T004057", "pattern": "\\w+(?!X)", "input": "hxswkX hxswkY", "op": "find", "expect": [{"m": "hxswkX"}, {"m": "hxswkY"}], "note": "negative lookahead at each position"}
 {"id": "T004058", "pattern": "\\w+(?=:)", "input": "sba:fajoxhvg", "op": "find", "expect": [{"m": "sba"}], "note": "lookahead before ':'"}
 {"id": "T004059", "pattern": "(?<=:)\\w+", "input": "sba:fajoxhvg", "op": "find", "expect": [{"m": "fajoxhvg"}], "note": "lookbehind after ':'"}
-{"id": "T004060", "pattern": "\\w+(?!X)", "input": "sbaX sbaY", "op": "find", "expect": [{"m": "sba"}, {"m": "sba"}], "note": "negative lookahead at each position"}
+{"id": "T004060", "pattern": "\\w+(?!X)", "input": "sbaX sbaY", "op": "find", "expect": [{"m": "sbaX"}, {"m": "sbaY"}], "note": "negative lookahead at each position"}
 {"id": "T004061", "pattern": "\\w+(?=:)", "input": "kvu:undcpld", "op": "find", "expect": [{"m": "kvu"}], "note": "lookahead before ':'"}
 {"id": "T004062", "pattern": "(?<=:)\\w+", "input": "kvu:undcpld", "op": "find", "expect": [{"m": "undcpld"}], "note": "lookbehind after ':'"}
-{"id": "T004063", "pattern": "\\w+(?!X)", "input": "kvuX kvuY", "op": "find", "expect": [{"m": "kvu"}, {"m": "kvu"}], "note": "negative lookahead at each position"}
+{"id": "T004063", "pattern": "\\w+(?!X)", "input": "kvuX kvuY", "op": "find", "expect": [{"m": "kvuX"}, {"m": "kvuY"}], "note": "negative lookahead at each position"}
 {"id": "T004064", "pattern": "\\w+(?=:)", "input": "dyrxc:qricrjb", "op": "find", "expect": [{"m": "dyrxc"}], "note": "lookahead before ':'"}
 {"id": "T004065", "pattern": "(?<=:)\\w+", "input": "dyrxc:qricrjb", "op": "find", "expect": [{"m": "qricrjb"}], "note": "lookbehind after ':'"}
-{"id": "T004066", "pattern": "\\w+(?!X)", "input": "dyrxcX dyrxcY", "op": "find", "expect": [{"m": "dyrxc"}, {"m": "dyrxc"}], "note": "negative lookahead at each position"}
+{"id": "T004066", "pattern": "\\w+(?!X)", "input": "dyrxcX dyrxcY", "op": "find", "expect": [{"m": "dyrxcX"}, {"m": "dyrxcY"}], "note": "negative lookahead at each position"}
 {"id": "T004067", "pattern": "\\w+(?=:)", "input": "niygjt:swqu", "op": "find", "expect": [{"m": "niygjt"}], "note": "lookahead before ':'"}
 {"id": "T004068", "pattern": "(?<=:)\\w+", "input": "niygjt:swqu", "op": "find", "expect": [{"m": "swqu"}], "note": "lookbehind after ':'"}
-{"id": "T004069", "pattern": "\\w+(?!X)", "input": "niygjtX niygjtY", "op": "find", "expect": [{"m": "niygjt"}, {"m": "niygjt"}], "note": "negative lookahead at each position"}
+{"id": "T004069", "pattern": "\\w+(?!X)", "input": "niygjtX niygjtY", "op": "find", "expect": [{"m": "niygjtX"}, {"m": "niygjtY"}], "note": "negative lookahead at each position"}
 {"id": "T004070", "pattern": "\\w+(?=:)", "input": "lew:msr", "op": "find", "expect": [{"m": "lew"}], "note": "lookahead before ':'"}
 {"id": "T004071", "pattern": "(?<=:)\\w+", "input": "lew:msr", "op": "find", "expect": [{"m": "msr"}], "note": "lookbehind after ':'"}
-{"id": "T004072", "pattern": "\\w+(?!X)", "input": "lewX lewY", "op": "find", "expect": [{"m": "lew"}, {"m": "lew"}], "note": "negative lookahead at each position"}
+{"id": "T004072", "pattern": "\\w+(?!X)", "input": "lewX lewY", "op": "find", "expect": [{"m": "lewX"}, {"m": "lewY"}], "note": "negative lookahead at each position"}
 {"id": "T004073", "pattern": "\\w+(?=:)", "input": "aio:zayh", "op": "find", "expect": [{"m": "aio"}], "note": "lookahead before ':'"}
 {"id": "T004074", "pattern": "(?<=:)\\w+", "input": "aio:zayh", "op": "find", "expect": [{"m": "zayh"}], "note": "lookbehind after ':'"}
-{"id": "T004075", "pattern": "\\w+(?!X)", "input": "aioX aioY", "op": "find", "expect": [{"m": "aio"}, {"m": "aio"}], "note": "negative lookahead at each position"}
+{"id": "T004075", "pattern": "\\w+(?!X)", "input": "aioX aioY", "op": "find", "expect": [{"m": "aioX"}, {"m": "aioY"}], "note": "negative lookahead at each position"}
 {"id": "T004076", "pattern": "\\w+(?=:)", "input": "ujgg:gclkjhci", "op": "find", "expect": [{"m": "ujgg"}], "note": "lookahead before ':'"}
 {"id": "T004077", "pattern": "(?<=:)\\w+", "input": "ujgg:gclkjhci", "op": "find", "expect": [{"m": "gclkjhci"}], "note": "lookbehind after ':'"}
-{"id": "T004078", "pattern": "\\w+(?!X)", "input": "ujggX ujggY", "op": "find", "expect": [{"m": "ujgg"}, {"m": "ujgg"}], "note": "negative lookahead at each position"}
+{"id": "T004078", "pattern": "\\w+(?!X)", "input": "ujggX ujggY", "op": "find", "expect": [{"m": "ujggX"}, {"m": "ujggY"}], "note": "negative lookahead at each position"}
 {"id": "T004079", "pattern": "\\w+(?=:)", "input": "xuay:vas", "op": "find", "expect": [{"m": "xuay"}], "note": "lookahead before ':'"}
 {"id": "T004080", "pattern": "(?<=:)\\w+", "input": "xuay:vas", "op": "find", "expect": [{"m": "vas"}], "note": "lookbehind after ':'"}
-{"id": "T004081", "pattern": "\\w+(?!X)", "input": "xuayX xuayY", "op": "find", "expect": [{"m": "xuay"}, {"m": "xuay"}], "note": "negative lookahead at each position"}
+{"id": "T004081", "pattern": "\\w+(?!X)", "input": "xuayX xuayY", "op": "find", "expect": [{"m": "xuayX"}, {"m": "xuayY"}], "note": "negative lookahead at each position"}
 {"id": "T004082", "pattern": "\\w+(?=:)", "input": "qauyi:xiiuj", "op": "find", "expect": [{"m": "qauyi"}], "note": "lookahead before ':'"}
 {"id": "T004083", "pattern": "(?<=:)\\w+", "input": "qauyi:xiiuj", "op": "find", "expect": [{"m": "xiiuj"}], "note": "lookbehind after ':'"}
-{"id": "T004084", "pattern": "\\w+(?!X)", "input": "qauyiX qauyiY", "op": "find", "expect": [{"m": "qauyi"}, {"m": "qauyi"}], "note": "negative lookahead at each position"}
+{"id": "T004084", "pattern": "\\w+(?!X)", "input": "qauyiX qauyiY", "op": "find", "expect": [{"m": "qauyiX"}, {"m": "qauyiY"}], "note": "negative lookahead at each position"}
 {"id": "T004085", "pattern": "\\w+(?=:)", "input": "snnff:pbgtms", "op": "find", "expect": [{"m": "snnff"}], "note": "lookahead before ':'"}
 {"id": "T004086", "pattern": "(?<=:)\\w+", "input": "snnff:pbgtms", "op": "find", "expect": [{"m": "pbgtms"}], "note": "lookbehind after ':'"}
-{"id": "T004087", "pattern": "\\w+(?!X)", "input": "snnffX snnffY", "op": "find", "expect": [{"m": "snnff"}, {"m": "snnff"}], "note": "negative lookahead at each position"}
+{"id": "T004087", "pattern": "\\w+(?!X)", "input": "snnffX snnffY", "op": "find", "expect": [{"m": "snnffX"}, {"m": "snnffY"}], "note": "negative lookahead at each position"}
 {"id": "T004088", "pattern": "\\w+(?=:)", "input": "balnaleb:tkknm", "op": "find", "expect": [{"m": "balnaleb"}], "note": "lookahead before ':'"}
 {"id": "T004089", "pattern": "(?<=:)\\w+", "input": "balnaleb:tkknm", "op": "find", "expect": [{"m": "tkknm"}], "note": "lookbehind after ':'"}
-{"id": "T004090", "pattern": "\\w+(?!X)", "input": "balnalebX balnalebY", "op": "find", "expect": [{"m": "balnaleb"}, {"m": "balnaleb"}], "note": "negative lookahead at each position"}
+{"id": "T004090", "pattern": "\\w+(?!X)", "input": "balnalebX balnalebY", "op": "find", "expect": [{"m": "balnalebX"}, {"m": "balnalebY"}], "note": "negative lookahead at each position"}
 {"id": "T004091", "pattern": "\\w+(?=:)", "input": "omjsba:txrrabpq", "op": "find", "expect": [{"m": "omjsba"}], "note": "lookahead before ':'"}
 {"id": "T004092", "pattern": "(?<=:)\\w+", "input": "omjsba:txrrabpq", "op": "find", "expect": [{"m": "txrrabpq"}], "note": "lookbehind after ':'"}
-{"id": "T004093", "pattern": "\\w+(?!X)", "input": "omjsbaX omjsbaY", "op": "find", "expect": [{"m": "omjsba"}, {"m": "omjsba"}], "note": "negative lookahead at each position"}
+{"id": "T004093", "pattern": "\\w+(?!X)", "input": "omjsbaX omjsbaY", "op": "find", "expect": [{"m": "omjsbaX"}, {"m": "omjsbaY"}], "note": "negative lookahead at each position"}
 {"id": "T004094", "pattern": "\\w+(?=:)", "input": "dfaxep:mkyoe", "op": "find", "expect": [{"m": "dfaxep"}], "note": "lookahead before ':'"}
 {"id": "T004095", "pattern": "(?<=:)\\w+", "input": "dfaxep:mkyoe", "op": "find", "expect": [{"m": "mkyoe"}], "note": "lookbehind after ':'"}
-{"id": "T004096", "pattern": "\\w+(?!X)", "input": "dfaxepX dfaxepY", "op": "find", "expect": [{"m": "dfaxep"}, {"m": "dfaxep"}], "note": "negative lookahead at each position"}
+{"id": "T004096", "pattern": "\\w+(?!X)", "input": "dfaxepX dfaxepY", "op": "find", "expect": [{"m": "dfaxepX"}, {"m": "dfaxepY"}], "note": "negative lookahead at each position"}
 {"id": "T004097", "pattern": "\\w+(?=:)", "input": "kyo:dgnixv", "op": "find", "expect": [{"m": "kyo"}], "note": "lookahead before ':'"}
 {"id": "T004098", "pattern": "(?<=:)\\w+", "input": "kyo:dgnixv", "op": "find", "expect": [{"m": "dgnixv"}], "note": "lookbehind after ':'"}
-{"id": "T004099", "pattern": "\\w+(?!X)", "input": "kyoX kyoY", "op": "find", "expect": [{"m": "kyo"}, {"m": "kyo"}], "note": "negative lookahead at each position"}
+{"id": "T004099", "pattern": "\\w+(?!X)", "input": "kyoX kyoY", "op": "find", "expect": [{"m": "kyoX"}, {"m": "kyoY"}], "note": "negative lookahead at each position"}
 {"id": "T004100", "pattern": "\\w+(?=:)", "input": "niwbn:hf", "op": "find", "expect": [{"m": "niwbn"}], "note": "lookahead before ':'"}
 {"id": "T004101", "pattern": "(?<=:)\\w+", "input": "niwbn:hf", "op": "find", "expect": [{"m": "hf"}], "note": "lookbehind after ':'"}
-{"id": "T004102", "pattern": "\\w+(?!X)", "input": "niwbnX niwbnY", "op": "find", "expect": [{"m": "niwbn"}, {"m": "niwbn"}], "note": "negative lookahead at each position"}
+{"id": "T004102", "pattern": "\\w+(?!X)", "input": "niwbnX niwbnY", "op": "find", "expect": [{"m": "niwbnX"}, {"m": "niwbnY"}], "note": "negative lookahead at each position"}
 {"id": "T004103", "pattern": "\\w+(?=:)", "input": "ggjlwrmq:abs", "op": "find", "expect": [{"m": "ggjlwrmq"}], "note": "lookahead before ':'"}
 {"id": "T004104", "pattern": "(?<=:)\\w+", "input": "ggjlwrmq:abs", "op": "find", "expect": [{"m": "abs"}], "note": "lookbehind after ':'"}
-{"id": "T004105", "pattern": "\\w+(?!X)", "input": "ggjlwrmqX ggjlwrmqY", "op": "find", "expect": [{"m": "ggjlwrmq"}, {"m": "ggjlwrmq"}], "note": "negative lookahead at each position"}
+{"id": "T004105", "pattern": "\\w+(?!X)", "input": "ggjlwrmqX ggjlwrmqY", "op": "find", "expect": [{"m": "ggjlwrmqX"}, {"m": "ggjlwrmqY"}], "note": "negative lookahead at each position"}
 {"id": "T004106", "pattern": "\\w+(?=:)", "input": "csabxmsr:nm", "op": "find", "expect": [{"m": "csabxmsr"}], "note": "lookahead before ':'"}
 {"id": "T004107", "pattern": "(?<=:)\\w+", "input": "csabxmsr:nm", "op": "find", "expect": [{"m": "nm"}], "note": "lookbehind after ':'"}
-{"id": "T004108", "pattern": "\\w+(?!X)", "input": "csabxmsrX csabxmsrY", "op": "find", "expect": [{"m": "csabxmsr"}, {"m": "csabxmsr"}], "note": "negative lookahead at each position"}
+{"id": "T004108", "pattern": "\\w+(?!X)", "input": "csabxmsrX csabxmsrY", "op": "find", "expect": [{"m": "csabxmsrX"}, {"m": "csabxmsrY"}], "note": "negative lookahead at each position"}
 {"id": "T004109", "pattern": "\\w+(?=:)", "input": "ksqdxhs:qbd", "op": "find", "expect": [{"m": "ksqdxhs"}], "note": "lookahead before ':'"}
 {"id": "T004110", "pattern": "(?<=:)\\w+", "input": "ksqdxhs:qbd", "op": "find", "expect": [{"m": "qbd"}], "note": "lookbehind after ':'"}
-{"id": "T004111", "pattern": "\\w+(?!X)", "input": "ksqdxhsX ksqdxhsY", "op": "find", "expect": [{"m": "ksqdxhs"}, {"m": "ksqdxhs"}], "note": "negative lookahead at each position"}
+{"id": "T004111", "pattern": "\\w+(?!X)", "input": "ksqdxhsX ksqdxhsY", "op": "find", "expect": [{"m": "ksqdxhsX"}, {"m": "ksqdxhsY"}], "note": "negative lookahead at each position"}
 {"id": "T004112", "pattern": "\\w+(?=:)", "input": "lkxpl:fg", "op": "find", "expect": [{"m": "lkxpl"}], "note": "lookahead before ':'"}
 {"id": "T004113", "pattern": "(?<=:)\\w+", "input": "lkxpl:fg", "op": "find", "expect": [{"m": "fg"}], "note": "lookbehind after ':'"}
-{"id": "T004114", "pattern": "\\w+(?!X)", "input": "lkxplX lkxplY", "op": "find", "expect": [{"m": "lkxpl"}, {"m": "lkxpl"}], "note": "negative lookahead at each position"}
+{"id": "T004114", "pattern": "\\w+(?!X)", "input": "lkxplX lkxplY", "op": "find", "expect": [{"m": "lkxplX"}, {"m": "lkxplY"}], "note": "negative lookahead at each position"}
 {"id": "T004115", "pattern": "\\w+(?=:)", "input": "joyvba:lpzghb", "op": "find", "expect": [{"m": "joyvba"}], "note": "lookahead before ':'"}
 {"id": "T004116", "pattern": "(?<=:)\\w+", "input": "joyvba:lpzghb", "op": "find", "expect": [{"m": "lpzghb"}], "note": "lookbehind after ':'"}
-{"id": "T004117", "pattern": "\\w+(?!X)", "input": "joyvbaX joyvbaY", "op": "find", "expect": [{"m": "joyvba"}, {"m": "joyvba"}], "note": "negative lookahead at each position"}
+{"id": "T004117", "pattern": "\\w+(?!X)", "input": "joyvbaX joyvbaY", "op": "find", "expect": [{"m": "joyvbaX"}, {"m": "joyvbaY"}], "note": "negative lookahead at each position"}
 {"id": "T004118", "pattern": "\\w+(?=:)", "input": "pfrrb:yqtx", "op": "find", "expect": [{"m": "pfrrb"}], "note": "lookahead before ':'"}
 {"id": "T004119", "pattern": "(?<=:)\\w+", "input": "pfrrb:yqtx", "op": "find", "expect": [{"m": "yqtx"}], "note": "lookbehind after ':'"}
-{"id": "T004120", "pattern": "\\w+(?!X)", "input": "pfrrbX pfrrbY", "op": "find", "expect": [{"m": "pfrrb"}, {"m": "pfrrb"}], "note": "negative lookahead at each position"}
+{"id": "T004120", "pattern": "\\w+(?!X)", "input": "pfrrbX pfrrbY", "op": "find", "expect": [{"m": "pfrrbX"}, {"m": "pfrrbY"}], "note": "negative lookahead at each position"}
 {"id": "T004121", "pattern": "\\w+(?=:)", "input": "argce:aedzgq", "op": "find", "expect": [{"m": "argce"}], "note": "lookahead before ':'"}
 {"id": "T004122", "pattern": "(?<=:)\\w+", "input": "argce:aedzgq", "op": "find", "expect": [{"m": "aedzgq"}], "note": "lookbehind after ':'"}
-{"id": "T004123", "pattern": "\\w+(?!X)", "input": "argceX argceY", "op": "find", "expect": [{"m": "argce"}, {"m": "argce"}], "note": "negative lookahead at each position"}
+{"id": "T004123", "pattern": "\\w+(?!X)", "input": "argceX argceY", "op": "find", "expect": [{"m": "argceX"}, {"m": "argceY"}], "note": "negative lookahead at each position"}
 {"id": "T004124", "pattern": "\\w+(?=:)", "input": "ghmpvlr:ldbtd", "op": "find", "expect": [{"m": "ghmpvlr"}], "note": "lookahead before ':'"}
 {"id": "T004125", "pattern": "(?<=:)\\w+", "input": "ghmpvlr:ldbtd", "op": "find", "expect": [{"m": "ldbtd"}], "note": "lookbehind after ':'"}
-{"id": "T004126", "pattern": "\\w+(?!X)", "input": "ghmpvlrX ghmpvlrY", "op": "find", "expect": [{"m": "ghmpvlr"}, {"m": "ghmpvlr"}], "note": "negative lookahead at each position"}
+{"id": "T004126", "pattern": "\\w+(?!X)", "input": "ghmpvlrX ghmpvlrY", "op": "find", "expect": [{"m": "ghmpvlrX"}, {"m": "ghmpvlrY"}], "note": "negative lookahead at each position"}
 {"id": "T004127", "pattern": "\\w+(?=:)", "input": "zuostsps:qev", "op": "find", "expect": [{"m": "zuostsps"}], "note": "lookahead before ':'"}
 {"id": "T004128", "pattern": "(?<=:)\\w+", "input": "zuostsps:qev", "op": "find", "expect": [{"m": "qev"}], "note": "lookbehind after ':'"}
-{"id": "T004129", "pattern": "\\w+(?!X)", "input": "zuostspsX zuostspsY", "op": "find", "expect": [{"m": "zuostsps"}, {"m": "zuostsps"}], "note": "negative lookahead at each position"}
+{"id": "T004129", "pattern": "\\w+(?!X)", "input": "zuostspsX zuostspsY", "op": "find", "expect": [{"m": "zuostspsX"}, {"m": "zuostspsY"}], "note": "negative lookahead at each position"}
 {"id": "T004130", "pattern": "\\w+(?=:)", "input": "fhhyd:nbl", "op": "find", "expect": [{"m": "fhhyd"}], "note": "lookahead before ':'"}
 {"id": "T004131", "pattern": "(?<=:)\\w+", "input": "fhhyd:nbl", "op": "find", "expect": [{"m": "nbl"}], "note": "lookbehind after ':'"}
-{"id": "T004132", "pattern": "\\w+(?!X)", "input": "fhhydX fhhydY", "op": "find", "expect": [{"m": "fhhyd"}, {"m": "fhhyd"}], "note": "negative lookahead at each position"}
+{"id": "T004132", "pattern": "\\w+(?!X)", "input": "fhhydX fhhydY", "op": "find", "expect": [{"m": "fhhydX"}, {"m": "fhhydY"}], "note": "negative lookahead at each position"}
 {"id": "T004133", "pattern": "\\w+(?=:)", "input": "idfweqgs:lbhbak", "op": "find", "expect": [{"m": "idfweqgs"}], "note": "lookahead before ':'"}
 {"id": "T004134", "pattern": "(?<=:)\\w+", "input": "idfweqgs:lbhbak", "op": "find", "expect": [{"m": "lbhbak"}], "note": "lookbehind after ':'"}
-{"id": "T004135", "pattern": "\\w+(?!X)", "input": "idfweqgsX idfweqgsY", "op": "find", "expect": [{"m": "idfweqgs"}, {"m": "idfweqgs"}], "note": "negative lookahead at each position"}
+{"id": "T004135", "pattern": "\\w+(?!X)", "input": "idfweqgsX idfweqgsY", "op": "find", "expect": [{"m": "idfweqgsX"}, {"m": "idfweqgsY"}], "note": "negative lookahead at each position"}
 {"id": "T004136", "pattern": "\\w+(?=:)", "input": "ybs:jdoqx", "op": "find", "expect": [{"m": "ybs"}], "note": "lookahead before ':'"}
 {"id": "T004137", "pattern": "(?<=:)\\w+", "input": "ybs:jdoqx", "op": "find", "expect": [{"m": "jdoqx"}], "note": "lookbehind after ':'"}
-{"id": "T004138", "pattern": "\\w+(?!X)", "input": "ybsX ybsY", "op": "find", "expect": [{"m": "ybs"}, {"m": "ybs"}], "note": "negative lookahead at each position"}
+{"id": "T004138", "pattern": "\\w+(?!X)", "input": "ybsX ybsY", "op": "find", "expect": [{"m": "ybsX"}, {"m": "ybsY"}], "note": "negative lookahead at each position"}
 {"id": "T004139", "pattern": "\\w+(?=:)", "input": "ohhxhjpu:wbve", "op": "find", "expect": [{"m": "ohhxhjpu"}], "note": "lookahead before ':'"}
 {"id": "T004140", "pattern": "(?<=:)\\w+", "input": "ohhxhjpu:wbve", "op": "find", "expect": [{"m": "wbve"}], "note": "lookbehind after ':'"}
-{"id": "T004141", "pattern": "\\w+(?!X)", "input": "ohhxhjpuX ohhxhjpuY", "op": "find", "expect": [{"m": "ohhxhjpu"}, {"m": "ohhxhjpu"}], "note": "negative lookahead at each position"}
+{"id": "T004141", "pattern": "\\w+(?!X)", "input": "ohhxhjpuX ohhxhjpuY", "op": "find", "expect": [{"m": "ohhxhjpuX"}, {"m": "ohhxhjpuY"}], "note": "negative lookahead at each position"}
 {"id": "T004142", "pattern": "\\w+(?=:)", "input": "axz:vrecfr", "op": "find", "expect": [{"m": "axz"}], "note": "lookahead before ':'"}
 {"id": "T004143", "pattern": "(?<=:)\\w+", "input": "axz:vrecfr", "op": "find", "expect": [{"m": "vrecfr"}], "note": "lookbehind after ':'"}
-{"id": "T004144", "pattern": "\\w+(?!X)", "input": "axzX axzY", "op": "find", "expect": [{"m": "axz"}, {"m": "axz"}], "note": "negative lookahead at each position"}
+{"id": "T004144", "pattern": "\\w+(?!X)", "input": "axzX axzY", "op": "find", "expect": [{"m": "axzX"}, {"m": "axzY"}], "note": "negative lookahead at each position"}
 {"id": "T004145", "pattern": "\\w+(?=:)", "input": "ozafz:ape", "op": "find", "expect": [{"m": "ozafz"}], "note": "lookahead before ':'"}
 {"id": "T004146", "pattern": "(?<=:)\\w+", "input": "ozafz:ape", "op": "find", "expect": [{"m": "ape"}], "note": "lookbehind after ':'"}
-{"id": "T004147", "pattern": "\\w+(?!X)", "input": "ozafzX ozafzY", "op": "find", "expect": [{"m": "ozafz"}, {"m": "ozafz"}], "note": "negative lookahead at each position"}
+{"id": "T004147", "pattern": "\\w+(?!X)", "input": "ozafzX ozafzY", "op": "find", "expect": [{"m": "ozafzX"}, {"m": "ozafzY"}], "note": "negative lookahead at each position"}
 {"id": "T004148", "pattern": "\\w+(?=:)", "input": "ivfp:scz", "op": "find", "expect": [{"m": "ivfp"}], "note": "lookahead before ':'"}
 {"id": "T004149", "pattern": "(?<=:)\\w+", "input": "ivfp:scz", "op": "find", "expect": [{"m": "scz"}], "note": "lookbehind after ':'"}
-{"id": "T004150", "pattern": "\\w+(?!X)", "input": "ivfpX ivfpY", "op": "find", "expect": [{"m": "ivfp"}, {"m": "ivfp"}], "note": "negative lookahead at each position"}
+{"id": "T004150", "pattern": "\\w+(?!X)", "input": "ivfpX ivfpY", "op": "find", "expect": [{"m": "ivfpX"}, {"m": "ivfpY"}], "note": "negative lookahead at each position"}
 {"id": "T004151", "pattern": "\\w+(?=:)", "input": "khiha:da", "op": "find", "expect": [{"m": "khiha"}], "note": "lookahead before ':'"}
 {"id": "T004152", "pattern": "(?<=:)\\w+", "input": "khiha:da", "op": "find", "expect": [{"m": "da"}], "note": "lookbehind after ':'"}
-{"id": "T004153", "pattern": "\\w+(?!X)", "input": "khihaX khihaY", "op": "find", "expect": [{"m": "khiha"}, {"m": "khiha"}], "note": "negative lookahead at each position"}
+{"id": "T004153", "pattern": "\\w+(?!X)", "input": "khihaX khihaY", "op": "find", "expect": [{"m": "khihaX"}, {"m": "khihaY"}], "note": "negative lookahead at each position"}
 {"id": "T004154", "pattern": "\\w+(?=:)", "input": "vccdaosz:qydxisrr", "op": "find", "expect": [{"m": "vccdaosz"}], "note": "lookahead before ':'"}
 {"id": "T004155", "pattern": "(?<=:)\\w+", "input": "vccdaosz:qydxisrr", "op": "find", "expect": [{"m": "qydxisrr"}], "note": "lookbehind after ':'"}
-{"id": "T004156", "pattern": "\\w+(?!X)", "input": "vccdaoszX vccdaoszY", "op": "find", "expect": [{"m": "vccdaosz"}, {"m": "vccdaosz"}], "note": "negative lookahead at each position"}
+{"id": "T004156", "pattern": "\\w+(?!X)", "input": "vccdaoszX vccdaoszY", "op": "find", "expect": [{"m": "vccdaoszX"}, {"m": "vccdaoszY"}], "note": "negative lookahead at each position"}
 {"id": "T004157", "pattern": "\\w+(?=:)", "input": "uwa:ubpzxxt", "op": "find", "expect": [{"m": "uwa"}], "note": "lookahead before ':'"}
 {"id": "T004158", "pattern": "(?<=:)\\w+", "input": "uwa:ubpzxxt", "op": "find", "expect": [{"m": "ubpzxxt"}], "note": "lookbehind after ':'"}
-{"id": "T004159", "pattern": "\\w+(?!X)", "input": "uwaX uwaY", "op": "find", "expect": [{"m": "uwa"}, {"m": "uwa"}], "note": "negative lookahead at each position"}
+{"id": "T004159", "pattern": "\\w+(?!X)", "input": "uwaX uwaY", "op": "find", "expect": [{"m": "uwaX"}, {"m": "uwaY"}], "note": "negative lookahead at each position"}
 {"id": "T004160", "pattern": "\\w+(?=:)", "input": "retjwhf:uspcr", "op": "find", "expect": [{"m": "retjwhf"}], "note": "lookahead before ':'"}
 {"id": "T004161", "pattern": "(?<=:)\\w+", "input": "retjwhf:uspcr", "op": "find", "expect": [{"m": "uspcr"}], "note": "lookbehind after ':'"}
-{"id": "T004162", "pattern": "\\w+(?!X)", "input": "retjwhfX retjwhfY", "op": "find", "expect": [{"m": "retjwhf"}, {"m": "retjwhf"}], "note": "negative lookahead at each position"}
+{"id": "T004162", "pattern": "\\w+(?!X)", "input": "retjwhfX retjwhfY", "op": "find", "expect": [{"m": "retjwhfX"}, {"m": "retjwhfY"}], "note": "negative lookahead at each position"}
 {"id": "T004163", "pattern": "\\w+(?=:)", "input": "mpwjixtv:zflzrnh", "op": "find", "expect": [{"m": "mpwjixtv"}], "note": "lookahead before ':'"}
 {"id": "T004164", "pattern": "(?<=:)\\w+", "input": "mpwjixtv:zflzrnh", "op": "find", "expect": [{"m": "zflzrnh"}], "note": "lookbehind after ':'"}
-{"id": "T004165", "pattern": "\\w+(?!X)", "input": "mpwjixtvX mpwjixtvY", "op": "find", "expect": [{"m": "mpwjixtv"}, {"m": "mpwjixtv"}], "note": "negative lookahead at each position"}
+{"id": "T004165", "pattern": "\\w+(?!X)", "input": "mpwjixtvX mpwjixtvY", "op": "find", "expect": [{"m": "mpwjixtvX"}, {"m": "mpwjixtvY"}], "note": "negative lookahead at each position"}
 {"id": "T004166", "pattern": "\\w+(?=:)", "input": "xmjex:nnqphq", "op": "find", "expect": [{"m": "xmjex"}], "note": "lookahead before ':'"}
 {"id": "T004167", "pattern": "(?<=:)\\w+", "input": "xmjex:nnqphq", "op": "find", "expect": [{"m": "nnqphq"}], "note": "lookbehind after ':'"}
-{"id": "T004168", "pattern": "\\w+(?!X)", "input": "xmjexX xmjexY", "op": "find", "expect": [{"m": "xmjex"}, {"m": "xmjex"}], "note": "negative lookahead at each position"}
+{"id": "T004168", "pattern": "\\w+(?!X)", "input": "xmjexX xmjexY", "op": "find", "expect": [{"m": "xmjexX"}, {"m": "xmjexY"}], "note": "negative lookahead at each position"}
 {"id": "T004169", "pattern": "\\w+(?=:)", "input": "chyippz:dbhn", "op": "find", "expect": [{"m": "chyippz"}], "note": "lookahead before ':'"}
 {"id": "T004170", "pattern": "(?<=:)\\w+", "input": "chyippz:dbhn", "op": "find", "expect": [{"m": "dbhn"}], "note": "lookbehind after ':'"}
-{"id": "T004171", "pattern": "\\w+(?!X)", "input": "chyippzX chyippzY", "op": "find", "expect": [{"m": "chyippz"}, {"m": "chyippz"}], "note": "negative lookahead at each position"}
+{"id": "T004171", "pattern": "\\w+(?!X)", "input": "chyippzX chyippzY", "op": "find", "expect": [{"m": "chyippzX"}, {"m": "chyippzY"}], "note": "negative lookahead at each position"}
 {"id": "T004172", "pattern": "\\w+(?=:)", "input": "wmhxk:ywavf", "op": "find", "expect": [{"m": "wmhxk"}], "note": "lookahead before ':'"}
 {"id": "T004173", "pattern": "(?<=:)\\w+", "input": "wmhxk:ywavf", "op": "find", "expect": [{"m": "ywavf"}], "note": "lookbehind after ':'"}
-{"id": "T004174", "pattern": "\\w+(?!X)", "input": "wmhxkX wmhxkY", "op": "find", "expect": [{"m": "wmhxk"}, {"m": "wmhxk"}], "note": "negative lookahead at each position"}
+{"id": "T004174", "pattern": "\\w+(?!X)", "input": "wmhxkX wmhxkY", "op": "find", "expect": [{"m": "wmhxkX"}, {"m": "wmhxkY"}], "note": "negative lookahead at each position"}
 {"id": "T004175", "pattern": "\\w+(?=:)", "input": "jrmtrby:pjbrgh", "op": "find", "expect": [{"m": "jrmtrby"}], "note": "lookahead before ':'"}
 {"id": "T004176", "pattern": "(?<=:)\\w+", "input": "jrmtrby:pjbrgh", "op": "find", "expect": [{"m": "pjbrgh"}], "note": "lookbehind after ':'"}
-{"id": "T004177", "pattern": "\\w+(?!X)", "input": "jrmtrbyX jrmtrbyY", "op": "find", "expect": [{"m": "jrmtrby"}, {"m": "jrmtrby"}], "note": "negative lookahead at each position"}
+{"id": "T004177", "pattern": "\\w+(?!X)", "input": "jrmtrbyX jrmtrbyY", "op": "find", "expect": [{"m": "jrmtrbyX"}, {"m": "jrmtrbyY"}], "note": "negative lookahead at each position"}
 {"id": "T004178", "pattern": "\\w+(?=:)", "input": "gipbdq:afsxz", "op": "find", "expect": [{"m": "gipbdq"}], "note": "lookahead before ':'"}
 {"id": "T004179", "pattern": "(?<=:)\\w+", "input": "gipbdq:afsxz", "op": "find", "expect": [{"m": "afsxz"}], "note": "lookbehind after ':'"}
-{"id": "T004180", "pattern": "\\w+(?!X)", "input": "gipbdqX gipbdqY", "op": "find", "expect": [{"m": "gipbdq"}, {"m": "gipbdq"}], "note": "negative lookahead at each position"}
+{"id": "T004180", "pattern": "\\w+(?!X)", "input": "gipbdqX gipbdqY", "op": "find", "expect": [{"m": "gipbdqX"}, {"m": "gipbdqY"}], "note": "negative lookahead at each position"}
 {"id": "T004181", "pattern": "(a|ab)c", "input": "abc", "op": "matches", "expect": true, "note": "backtracking allows ab"}
 {"id": "T004182", "pattern": "(?>a|ab)c", "input": "abc", "op": "matches", "expect": false, "note": "atomic prevents backtracking"}
 {"id": "T004183", "pattern": "(a|ab)c", "input": "abc", "op": "matches", "expect": true, "note": "backtracking allows ab"}
@@ -4998,3 +4998,293 @@
 {"id": "T004998", "pattern": "a.*b", "input": "a\nb", "op": "matches", "flags": "s", "expect": true, "note": "DOTALL"}
 {"id": "T004999", "pattern": "(?x)a \\s+ b  #comment", "input": "a   b", "op": "matches", "expect": true, "note": "COMMENTS"}
 {"id": "T005000", "pattern": "ruptuyc", "input": "RUPTUYC", "op": "matches", "flags": "i", "expect": true, "note": "CASE_INSENSITIVE"}
+{"id": "T006000", "pattern": "abc", "input": "abc", "op": "matches", "expect": true, "note": "literal match"}
+{"id": "T006001", "pattern": "abc", "input": "ABC", "op": "matches", "expect": false, "note": "literal case sensitive"}
+{"id": "T006002", "pattern": "a.c", "input": "axc", "op": "matches", "expect": true, "note": "dot matches any char"}
+{"id": "T006003", "pattern": "a\\.c", "input": "a.c", "op": "matches", "expect": true, "note": "escaped dot literal"}
+{"id": "T006004", "pattern": "a\\(b", "input": "a(b", "op": "matches", "expect": true, "note": "escaped paren literal"}
+{"id": "T006005", "pattern": "a\\[b", "input": "a[b", "op": "matches", "expect": true, "note": "escaped bracket literal"}
+{"id": "T006006", "pattern": "a\\{b", "input": "a{b", "op": "matches", "expect": true, "note": "escaped brace literal"}
+{"id": "T006007", "pattern": "a\\\\b", "input": "a\\b", "op": "matches", "expect": true, "note": "escaped backslash"}
+{"id": "T006008", "pattern": "a\\+b", "input": "a+b", "op": "matches", "expect": true, "note": "escaped plus literal"}
+{"id": "T006009", "pattern": "a\\*b", "input": "a*b", "op": "matches", "expect": true, "note": "escaped star literal"}
+{"id": "T006010", "pattern": "a\\?b", "input": "a?b", "op": "matches", "expect": true, "note": "escaped question mark literal"}
+{"id": "T006011", "pattern": "[abc]", "input": "a", "op": "matches", "expect": true, "note": "simple char class"}
+{"id": "T006012", "pattern": "[abc]", "input": "d", "op": "matches", "expect": false, "note": "char class no match"}
+{"id": "T006013", "pattern": "[a-z]", "input": "m", "op": "matches", "expect": true, "note": "char range"}
+{"id": "T006014", "pattern": "[a-z]", "input": "M", "op": "matches", "expect": false, "note": "char range case"}
+{"id": "T006015", "pattern": "[^abc]", "input": "d", "op": "matches", "expect": true, "note": "negated char class"}
+{"id": "T006016", "pattern": "[^abc]", "input": "a", "op": "matches", "expect": false, "note": "negated char class no match"}
+{"id": "T006017", "pattern": "[a-zA-Z]", "input": "Z", "op": "matches", "expect": true, "note": "multiple ranges"}
+{"id": "T006018", "pattern": "[a-z&&[def]]", "input": "d", "op": "matches", "expect": true, "note": "intersection match"}
+{"id": "T006019", "pattern": "[a-z&&[def]]", "input": "a", "op": "matches", "expect": false, "note": "intersection no match"}
+{"id": "T006020", "pattern": "[a-z&&[^bc]]", "input": "a", "op": "matches", "expect": true, "note": "intersection with negation match"}
+{"id": "T006021", "pattern": "[a-z&&[^bc]]", "input": "b", "op": "matches", "expect": false, "note": "intersection with negation no match"}
+{"id": "T006022", "pattern": "[a-z&&[^m-p]]", "input": "a", "op": "matches", "expect": true, "note": "intersection exclude range match"}
+{"id": "T006023", "pattern": "[a-z&&[^m-p]]", "input": "n", "op": "matches", "expect": false, "note": "intersection exclude range no match"}
+{"id": "T006024", "pattern": "[\\d]", "input": "5", "op": "matches", "expect": true, "note": "predefined in class"}
+{"id": "T006025", "pattern": "[\\d]", "input": "a", "op": "matches", "expect": false, "note": "predefined in class no match"}
+{"id": "T006026", "pattern": "[\\w&&[^\\d]]", "input": "a", "op": "matches", "expect": true, "note": "intersection predefined match"}
+{"id": "T006027", "pattern": "[\\w&&[^\\d]]", "input": "5", "op": "matches", "expect": false, "note": "intersection predefined no match"}
+{"id": "T006028", "pattern": "[a-d[m-p]]", "input": "a", "op": "matches", "expect": true, "note": "union char class match a"}
+{"id": "T006029", "pattern": "[a-d[m-p]]", "input": "n", "op": "matches", "expect": true, "note": "union char class match n"}
+{"id": "T006030", "pattern": "[a-d[m-p]]", "input": "e", "op": "matches", "expect": false, "note": "union char class no match"}
+{"id": "T006031", "pattern": "[a-z&&[^aeiou]]", "input": "b", "op": "matches", "expect": true, "note": "consonants match"}
+{"id": "T006032", "pattern": "[a-z&&[^aeiou]]", "input": "e", "op": "matches", "expect": false, "note": "consonants no match vowel"}
+{"id": "T006033", "pattern": "\\d", "input": "5", "op": "matches", "expect": true, "note": "digit"}
+{"id": "T006034", "pattern": "\\d", "input": "a", "op": "matches", "expect": false, "note": "digit no match"}
+{"id": "T006035", "pattern": "\\D", "input": "a", "op": "matches", "expect": true, "note": "non-digit"}
+{"id": "T006036", "pattern": "\\D", "input": "5", "op": "matches", "expect": false, "note": "non-digit no match"}
+{"id": "T006037", "pattern": "\\w", "input": "a", "op": "matches", "expect": true, "note": "word char"}
+{"id": "T006038", "pattern": "\\w", "input": "!", "op": "matches", "expect": false, "note": "word char no match"}
+{"id": "T006039", "pattern": "\\W", "input": "!", "op": "matches", "expect": true, "note": "non-word char"}
+{"id": "T006040", "pattern": "\\W", "input": "a", "op": "matches", "expect": false, "note": "non-word char no match"}
+{"id": "T006041", "pattern": "\\s", "input": " ", "op": "matches", "expect": true, "note": "whitespace space"}
+{"id": "T006042", "pattern": "\\s", "input": "\t", "op": "matches", "expect": true, "note": "whitespace tab"}
+{"id": "T006043", "pattern": "\\s", "input": "a", "op": "matches", "expect": false, "note": "whitespace no match"}
+{"id": "T006044", "pattern": "\\S", "input": "a", "op": "matches", "expect": true, "note": "non-whitespace"}
+{"id": "T006045", "pattern": "\\S", "input": " ", "op": "matches", "expect": false, "note": "non-whitespace no match"}
+{"id": "T006046", "pattern": "\\h", "input": " ", "op": "matches", "expect": true, "note": "horizontal whitespace space"}
+{"id": "T006047", "pattern": "\\h", "input": "\t", "op": "matches", "expect": true, "note": "horizontal whitespace tab"}
+{"id": "T006048", "pattern": "\\h", "input": "\n", "op": "matches", "expect": false, "note": "horizontal whitespace no newline"}
+{"id": "T006049", "pattern": "\\H", "input": "a", "op": "matches", "expect": true, "note": "non-horizontal whitespace"}
+{"id": "T006050", "pattern": "\\H", "input": " ", "op": "matches", "expect": false, "note": "non-horizontal whitespace no space"}
+{"id": "T006051", "pattern": "\\v", "input": "\n", "op": "matches", "expect": true, "note": "vertical whitespace newline"}
+{"id": "T006052", "pattern": "\\v", "input": "\r", "op": "matches", "expect": true, "note": "vertical whitespace cr"}
+{"id": "T006053", "pattern": "\\v", "input": " ", "op": "matches", "expect": false, "note": "vertical whitespace no space"}
+{"id": "T006054", "pattern": "\\V", "input": "a", "op": "matches", "expect": true, "note": "non-vertical whitespace"}
+{"id": "T006055", "pattern": "\\V", "input": "\n", "op": "matches", "expect": false, "note": "non-vertical whitespace no newline"}
+{"id": "T006056", "pattern": "a*", "input": "", "op": "matches", "expect": true, "note": "star zero"}
+{"id": "T006057", "pattern": "a*", "input": "aaa", "op": "matches", "expect": true, "note": "star multiple"}
+{"id": "T006058", "pattern": "a+", "input": "", "op": "matches", "expect": false, "note": "plus zero"}
+{"id": "T006059", "pattern": "a+", "input": "a", "op": "matches", "expect": true, "note": "plus one"}
+{"id": "T006060", "pattern": "a?", "input": "", "op": "matches", "expect": true, "note": "question zero"}
+{"id": "T006061", "pattern": "a?", "input": "a", "op": "matches", "expect": true, "note": "question one"}
+{"id": "T006062", "pattern": "a{3}", "input": "aaa", "op": "matches", "expect": true, "note": "exact count"}
+{"id": "T006063", "pattern": "a{3}", "input": "aa", "op": "matches", "expect": false, "note": "exact count no match"}
+{"id": "T006064", "pattern": "a{2,4}", "input": "aaa", "op": "matches", "expect": true, "note": "range count"}
+{"id": "T006065", "pattern": "a{2,4}", "input": "a", "op": "matches", "expect": false, "note": "range count no match"}
+{"id": "T006066", "pattern": "a{2,}", "input": "aaaa", "op": "matches", "expect": true, "note": "min count"}
+{"id": "T006067", "pattern": "a{2,}", "input": "a", "op": "matches", "expect": false, "note": "min count no match"}
+{"id": "T006068", "pattern": "a+", "input": "aaa", "op": "find", "expect": [{"m": "aaa"}], "note": "greedy plus find"}
+{"id": "T006069", "pattern": "a+?", "input": "aaa", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}], "note": "reluctant plus find"}
+{"id": "T006070", "pattern": "a*?b", "input": "aab", "op": "find", "expect": [{"m": "aab"}], "note": "reluctant star find"}
+{"id": "T006071", "pattern": "a{2,4}", "input": "aaaaa", "op": "find", "expect": [{"m": "aaaa"}], "note": "greedy counted find"}
+{"id": "T006072", "pattern": "a{2,4}?", "input": "aaaaa", "op": "find", "expect": [{"m": "aa"}, {"m": "aa"}], "note": "reluctant counted find"}
+{"id": "T006073", "pattern": "a++a", "input": "aaa", "op": "matches", "expect": false, "note": "possessive no backtrack"}
+{"id": "T006074", "pattern": "a++", "input": "aaa", "op": "matches", "expect": true, "note": "possessive match all"}
+{"id": "T006075", "pattern": "a?+a", "input": "a", "op": "matches", "expect": false, "note": "possessive optional no backtrack"}
+{"id": "T006076", "pattern": "[a-z]++.", "input": "abc", "op": "matches", "expect": false, "note": "possessive class no backtrack"}
+{"id": "T006077", "pattern": "^abc", "input": "abc\ndef", "op": "find", "expect": [{"m": "abc"}], "note": "caret start of string"}
+{"id": "T006078", "pattern": "^abc", "input": "abc\nabc", "op": "find", "expect": [{"m": "abc"}, {"m": "abc"}], "flags": "m", "note": "caret multiline"}
+{"id": "T006079", "pattern": "abc$", "input": "abc", "op": "matches", "expect": true, "note": "dollar end"}
+{"id": "T006080", "pattern": "abc$", "input": "abc\ndef\nabc", "op": "find", "expect": [{"m": "abc"}], "note": "dollar find"}
+{"id": "T006081", "pattern": "abc$", "input": "abc\nabc", "op": "find", "expect": [{"m": "abc"}, {"m": "abc"}], "flags": "m", "note": "dollar multiline"}
+{"id": "T006082", "pattern": "\\Aabc", "input": "abc", "op": "matches", "expect": true, "note": "start of input anchor"}
+{"id": "T006083", "pattern": "\\Aabc", "input": "abc\nabc", "op": "find", "expect": [{"m": "abc"}], "note": "\\A only matches start"}
+{"id": "T006084", "pattern": "abc\\z", "input": "abc", "op": "matches", "expect": true, "note": "\\z end of input"}
+{"id": "T006085", "pattern": "abc\\z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\z no trailing newline"}
+{"id": "T006086", "pattern": "abc\\Z", "input": "abc", "op": "matches", "expect": true, "note": "\\Z end of input"}
+{"id": "T006087", "pattern": "abc\\Z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\Z allows trailing newline"}
+{"id": "T006088", "pattern": "abc\\Z", "input": "abc\n\n", "op": "matches", "expect": false, "note": "\\Z only one trailing newline"}
+{"id": "T006089", "pattern": "\\bword\\b", "input": "a word here", "op": "find", "expect": [{"m": "word"}], "note": "word boundary"}
+{"id": "T006090", "pattern": "\\bword\\b", "input": "awordhere", "op": "find", "expect": [], "note": "word boundary no match"}
+{"id": "T006091", "pattern": "\\Bword\\B", "input": "awordhere", "op": "find", "expect": [{"m": "word"}], "note": "non-word boundary interior"}
+{"id": "T006092", "pattern": "\\Boo\\B", "input": "foobar", "op": "find", "expect": [{"m": "oo"}], "note": "non-word boundary match"}
+{"id": "T006093", "pattern": "\\bcat\\b", "input": "cat cats concatenate", "op": "find", "expect": [{"m": "cat"}], "note": "word boundary multiple"}
+{"id": "T006094", "pattern": "(abc)", "input": "abc", "op": "matches", "expect": true, "note": "simple group"}
+{"id": "T006095", "pattern": "(a)(b)(c)", "input": "abc", "op": "find", "expect": [{"m": "abc", "g": ["a", "b", "c"]}], "note": "multiple groups"}
+{"id": "T006096", "pattern": "(a+)(b+)", "input": "aaabb", "op": "matches", "expect": true, "note": "groups with quantifiers"}
+{"id": "T006097", "pattern": "(\\d+)-(\\d+)", "input": "123-456", "op": "find", "expect": [{"m": "123-456", "g": ["123", "456"]}], "note": "groups capture digits"}
+{"id": "T006098", "pattern": "(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})", "input": "2024-01-15", "op": "find", "expect": [{"m": "2024-01-15", "g": ["2024", "01", "15"]}], "note": "named groups date"}
+{"id": "T006099", "pattern": "(?<name>abc)\\k<name>", "input": "abcabc", "op": "matches", "expect": true, "note": "named backreference match"}
+{"id": "T006100", "pattern": "(?<name>abc)\\k<name>", "input": "abcdef", "op": "matches", "expect": false, "note": "named backreference no match"}
+{"id": "T006101", "pattern": "(?:abc)+", "input": "abcabc", "op": "matches", "expect": true, "note": "non-capturing group repeated"}
+{"id": "T006102", "pattern": "(?:a|b)+", "input": "aabba", "op": "find", "expect": [{"m": "aabba"}], "note": "non-capturing alternation"}
+{"id": "T006103", "pattern": "(a)\\1", "input": "aa", "op": "matches", "expect": true, "note": "backreference match"}
+{"id": "T006104", "pattern": "(a)\\1", "input": "ab", "op": "matches", "expect": false, "note": "backreference no match"}
+{"id": "T006105", "pattern": "(.)(.)\\2\\1", "input": "abba", "op": "matches", "expect": true, "note": "double backreference palindrome"}
+{"id": "T006106", "pattern": "(.)(.)\\2\\1", "input": "abca", "op": "matches", "expect": false, "note": "double backreference no palindrome"}
+{"id": "T006107", "pattern": "(a+)\\1", "input": "aaa", "op": "matches", "expect": false, "note": "backreference greedy"}
+{"id": "T006108", "pattern": "(a+)\\1", "input": "aaaa", "op": "matches", "expect": true, "note": "backreference greedy match"}
+{"id": "T006109", "pattern": "(a+?)\\1", "input": "aa", "op": "matches", "expect": true, "note": "backreference reluctant"}
+{"id": "T006110", "pattern": "(\\w+)\\s+\\1", "input": "the the cat cat", "op": "find", "expect": [{"m": "the the", "g": ["the"]}, {"m": "cat cat", "g": ["cat"]}], "note": "backreference repeated words"}
+{"id": "T006111", "pattern": "\\w+(?=\\s)", "input": "hello world foo", "op": "find", "expect": [{"m": "hello"}, {"m": "world"}], "note": "positive lookahead"}
+{"id": "T006112", "pattern": "(?=\\d)\\d+", "input": "abc123def456", "op": "find", "expect": [{"m": "123"}, {"m": "456"}], "note": "positive lookahead digits"}
+{"id": "T006113", "pattern": "a(?=b)b", "input": "ab", "op": "matches", "expect": true, "note": "lookahead then literal"}
+{"id": "T006114", "pattern": "a(?=b)c", "input": "ac", "op": "matches", "expect": false, "note": "lookahead fails"}
+{"id": "T006115", "pattern": "\\w+(?!\\d)", "input": "abc123 def", "op": "find", "expect": [{"m": "abc123"}, {"m": "def"}], "note": "negative lookahead"}
+{"id": "T006116", "pattern": "a(?!b).", "input": "ac", "op": "matches", "expect": true, "note": "negative lookahead match"}
+{"id": "T006117", "pattern": "a(?!b).", "input": "ab", "op": "matches", "expect": false, "note": "negative lookahead fail"}
+{"id": "T006118", "pattern": "(?<=@)\\w+", "input": "user@domain.com", "op": "find", "expect": [{"m": "domain"}], "note": "positive lookbehind"}
+{"id": "T006119", "pattern": "(?<=\\d)\\w+", "input": "abc1def", "op": "find", "expect": [{"m": "def"}], "note": "positive lookbehind digit"}
+{"id": "T006120", "pattern": "(?<=a)b", "input": "b", "op": "matches", "expect": false, "note": "lookbehind no context"}
+{"id": "T006121", "pattern": "(?<!\\d)\\w+", "input": "abc 1def", "op": "find", "expect": [{"m": "abc"}, {"m": "1def"}], "note": "negative lookbehind"}
+{"id": "T006122", "pattern": "(?<=\\$)\\d+", "input": "price $100 and $200", "op": "find", "expect": [{"m": "100"}, {"m": "200"}], "note": "lookbehind dollar sign"}
+{"id": "T006123", "pattern": "(?<!\\w)\\d+", "input": "abc 123 def 456", "op": "find", "expect": [{"m": "123"}, {"m": "456"}], "note": "negative lookbehind non-word"}
+{"id": "T006124", "pattern": "cat|dog", "input": "cat", "op": "matches", "expect": true, "note": "alternation first"}
+{"id": "T006125", "pattern": "cat|dog", "input": "dog", "op": "matches", "expect": true, "note": "alternation second"}
+{"id": "T006126", "pattern": "cat|dog", "input": "rat", "op": "matches", "expect": false, "note": "alternation no match"}
+{"id": "T006127", "pattern": "(cat|dog)s?", "input": "cats", "op": "matches", "expect": true, "note": "alternation in group"}
+{"id": "T006128", "pattern": "(cat|dog)s?", "input": "dog", "op": "matches", "expect": true, "note": "alternation in group 2"}
+{"id": "T006129", "pattern": "ab|cd|ef", "input": "cdabef", "op": "find", "expect": [{"m": "cd"}, {"m": "ab"}, {"m": "ef"}], "note": "alternation find multiple"}
+{"id": "T006130", "pattern": ".", "input": "a", "op": "matches", "expect": true, "note": "dot matches char"}
+{"id": "T006131", "pattern": ".", "input": "\n", "op": "matches", "expect": false, "note": "dot no newline default"}
+{"id": "T006132", "pattern": ".", "input": "\n", "op": "matches", "expect": true, "flags": "s", "note": "dot matches newline DOTALL"}
+{"id": "T006133", "pattern": "(?s).", "input": "\n", "op": "matches", "expect": true, "note": "dot matches newline inline DOTALL"}
+{"id": "T006134", "pattern": "abc", "input": "ABC", "op": "matches", "expect": true, "flags": "i", "note": "case insensitive flag"}
+{"id": "T006135", "pattern": "[a-z]+", "input": "ABC", "op": "matches", "expect": true, "flags": "i", "note": "case insensitive range"}
+{"id": "T006136", "pattern": "(?i)abc", "input": "ABC", "op": "matches", "expect": true, "note": "inline case insensitive"}
+{"id": "T006137", "pattern": "(?i)abc(?-i)def", "input": "ABCdef", "op": "matches", "expect": true, "note": "inline flag on then off"}
+{"id": "T006138", "pattern": "(?i:abc)def", "input": "ABCdef", "op": "matches", "expect": true, "note": "scoped case insensitive"}
+{"id": "T006139", "pattern": "(?i:abc)def", "input": "ABCDEF", "op": "matches", "expect": false, "note": "scoped flag doesnt leak"}
+{"id": "T006140", "pattern": "^abc$", "input": "abc", "op": "matches", "expect": true, "flags": "m", "note": "multiline simple"}
+{"id": "T006141", "pattern": "^\\w+$", "input": "abc\ndef\nghi", "op": "find", "expect": [{"m": "abc"}, {"m": "def"}, {"m": "ghi"}], "flags": "m", "note": "multiline find each line"}
+{"id": "T006142", "pattern": "a b c # comment", "input": "abc", "op": "matches", "expect": true, "flags": "x", "note": "comments mode"}
+{"id": "T006143", "pattern": "a\\ b", "input": "a b", "op": "matches", "expect": true, "flags": "x", "note": "comments escaped space"}
+{"id": "T006144", "pattern": "\\w+", "input": "café", "op": "matches", "expect": true, "flags": "U", "note": "unicode word class"}
+{"id": "T006145", "pattern": "\\d", "input": "٠", "op": "matches", "expect": true, "flags": "U", "note": "unicode digit arabic"}
+{"id": "T006146", "pattern": "\\p{Alpha}+", "input": "hello", "op": "matches", "expect": true, "note": "posix Alpha"}
+{"id": "T006147", "pattern": "\\p{Digit}+", "input": "123", "op": "matches", "expect": true, "note": "posix Digit"}
+{"id": "T006148", "pattern": "\\p{Alnum}+", "input": "abc123", "op": "matches", "expect": true, "note": "posix Alnum"}
+{"id": "T006149", "pattern": "\\p{Lower}", "input": "a", "op": "matches", "expect": true, "note": "posix Lower"}
+{"id": "T006150", "pattern": "\\p{Upper}", "input": "A", "op": "matches", "expect": true, "note": "posix Upper"}
+{"id": "T006151", "pattern": "\\p{Punct}", "input": "!", "op": "matches", "expect": true, "note": "posix Punct"}
+{"id": "T006152", "pattern": "\\p{Space}", "input": " ", "op": "matches", "expect": true, "note": "posix Space"}
+{"id": "T006153", "pattern": "\\p{Blank}", "input": "\t", "op": "matches", "expect": true, "note": "posix Blank tab"}
+{"id": "T006154", "pattern": "\\p{XDigit}", "input": "f", "op": "matches", "expect": true, "note": "posix XDigit"}
+{"id": "T006155", "pattern": "\\p{ASCII}", "input": "a", "op": "matches", "expect": true, "note": "posix ASCII"}
+{"id": "T006156", "pattern": "\\p{ASCII}", "input": "Ā", "op": "matches", "expect": false, "note": "posix ASCII no match"}
+{"id": "T006157", "pattern": "\\p{Lu}", "input": "A", "op": "matches", "expect": true, "note": "unicode Lu uppercase"}
+{"id": "T006158", "pattern": "\\p{Ll}", "input": "a", "op": "matches", "expect": true, "note": "unicode Ll lowercase"}
+{"id": "T006159", "pattern": "\\p{L}", "input": "a", "op": "matches", "expect": true, "note": "unicode L letter"}
+{"id": "T006160", "pattern": "\\p{N}", "input": "5", "op": "matches", "expect": true, "note": "unicode N number"}
+{"id": "T006161", "pattern": "\\p{Nd}", "input": "5", "op": "matches", "expect": true, "note": "unicode Nd decimal"}
+{"id": "T006162", "pattern": "\\p{P}", "input": "!", "op": "matches", "expect": true, "note": "unicode P punctuation"}
+{"id": "T006163", "pattern": "\\p{S}", "input": "+", "op": "matches", "expect": true, "note": "unicode S symbol"}
+{"id": "T006164", "pattern": "\\p{Z}", "input": " ", "op": "matches", "expect": true, "note": "unicode Z separator"}
+{"id": "T006165", "pattern": "\\p{IsLatin}", "input": "a", "op": "matches", "expect": true, "note": "unicode IsLatin script"}
+{"id": "T006166", "pattern": "\\p{IsGreek}", "input": "α", "op": "matches", "expect": true, "note": "unicode IsGreek script"}
+{"id": "T006167", "pattern": "\\p{IsCyrillic}", "input": "А", "op": "matches", "expect": true, "note": "unicode IsCyrillic script"}
+{"id": "T006168", "pattern": "\\P{Lu}", "input": "a", "op": "matches", "expect": true, "note": "negated unicode property"}
+{"id": "T006169", "pattern": "\\P{Lu}", "input": "A", "op": "matches", "expect": false, "note": "negated unicode property no match"}
+{"id": "T006170", "pattern": "\\p{Sc}", "input": "$", "op": "matches", "expect": true, "note": "unicode Sc currency"}
+{"id": "T006171", "pattern": "\\p{Sm}", "input": "+", "op": "matches", "expect": true, "note": "unicode Sm math"}
+{"id": "T006172", "pattern": "\\Q.+*?\\E", "input": ".+*?", "op": "matches", "expect": true, "note": "quote metacharacters"}
+{"id": "T006173", "pattern": "\\Q[abc]\\E", "input": "[abc]", "op": "matches", "expect": true, "note": "quote brackets"}
+{"id": "T006174", "pattern": "\\Q(\\E\\d+\\Q)\\E", "input": "(123)", "op": "matches", "expect": true, "note": "quote partial pattern"}
+{"id": "T006175", "pattern": "\\Qabc", "input": "abc", "op": "matches", "expect": true, "note": "quote without end"}
+{"id": "T006176", "pattern": "a\\Rb", "input": "a\nb", "op": "matches", "expect": true, "note": "linebreak LF"}
+{"id": "T006177", "pattern": "a\\Rb", "input": "a\rb", "op": "matches", "expect": true, "note": "linebreak CR"}
+{"id": "T006178", "pattern": "a\\Rb", "input": "a\r\nb", "op": "matches", "expect": true, "note": "linebreak CRLF"}
+{"id": "T006179", "pattern": "a\\Rb", "input": "a b", "op": "matches", "expect": false, "note": "linebreak no space"}
+{"id": "T006180", "pattern": "(\\d+)", "input": "a1b2c3", "op": "replaceAll", "replacement": "[$1]", "expect": "a[1]b[2]c[3]", "note": "replace with group ref"}
+{"id": "T006181", "pattern": "(\\w+)\\s(\\w+)", "input": "hello world", "op": "replaceAll", "replacement": "$2 $1", "expect": "world hello", "note": "replace swap groups"}
+{"id": "T006182", "pattern": "\\d", "input": "a1b2c3", "op": "replaceAll", "replacement": "", "expect": "abc", "note": "replace remove digits"}
+{"id": "T006183", "pattern": "(?i)hello", "input": "Hello HELLO hello", "op": "replaceAll", "replacement": "hi", "expect": "hi hi hi", "note": "replace case insensitive"}
+{"id": "T006184", "pattern": "^", "input": "abc", "op": "replaceAll", "replacement": "X", "expect": "Xabc", "note": "replace at start"}
+{"id": "T006185", "pattern": "$", "input": "abc", "op": "replaceAll", "replacement": "X", "expect": "abcX", "note": "replace at end"}
+{"id": "T006186", "pattern": "", "input": "abc", "op": "replaceAll", "replacement": "-", "expect": "-a-b-c-", "note": "replace empty pattern"}
+{"id": "T006187", "pattern": "(a)(b)", "input": "ab", "op": "replaceAll", "replacement": "$1-$2", "expect": "a-b", "note": "replace with two groups"}
+{"id": "T006188", "pattern": ",", "input": "a,b,c", "op": "split", "expect": ["a", "b", "c"], "note": "simple split comma"}
+{"id": "T006189", "pattern": "\\s+", "input": "a  b   c", "op": "split", "expect": ["a", "b", "c"], "note": "split whitespace"}
+{"id": "T006190", "pattern": ",", "input": "a,,b", "op": "split", "expect": ["a", "", "b"], "note": "split empty between"}
+{"id": "T006191", "pattern": ",", "input": ",a,b,", "op": "split", "expect": ["", "a", "b"], "note": "split leading trailing"}
+{"id": "T006192", "pattern": "(?<=;)", "input": "a;b;c", "op": "split", "expect": ["a;", "b;", "c"], "note": "split lookbehind keep delim"}
+{"id": "T006193", "pattern": "o", "input": "boo:and:foo", "op": "split", "expect": ["b", "", ":and:f"], "note": "split on char"}
+{"id": "T006194", "pattern": ":", "input": "boo:and:foo", "op": "split", "expect": ["boo", "and", "foo"], "note": "split on colon"}
+{"id": "T006195", "pattern": "\\|", "input": "a|b|c", "op": "split", "expect": ["a", "b", "c"], "note": "split pipe"}
+{"id": "T006196", "pattern": "(,)", "input": "a,b,c", "op": "split", "expect": ["a", "b", "c"], "note": "split with capturing group"}
+{"id": "T006197", "pattern": "[", "op": "compile_error", "expect": true, "note": "unclosed class"}
+{"id": "T006198", "pattern": "(", "op": "compile_error", "expect": true, "note": "unclosed group"}
+{"id": "T006199", "pattern": "*", "op": "compile_error", "expect": true, "note": "dangling metachar star"}
+{"id": "T006200", "pattern": "+", "op": "compile_error", "expect": true, "note": "dangling metachar plus"}
+{"id": "T006201", "pattern": "?", "op": "compile_error", "expect": true, "note": "dangling metachar question"}
+{"id": "T006202", "pattern": "[z-a]", "op": "compile_error", "expect": true, "note": "reversed range"}
+{"id": "T006203", "pattern": "(?P<name>abc)", "op": "compile_error", "expect": true, "note": "invalid group syntax"}
+{"id": "T006204", "pattern": "\\p{Invalid}", "op": "compile_error", "expect": true, "note": "invalid unicode property"}
+{"id": "T006205", "pattern": "(?q)", "op": "compile_error", "expect": true, "note": "invalid flag"}
+{"id": "T006206", "pattern": ")", "op": "compile_error", "expect": true, "note": "unmatched close paren"}
+{"id": "T006207", "pattern": "a{3,2}", "op": "compile_error", "expect": true, "note": "min > max in counted"}
+{"id": "T006208", "pattern": "\\", "op": "compile_error", "expect": true, "note": "trailing backslash"}
+{"id": "T006209", "pattern": "[abc", "op": "compile_error", "expect": true, "note": "unclosed char class"}
+{"id": "T006210", "pattern": "(?>a+)a", "input": "aaa", "op": "matches", "expect": false, "note": "atomic no backtrack"}
+{"id": "T006211", "pattern": "(?>a+)", "input": "aaa", "op": "matches", "expect": true, "note": "atomic match all"}
+{"id": "T006212", "pattern": "(?>a|ab)b", "input": "ab", "op": "matches", "expect": true, "note": "atomic alternation no backtrack"}
+{"id": "T006213", "pattern": "(?>a|ab)c", "input": "ac", "op": "matches", "expect": true, "note": "atomic alternation first match"}
+{"id": "T006214", "pattern": "(?>\\d+)", "input": "abc123def456", "op": "find", "expect": [{"m": "123"}, {"m": "456"}], "note": "atomic find digits"}
+{"id": "T006215", "pattern": "(?>\\w+)\\d", "input": "abc123", "op": "matches", "expect": false, "note": "atomic greedy no backtrack"}
+{"id": "T006216", "pattern": "", "input": "", "op": "matches", "expect": true, "note": "empty pattern empty input"}
+{"id": "T006217", "pattern": "", "input": "a", "op": "matches", "expect": false, "note": "empty pattern non-empty input"}
+{"id": "T006218", "pattern": "", "input": "abc", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "empty pattern find"}
+{"id": "T006219", "pattern": "a{0}", "input": "", "op": "matches", "expect": true, "note": "zero repetition"}
+{"id": "T006220", "pattern": "a{0,0}", "input": "", "op": "matches", "expect": true, "note": "zero to zero repetition"}
+{"id": "T006221", "pattern": "(?=a)", "input": "aaa", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}], "note": "lookahead zero width find"}
+{"id": "T006222", "pattern": "[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}", "input": "user@example.com", "op": "matches", "expect": true, "note": "email-like match"}
+{"id": "T006223", "pattern": "[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}", "input": "invalid", "op": "matches", "expect": false, "note": "email-like no match"}
+{"id": "T006224", "pattern": "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}", "input": "192.168.1.1", "op": "matches", "expect": true, "note": "ip-like match"}
+{"id": "T006225", "pattern": "((a)(b(c)))", "input": "abc", "op": "matches", "expect": true, "note": "nested groups"}
+{"id": "T006226", "pattern": "((a+)(b+))", "input": "aabb", "op": "find", "expect": [{"m": "aabb", "g": ["aabb", "aa", "bb"]}], "note": "nested group captures"}
+{"id": "T006227", "pattern": "(a+|b+)", "input": "aaabbb", "op": "find", "expect": [{"m": "aaa", "g": ["aaa"]}, {"m": "bbb", "g": ["bbb"]}], "note": "alternation groups"}
+{"id": "T006228", "pattern": "([abc])\\1+", "input": "aaa", "op": "matches", "expect": true, "note": "backreference repeated"}
+{"id": "T006229", "pattern": "([abc])\\1+", "input": "aba", "op": "matches", "expect": false, "note": "backreference repeated no match"}
+{"id": "T006230", "pattern": "<.*>", "input": "<a>b<c>", "op": "find", "expect": [{"m": "<a>b<c>"}], "note": "greedy across tags"}
+{"id": "T006231", "pattern": "<.*?>", "input": "<a>b<c>", "op": "find", "expect": [{"m": "<a>"}, {"m": "<c>"}], "note": "reluctant minimal tags"}
+{"id": "T006232", "pattern": "\\d+", "input": "12 34 56", "op": "find", "expect": [{"m": "12"}, {"m": "34"}, {"m": "56"}], "note": "find digits separated"}
+{"id": "T006233", "pattern": "a|", "input": "a", "op": "matches", "expect": true, "note": "empty alternative"}
+{"id": "T006234", "pattern": "a|", "input": "", "op": "matches", "expect": true, "note": "empty alternative empty"}
+{"id": "T006235", "pattern": "|a", "input": "", "op": "matches", "expect": true, "note": "empty first alternative"}
+{"id": "T006236", "pattern": "(ab)+", "input": "ababab", "op": "matches", "expect": true, "note": "group quantifier"}
+{"id": "T006237", "pattern": "(ab){2}", "input": "abab", "op": "matches", "expect": true, "note": "group exact count"}
+{"id": "T006238", "pattern": "(ab){2,3}", "input": "abab", "op": "matches", "expect": true, "note": "group range count"}
+{"id": "T006239", "pattern": "(a+)+", "input": "aaa", "op": "matches", "expect": true, "note": "nested quantifiers"}
+{"id": "T006240", "pattern": "((a+)+)+", "input": "aaa", "op": "matches", "expect": true, "note": "deeply nested quantifiers"}
+{"id": "T006241", "pattern": "(a+)+b", "input": "aaab", "op": "matches", "expect": true, "note": "backtracking nested plus"}
+{"id": "T006242", "pattern": "(a+)+b", "input": "aaa", "op": "matches", "expect": false, "note": "backtracking nested plus no match"}
+{"id": "T006243", "pattern": "\\Ga", "input": "aaab", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}], "note": "\\G consecutive matches"}
+{"id": "T006244", "pattern": "\\G\\d", "input": "123abc", "op": "find", "expect": [{"m": "1"}, {"m": "2"}, {"m": "3"}], "note": "\\G consecutive digits"}
+{"id": "T006245", "pattern": "^.*$", "input": "line1\nline2\nline3", "op": "find", "expect": [{"m": "line1"}, {"m": "line2"}, {"m": "line3"}], "flags": "m", "note": "multiline match all lines"}
+{"id": "T006246", "pattern": "^\\d+", "input": "123\n456\n789", "op": "find", "expect": [{"m": "123"}, {"m": "456"}, {"m": "789"}], "flags": "m", "note": "multiline caret digits"}
+{"id": "T006247", "pattern": "\\x41", "input": "A", "op": "matches", "expect": true, "note": "hex escape A"}
+{"id": "T006248", "pattern": "\\x61", "input": "a", "op": "matches", "expect": true, "note": "hex escape a"}
+{"id": "T006249", "pattern": "\\0101", "input": "A", "op": "matches", "expect": true, "note": "octal escape A"}
+{"id": "T006250", "pattern": "\\u0041", "input": "A", "op": "matches", "expect": true, "note": "unicode escape A"}
+{"id": "T006251", "pattern": "\\u03B1", "input": "α", "op": "matches", "expect": true, "note": "unicode escape alpha"}
+{"id": "T006252", "pattern": "\\t", "input": "\t", "op": "matches", "expect": true, "note": "tab escape"}
+{"id": "T006253", "pattern": "\\n", "input": "\n", "op": "matches", "expect": true, "note": "newline escape"}
+{"id": "T006254", "pattern": "\\r", "input": "\r", "op": "matches", "expect": true, "note": "carriage return escape"}
+{"id": "T006255", "pattern": "\\f", "input": "\f", "op": "matches", "expect": true, "note": "form feed escape"}
+{"id": "T006256", "pattern": "\\a", "input": "\u0007", "op": "matches", "expect": true, "note": "alert/bell escape"}
+{"id": "T006257", "pattern": "\\e", "input": "\u001b", "op": "matches", "expect": true, "note": "escape char escape"}
+{"id": "T006258", "pattern": "(?<!\\d)\\w+", "input": "abc 1def ghi", "op": "find", "expect": [{"m": "abc"}, {"m": "1def"}, {"m": "ghi"}], "note": "negative lookbehind find words"}
+{"id": "T006259", "pattern": "(?<!@)\\w+", "input": "user @mention other", "op": "find", "expect": [{"m": "user"}, {"m": "ention"}, {"m": "other"}], "note": "negative lookbehind at sign"}
+{"id": "T006260", "pattern": "\\d++", "input": "abc123def456", "op": "find", "expect": [{"m": "123"}, {"m": "456"}], "note": "possessive digits find"}
+{"id": "T006261", "pattern": "[a-z]++[a-z]", "input": "abcdef", "op": "matches", "expect": false, "note": "possessive class no backtrack"}
+{"id": "T006262", "pattern": "(a++).", "input": "aab", "op": "matches", "expect": true, "note": "possessive in group no backtrack"}
+{"id": "T006263", "pattern": "(?<name>\\w+)", "input": "hello world", "op": "replaceAll", "replacement": "${name}!", "expect": "hello! world!", "note": "replace named group ref"}
+{"id": "T006264", "pattern": "(\\d)(\\d)(\\d)", "input": "123", "op": "replaceAll", "replacement": "$3$2$1", "expect": "321", "note": "replace reverse digits"}
+{"id": "T006265", "pattern": "a*", "input": "aabaa", "op": "replaceAll", "replacement": "b", "expect": "bbbbb", "note": "replace zero-width star"}
+{"id": "T006266", "pattern": "\\b", "input": "a b", "op": "replaceAll", "replacement": "|", "expect": "|a| |b|", "note": "replace word boundary"}
+{"id": "T006267", "pattern": "a", "input": "a", "op": "split", "expect": [], "note": "split single delimiter"}
+{"id": "T006268", "pattern": "x", "input": "abc", "op": "split", "expect": ["abc"], "note": "split no match"}
+{"id": "T006269", "pattern": "(?=\\d)", "input": "abc123def", "op": "split", "expect": ["abc", "1", "2", "3def"], "note": "split lookahead"}
+{"id": "T006270", "pattern": "(?i)a(?-i)b", "input": "Ab", "op": "matches", "expect": true, "note": "flag toggle match"}
+{"id": "T006271", "pattern": "(?i)a(?-i)b", "input": "AB", "op": "matches", "expect": false, "note": "flag toggle no match upper B"}
+{"id": "T006272", "pattern": "(?i)(?-i:b)a", "input": "bA", "op": "matches", "expect": true, "note": "nested flag scope"}
+{"id": "T006273", "pattern": "(?i)(?-i:b)a", "input": "BA", "op": "matches", "expect": false, "note": "nested flag scope no match"}
+{"id": "T006274", "pattern": "(?im)^abc$", "input": "ABC", "op": "matches", "expect": true, "note": "multiple inline flags"}
+{"id": "T006275", "pattern": "(?i)a(?s:.)b", "input": "a\nb", "op": "matches", "expect": true, "note": "scoped dotall"}
+{"id": "T006276", "pattern": "[\\p{L}]+", "input": "hello", "op": "matches", "expect": true, "note": "unicode letter class"}
+{"id": "T006277", "pattern": "[\\p{L}\\p{N}]+", "input": "abc123", "op": "matches", "expect": true, "note": "letter and number class"}
+{"id": "T006278", "pattern": "[\\p{Lu}]", "input": "A", "op": "matches", "expect": true, "note": "uppercase in class"}
+{"id": "T006279", "pattern": "[^\\p{L}]+", "input": "123!@#", "op": "matches", "expect": true, "note": "negated letter class"}
+{"id": "T006280", "pattern": "[a-z&&[aeiou]]", "input": "e", "op": "matches", "expect": true, "note": "intersection vowels"}
+{"id": "T006281", "pattern": "[a-z&&[aeiou]]", "input": "b", "op": "matches", "expect": false, "note": "intersection vowels no consonant"}
+{"id": "T006282", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "h", "op": "matches", "expect": true, "note": "triple intersection match"}
+{"id": "T006283", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "a", "op": "matches", "expect": false, "note": "triple intersection no match"}
+{"id": "T006284", "pattern": "(a)?(b)", "input": "b", "op": "matches", "expect": true, "note": "optional group unmatched"}
+{"id": "T006285", "pattern": "(a)?b", "input": "b ab", "op": "find", "expect": [{"m": "b", "g": [null]}, {"m": "ab", "g": ["a"]}], "note": "optional group find"}
+{"id": "T006286", "pattern": "(a(b)?)+", "input": "aab", "op": "matches", "expect": true, "note": "nested optional group"}
+{"id": "T006287", "pattern": "[\\Q.+*\\E]", "input": ".", "op": "matches", "expect": true, "note": "quoted in class dot"}
+{"id": "T006288", "pattern": "[\\Q.+*\\E]", "input": "+", "op": "matches", "expect": true, "note": "quoted in class plus"}
+{"id": "T006289", "pattern": "[\\Q.+*\\E]", "input": "a", "op": "matches", "expect": false, "note": "quoted in class no match"}

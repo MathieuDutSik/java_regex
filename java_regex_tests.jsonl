@@ -11,7 +11,7 @@
 {"id": "T0011", "pattern": "\\Aabc", "input": "abc\nxabc", "op": "find", "expect": [{"m": "abc"}]}
 {"id": "T0012", "pattern": "abc\\z", "input": "xabc", "op": "find", "expect": [{"m": "abc"}]}
 {"id": "T0013", "pattern": "abc\\z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\z is absolute end"}
-{"id": "T0014", "pattern": "abc\\Z", "input": "abc\n", "op": "matches", "expect": true, "note": "\\Z allows final newline"}
+{"id": "T0014", "pattern": "abc\\Z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\Z allows final newline"}
 {"id": "T0015", "pattern": "\\bcat\\b", "input": "a cat! bobcat cat_", "op": "find", "expect": [{"m": "cat"}], "note": "cat_ is word char '_' so boundary fails at end"}
 {"id": "T0016", "pattern": "\\Bcat\\B", "input": "bobcat", "op": "find", "expect": [{"m": "cat"}]}
 {"id": "T0017", "pattern": "[abc]+", "input": "abac", "op": "matches", "expect": true}

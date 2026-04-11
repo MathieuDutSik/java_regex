@@ -274,6 +274,11 @@ impl Parser {
             }
             '[' => self.parse_char_class_node(),
             '(' => self.parse_group(),
+            '*' | '+' | '?' => {
+                Err(PatternSyntaxError {
+                    message: format!("Dangling meta character '{}'", c),
+                })
+            }
             _ => {
                 self.advance();
                 Ok(Node::Literal(c))
@@ -482,6 +487,11 @@ impl Parser {
                 }
                 name.push(c);
                 self.advance();
+            }
+            if !is_valid_unicode_property(&name) {
+                return Err(PatternSyntaxError {
+                    message: format!("Unknown Unicode property: {}", name),
+                });
             }
             Ok(Node::CharClass(CharClass {
                 negated: false,
@@ -881,7 +891,10 @@ impl Parser {
                 self.advance();
                 match self.parse_quantifier_braces() {
                     Ok((min, max)) => (min, max),
-                    Err(_) => {
+                    Err(e) => {
+                        if e.message.starts_with("Illegal repetition") {
+                            return Err(e);
+                        }
                         // Not a valid quantifier, treat { as literal
                         self.pos = saved_pos;
                         return Ok(node);
@@ -950,6 +963,11 @@ impl Parser {
                     let max: u32 = max_str.parse().map_err(|_| PatternSyntaxError {
                         message: "Invalid quantifier number".to_string(),
                     })?;
+                    if min > max {
+                        return Err(PatternSyntaxError {
+                            message: format!("Illegal repetition range near index {}", self.pos),
+                        });
+                    }
                     Ok((min, max))
                 }
             }
@@ -998,7 +1016,7 @@ impl Parser {
                 }),
                 Some(']') => break,
                 Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => {
-                    // Intersection
+                    // Intersection — may be chained: [a-z&&[a-m]&&[g-z]]
                     self.advance(); // first &
                     self.advance(); // second &
                     let right_items = if self.peek() == Some('[') {
@@ -1007,7 +1025,23 @@ impl Parser {
                     } else {
                         self.parse_char_class_items()?
                     };
-                    return Ok(vec![CharClassItem::Intersection(left_items, right_items)]);
+                    let mut result = vec![CharClassItem::Intersection(left_items, right_items)];
+                    // Handle chained &&
+                    while self.pos + 1 < self.chars.len()
+                        && self.peek() == Some('&')
+                        && self.chars[self.pos + 1] == '&'
+                    {
+                        self.advance(); // first &
+                        self.advance(); // second &
+                        let next_items = if self.peek() == Some('[') {
+                            let nested = self.parse_char_class()?;
+                            vec![CharClassItem::Nested(nested)]
+                        } else {
+                            self.parse_char_class_items()?
+                        };
+                        result = vec![CharClassItem::Intersection(result, next_items)];
+                    }
+                    return Ok(result);
                 }
                 _ => {
                     let item = self.parse_char_class_item()?;
@@ -1990,6 +2024,29 @@ fn match_predefined_class(pc: PredefinedClass, ch: char, unicode: bool) -> bool 
     }
 }
 
+fn is_valid_unicode_property(name: &str) -> bool {
+    let name = name.strip_prefix("Is").unwrap_or(name);
+    let name_lower = name.to_lowercase();
+    matches!(name_lower.as_str(),
+        "l" | "letter" | "lu" | "uppercase_letter" | "upper" | "ll" | "lowercase_letter" | "lower" |
+        "lt" | "titlecase_letter" | "lm" | "modifier_letter" | "lo" | "other_letter" |
+        "m" | "mark" | "mn" | "nonspacing_mark" | "mc" | "spacing_mark" |
+        "n" | "number" | "nd" | "decimal_digit_number" | "digit" | "nl" | "letter_number" | "no" | "other_number" |
+        "p" | "punctuation" | "punct" |
+        "pc" | "connector_punctuation" | "pd" | "dash_punctuation" |
+        "ps" | "open_punctuation" | "pe" | "close_punctuation" |
+        "pi" | "initial_punctuation" | "pf" | "final_punctuation" | "po" | "other_punctuation" |
+        "s" | "symbol" | "sm" | "math_symbol" | "sc" | "currency_symbol" | "sk" | "modifier_symbol" | "so" | "other_symbol" |
+        "z" | "separator" | "zs" | "space_separator" | "zl" | "line_separator" | "zp" | "paragraph_separator" |
+        "c" | "control" | "other" | "cc" | "cntrl" | "cf" | "format" | "co" | "private_use" | "cn" | "unassigned" |
+        "alpha" | "alnum" | "ascii" | "blank" | "graph" | "print" | "space" | "white_space" | "xdigit" |
+        "greek" | "isgreek" | "latin" | "islatin" | "cyrillic" | "iscyrillic" |
+        "han" | "ishan" | "arabic" | "isarabic" | "armenian" | "isarmenian" |
+        "hebrew" | "ishebrew" | "thai" | "isthai" | "hiragana" | "ishiragana" |
+        "katakana" | "iskatakana" | "devanagari" | "isdevanagari"
+    )
+}
+
 fn match_unicode_property(name: &str, ch: char) -> bool {
     // Handle "Is" prefix for script names
     let name = name.strip_prefix("Is").unwrap_or(name);
@@ -2043,9 +2100,53 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
             matches!(cat, UnicodeCategory::Pc | UnicodeCategory::Pd | UnicodeCategory::Ps |
                 UnicodeCategory::Pe | UnicodeCategory::Pi | UnicodeCategory::Pf | UnicodeCategory::Po)
         }
+        "pc" | "connector_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Pc)
+        }
+        "pd" | "dash_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Pd)
+        }
+        "ps" | "open_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Ps)
+        }
+        "pe" | "close_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Pe)
+        }
+        "pi" | "initial_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Pi)
+        }
+        "pf" | "final_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Pf)
+        }
+        "po" | "other_punctuation" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Po)
+        }
         "s" | "symbol" => {
             let cat = unicode_general_category(ch);
             matches!(cat, UnicodeCategory::Sm | UnicodeCategory::Sc | UnicodeCategory::Sk | UnicodeCategory::So)
+        }
+        "sm" | "math_symbol" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Sm)
+        }
+        "sc" | "currency_symbol" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Sc)
+        }
+        "sk" | "modifier_symbol" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::Sk)
+        }
+        "so" | "other_symbol" => {
+            let cat = unicode_general_category(ch);
+            matches!(cat, UnicodeCategory::So)
         }
         "z" | "separator" => {
             let cat = unicode_general_category(ch);
@@ -2261,17 +2362,7 @@ impl Regex {
         if engine.match_pattern(&self.pattern, &[], 0, &mut state) {
             let input_len = engine.input.len();
             // Check if entire input was consumed
-            if state.match_end == input_len {
-                return true;
-            }
-            // Allow \Z to match before trailing newline
-            if state.match_end == input_len - 1
-                && input_len > 0
-                && engine.input[input_len - 1] == '\n'
-            {
-                return true;
-            }
-            false
+            state.match_end == input_len
         } else {
             false
         }
@@ -2457,7 +2548,8 @@ impl Regex {
             parts.pop();
         }
 
-        if parts.is_empty() {
+        // Java: if no match was found at all, return the original input
+        if parts.is_empty() && last_end == 0 {
             parts.push(input.to_string());
         }
 

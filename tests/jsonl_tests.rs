@@ -165,8 +165,8 @@ fn test_jsonl_5000() {
     println!("\n=== java_regex_tests_5000.jsonl ===");
     println!("Passed: {}/{}", passed, total);
     if !failures.is_empty() {
-        println!("\nFirst 50 failures:");
-        for f in failures.iter().take(50) {
+        println!("\nFirst 200 failures:");
+        for f in failures.iter().take(200) {
             println!("  {}", f);
         }
     }

@@ -1041,11 +1041,9 @@ impl Parser {
                                 left_items.push(CharClassItem::Range(start, end));
                                 continue;
                             } else {
-                                // Not a simple range, push start and - as literals
-                                left_items.push(CharClassItem::Single(start));
-                                left_items.push(CharClassItem::Single('-'));
-                                left_items.push(end_item);
-                                continue;
+                                return Err(PatternSyntaxError {
+                                    message: "Illegal character range".to_string(),
+                                });
                             }
                         }
                     }
@@ -1126,6 +1124,13 @@ impl Parser {
                             }
                         }
                         let code = if oct.is_empty() { 0 } else { u32::from_str_radix(&oct, 8).unwrap_or(0) };
+                        Ok(CharClassItem::Single(char::from_u32(code).unwrap_or('\0')))
+                    }
+                    'c' => {
+                        let ctrl = self.advance().ok_or_else(|| PatternSyntaxError {
+                            message: "Expected control character after \\c".to_string(),
+                        })?;
+                        let code = (ctrl as u32) ^ 0x40;
                         Ok(CharClassItem::Single(char::from_u32(code).unwrap_or('\0')))
                     }
                     'Q' => {
@@ -1468,12 +1473,18 @@ impl Engine {
             }
 
             Node::GraphemeCluster => {
-                // \X - simplified: match one or more chars that form a grapheme cluster
-                // For simplicity: match one base char + any following combining marks
+                // \X - match one grapheme cluster:
+                // \r\n as single unit, base char + combining marks, regional indicators
                 if pos >= self.input.len() {
                     return false;
                 }
-                let mut p = pos + 1;
+                let mut p = pos;
+                // Handle \r\n as single grapheme cluster
+                if self.input[p] == '\r' && p + 1 < self.input.len() && self.input[p + 1] == '\n' {
+                    p += 2;
+                    return self.match_nodes(&nodes[1..], p, state);
+                }
+                p += 1;
                 while p < self.input.len() && is_combining_mark(self.input[p]) {
                     p += 1;
                 }
@@ -1874,8 +1885,18 @@ impl Engine {
             AnchorKind::EndOfLine => {
                 if self.flags.multiline {
                     // Multiline $: before any line terminator or at end of input
-                    pos == self.input.len()
-                        || (pos < self.input.len() && self.is_lt(self.input[pos]))
+                    // But don't match between \r and \n (treat \r\n as single terminator)
+                    if pos == self.input.len() {
+                        return true;
+                    }
+                    if pos < self.input.len() && self.is_lt(self.input[pos]) {
+                        // Don't match before \n if preceded by \r (inside \r\n)
+                        if !self.flags.unix_lines && self.input[pos] == '\n' && pos > 0 && self.input[pos - 1] == '\r' {
+                            return false;
+                        }
+                        return true;
+                    }
+                    false
                 } else {
                     // Non-multiline $: match at end, or before final line terminator
                     if pos == self.input.len() {
@@ -2057,8 +2078,8 @@ fn is_linebreak(c: char) -> bool {
 }
 
 fn is_combining_mark(c: char) -> bool {
-    let cat = unicode_general_category(c);
-    matches!(cat, UnicodeCategory::Mn | UnicodeCategory::Mc | UnicodeCategory::Me)
+    let cat = get_ugc(c);
+    matches!(cat, UGC::NonspacingMark | UGC::SpacingMark | UGC::EnclosingMark)
 }
 
 fn is_regional_indicator(c: char) -> bool {
@@ -2145,8 +2166,8 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
         "javaLowerCase" => return ch.is_lowercase(),
         "javaUpperCase" => return ch.is_uppercase(),
         "javaTitleCase" => {
-            let cat = unicode_general_category(ch);
-            return matches!(cat, UnicodeCategory::Lt);
+            let cat = get_ugc(ch);
+            return matches!(cat, UGC::TitlecaseLetter);
         }
         "javaDigit" => return ch.is_ascii_digit() || ch.is_numeric(),
         "javaLetter" => return ch.is_alphabetic(),
@@ -2154,8 +2175,8 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
         "javaAlphabetic" => return ch.is_alphabetic(),
         "javaWhitespace" => return ch.is_whitespace(),
         "javaSpaceChar" => {
-            let cat = unicode_general_category(ch);
-            return matches!(cat, UnicodeCategory::Zs | UnicodeCategory::Zl | UnicodeCategory::Zp);
+            let cat = get_ugc(ch);
+            return matches!(cat, UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator);
         }
         "javaISOControl" => return ch.is_control(),
         "javaDefined" => return ch != '\u{FFFF}',
@@ -2181,106 +2202,118 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
         "lu" | "uppercase_letter" => ch.is_uppercase(),
         "ll" | "lowercase_letter" => ch.is_lowercase(),
         "lt" | "titlecase_letter" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Lt)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::TitlecaseLetter)
         }
         "lm" | "modifier_letter" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Lm)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ModifierLetter)
         }
         "lo" | "other_letter" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Lo)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::OtherLetter)
         }
         "m" | "mark" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Mn | UnicodeCategory::Mc | UnicodeCategory::Me)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::NonspacingMark | UGC::SpacingMark | UGC::EnclosingMark)
         }
         "mn" | "nonspacing_mark" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Mn)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::NonspacingMark)
         }
         "mc" | "spacing_mark" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Mc)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::SpacingMark)
         }
         "n" | "number" => ch.is_numeric(),
         "nd" | "decimal_digit_number" | "digit" => ch.is_ascii_digit() || {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Nd)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::DecimalNumber)
         },
         "nl" | "letter_number" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Nl)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::LetterNumber)
         }
         "no" | "other_number" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::No)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::OtherNumber)
         }
         "p" | "punctuation" | "punct" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pc | UnicodeCategory::Pd | UnicodeCategory::Ps |
-                UnicodeCategory::Pe | UnicodeCategory::Pi | UnicodeCategory::Pf | UnicodeCategory::Po)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ConnectorPunctuation | UGC::DashPunctuation | UGC::OpenPunctuation |
+                UGC::ClosePunctuation | UGC::InitialPunctuation | UGC::FinalPunctuation | UGC::OtherPunctuation)
         }
         "pc" | "connector_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pc)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ConnectorPunctuation)
         }
         "pd" | "dash_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pd)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::DashPunctuation)
         }
         "ps" | "open_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Ps)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::OpenPunctuation)
         }
         "pe" | "close_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pe)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ClosePunctuation)
         }
         "pi" | "initial_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pi)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::InitialPunctuation)
         }
         "pf" | "final_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Pf)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::FinalPunctuation)
         }
         "po" | "other_punctuation" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Po)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::OtherPunctuation)
         }
         "s" | "symbol" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Sm | UnicodeCategory::Sc | UnicodeCategory::Sk | UnicodeCategory::So)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::MathSymbol | UGC::CurrencySymbol | UGC::ModifierSymbol | UGC::OtherSymbol)
         }
         "sm" | "math_symbol" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Sm)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::MathSymbol)
         }
         "sc" | "currency_symbol" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Sc)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::CurrencySymbol)
         }
         "sk" | "modifier_symbol" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Sk)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ModifierSymbol)
         }
         "so" | "other_symbol" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::So)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::OtherSymbol)
         }
         "z" | "separator" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Zs | UnicodeCategory::Zl | UnicodeCategory::Zp)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator)
+        }
+        "zs" | "space_separator" => {
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::SpaceSeparator)
+        }
+        "zl" | "line_separator" => {
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::LineSeparator)
+        }
+        "zp" | "paragraph_separator" => {
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::ParagraphSeparator)
         }
         "c" | "control" | "other" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Cc | UnicodeCategory::Cf | UnicodeCategory::Co | UnicodeCategory::Cn)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::Control | UGC::Format | UGC::PrivateUse | UGC::Unassigned)
         }
         "cc" | "cntrl" => {
-            let cat = unicode_general_category(ch);
-            matches!(cat, UnicodeCategory::Cc)
+            let cat = get_ugc(ch);
+            matches!(cat, UGC::Control)
         }
 
         // POSIX-style
@@ -2340,66 +2373,10 @@ fn is_script_arabic(ch: char) -> bool {
 }
 
 // Simplified Unicode General Category detection
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[allow(dead_code)]
-enum UnicodeCategory {
-    Lu, Ll, Lt, Lm, Lo,  // Letter
-    Mn, Mc, Me,           // Mark
-    Nd, Nl, No,           // Number
-    Pc, Pd, Ps, Pe, Pi, Pf, Po, // Punctuation
-    Sm, Sc, Sk, So,       // Symbol
-    Zs, Zl, Zp,           // Separator
-    Cc, Cf, Co, Cn,       // Other
-}
+use unicode_general_category::GeneralCategory as UGC;
 
-fn unicode_general_category(ch: char) -> UnicodeCategory {
-    if ch.is_ascii_uppercase() || (ch.is_uppercase() && !ch.is_ascii()) {
-        UnicodeCategory::Lu
-    } else if ch.is_ascii_lowercase() || (ch.is_lowercase() && !ch.is_ascii()) {
-        UnicodeCategory::Ll
-    } else if ch.is_ascii_digit() || ch.is_numeric() {
-        UnicodeCategory::Nd
-    } else if ch.is_alphabetic() && !ch.is_uppercase() && !ch.is_lowercase() {
-        UnicodeCategory::Lo
-    } else if ch.is_ascii_control() || ch.is_control() {
-        if ch.is_ascii_control() { UnicodeCategory::Cc } else { UnicodeCategory::Cf }
-    } else if ch.is_whitespace() {
-        if ch == '\n' || ch == '\r' || ch == '\t' || ch == '\x0B' || ch == '\x0C' {
-            UnicodeCategory::Cc
-        } else {
-            UnicodeCategory::Zs
-        }
-    } else {
-        // Try to categorize punctuation and symbols
-        let cp = ch as u32;
-        if matches!(ch, '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>') {
-            if matches!(ch, '(' | '[' | '{' | '<') { UnicodeCategory::Ps } else { UnicodeCategory::Pe }
-        } else if matches!(ch, '!' | '"' | '#' | '%' | '&' | '\'' | '*' | ',' | '.' | '/' | ':' | ';' | '?' | '@' | '\\' | '_') {
-            UnicodeCategory::Po
-        } else if matches!(ch, '+' | '=' | '|' | '~' | '^') {
-            UnicodeCategory::Sm
-        } else if matches!(ch, '$' | '\u{00A2}'..='\u{00A5}') {
-            UnicodeCategory::Sc
-        } else if ch == '-' {
-            UnicodeCategory::Pd
-        } else if ch == '`' {
-            UnicodeCategory::Sk
-        } else if (0xE000..=0xF8FF).contains(&cp) {
-            UnicodeCategory::Co
-        } else if (0x0300..=0x036F).contains(&cp) || (0x0483..=0x0489).contains(&cp) ||
-                  (0x0591..=0x05BD).contains(&cp) || (0x0610..=0x061A).contains(&cp) ||
-                  (0x064B..=0x065F).contains(&cp) || (0x0670..=0x0670).contains(&cp) ||
-                  (0x06D6..=0x06DC).contains(&cp) || (0x06DF..=0x06E4).contains(&cp) ||
-                  (0x0900..=0x0903).contains(&cp) || (0x093A..=0x094F).contains(&cp) ||
-                  (0x0951..=0x0957).contains(&cp) || (0x0962..=0x0963).contains(&cp) ||
-                  (0x0981..=0x0983).contains(&cp) || (0x09BC..=0x09CD).contains(&cp) ||
-                  (0x0A01..=0x0A03).contains(&cp) || (0x0A3C..=0x0A4D).contains(&cp) ||
-                  (0xFE20..=0xFE2F).contains(&cp) || (0x20D0..=0x20FF).contains(&cp) {
-            UnicodeCategory::Mn
-        } else {
-            UnicodeCategory::Cn
-        }
-    }
+fn get_ugc(ch: char) -> UGC {
+    unicode_general_category::get_general_category(ch)
 }
 
 // ==================== Public API ====================

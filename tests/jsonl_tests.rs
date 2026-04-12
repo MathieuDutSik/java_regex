@@ -141,88 +141,36 @@ fn run_test_file(path: &str) -> (usize, usize, Vec<String>) {
     (passed, total, failures)
 }
 
-#[test]
-fn test_jsonl_105() {
-    let (passed, total, failures) = run_test_file("java_regex_tests.jsonl");
+fn run_and_assert(path: &str) {
+    let (passed, total, failures) = run_test_file(path);
 
-    println!("\n=== java_regex_tests.jsonl ===");
+    println!("\n=== {} ===", path);
     println!("Passed: {}/{}", passed, total);
     if !failures.is_empty() {
         println!("\nFailures ({}):", failures.len());
-        for f in &failures {
-            println!("  {}", f);
-        }
-    }
-
-    // Require at least 80% pass rate
-    let pass_rate = passed as f64 / total as f64;
-    assert!(pass_rate >= 0.80, "Pass rate {:.1}% < 80%", pass_rate * 100.0);
-}
-
-#[test]
-fn test_jsonl_5000() {
-    let (passed, total, failures) = run_test_file("java_regex_tests_5000.jsonl");
-
-    println!("\n=== java_regex_tests_5000.jsonl ===");
-    println!("Passed: {}/{}", passed, total);
-    if !failures.is_empty() {
-        println!("\nFirst 200 failures:");
         for f in failures.iter().take(200) {
             println!("  {}", f);
         }
     }
 
     let pass_rate = passed as f64 / total as f64;
-    assert!(pass_rate >= 0.80, "Pass rate {:.1}% < 80%", pass_rate * 100.0);
+    assert!(pass_rate >= 0.80, "{}: pass rate {:.1}% < 80%", path, pass_rate * 100.0);
 }
 
 #[test]
-fn test_jsonl_new() {
-    let (passed, total, failures) = run_test_file("java_regex_tests_new.jsonl");
-
-    println!("\n=== java_regex_tests_new.jsonl ===");
-    println!("Passed: {}/{}", passed, total);
-    if !failures.is_empty() {
-        println!("\nFailures ({}):", failures.len());
-        for f in &failures {
-            println!("  {}", f);
-        }
-    }
-
-    let pass_rate = passed as f64 / total as f64;
-    assert!(pass_rate >= 0.80, "Pass rate {:.1}% < 80%", pass_rate * 100.0);
-}
+fn test_jsonl_105() { run_and_assert("tests/java_regex_tests.jsonl"); }
 
 #[test]
-fn test_jsonl_gen5() {
-    let (passed, total, failures) = run_test_file("java_regex_tests_gen5.jsonl");
-
-    println!("\n=== java_regex_tests_gen5.jsonl ===");
-    println!("Passed: {}/{}", passed, total);
-    if !failures.is_empty() {
-        println!("\nFailures ({}):", failures.len());
-        for f in &failures {
-            println!("  {}", f);
-        }
-    }
-
-    let pass_rate = passed as f64 / total as f64;
-    assert!(pass_rate >= 0.80, "Gen5 pass rate {:.1}% < 80%", pass_rate * 100.0);
-}
+fn test_jsonl_5000() { run_and_assert("tests/java_regex_tests_5000.jsonl"); }
 
 #[test]
-fn test_jsonl_gen6() {
-    let (passed, total, failures) = run_test_file("java_regex_tests_gen6.jsonl");
+fn test_jsonl_new() { run_and_assert("tests/java_regex_tests_new.jsonl"); }
 
-    println!("\n=== java_regex_tests_gen6.jsonl ===");
-    println!("Passed: {}/{}", passed, total);
-    if !failures.is_empty() {
-        println!("\nFailures ({}):", failures.len());
-        for f in &failures {
-            println!("  {}", f);
-        }
-    }
+#[test]
+fn test_jsonl_gen5() { run_and_assert("tests/java_regex_tests_gen5.jsonl"); }
 
-    let pass_rate = passed as f64 / total as f64;
-    assert!(pass_rate >= 0.80, "Gen6 pass rate {:.1}% < 80%", pass_rate * 100.0);
-}
+#[test]
+fn test_jsonl_gen6() { run_and_assert("tests/java_regex_tests_gen6.jsonl"); }
+
+#[test]
+fn test_jsonl_gen7() { run_and_assert("tests/java_regex_tests_gen7.jsonl"); }

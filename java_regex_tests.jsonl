@@ -52,7 +52,7 @@
 {"id": "T0052", "pattern": "\\w+(?!:)", "input": "key:value", "op": "find", "expect": [{"m": "ke"}, {"m": "value"}], "note": "negative lookahead (substrings)"}
 {"id": "T0053", "pattern": "(?<=\\$)\\d+", "input": "cost $123 and $7", "op": "find", "expect": [{"m": "123"}, {"m": "7"}], "note": "lookbehind"}
 {"id": "T0054", "pattern": "(?<!\\$)\\d+", "input": "cost $123 and 7", "op": "find", "expect": [{"m": "23"}, {"m": "7"}], "note": "negative lookbehind still matches digits in $123 after '$'? No, because first digit preceded by '$' so 123 should not match; but '7' should."}
-{"id": "T0055", "pattern": "(?<=\\w+)\\d+", "input": "a1", "op": "compile_error", "expect": "PatternSyntaxException", "note": "variable-length lookbehind not allowed"}
+{"id": "T0055", "pattern": "(?<=\\w+)\\d+", "input": "a1", "op": "find", "expect": [{"m": "1"}], "note": "variable-length lookbehind allowed in Java 9+"}
 {"id": "T0056", "pattern": "(?>a|ab)c", "input": "abc", "op": "matches", "expect": false, "note": "atomic group prevents backtracking from 'ab' alternative; picks 'a' then fails on 'c' with remaining 'bc'"}
 {"id": "T0057", "pattern": "(a|ab)c", "input": "abc", "op": "matches", "expect": true, "note": "non-atomic allows backtracking to 'ab'"}
 {"id": "T0058", "pattern": "abc", "input": "ABC", "op": "matches", "flags": "i", "expect": true}
@@ -74,8 +74,8 @@
 {"id": "T0074", "pattern": "\\R", "input": "a\r\nb\nc\rd", "op": "find", "expect": [{"m": "\r\n"}, {"m": "\n"}, {"m": "\r"}], "note": "any linebreak sequence"}
 {"id": "T0075", "pattern": "(?x) a b c ", "input": "abc", "op": "matches", "expect": true}
 {"id": "T0076", "pattern": "(?x) a\\ b ", "input": "a b", "op": "matches", "expect": true, "note": "escaped space in COMMENTS mode"}
-{"id": "T0077", "pattern": "[[:digit:]]+", "input": "123", "op": "matches", "expect": true}
-{"id": "T0078", "pattern": "[[:alpha:]]+", "input": "abcXYZ", "op": "matches", "expect": true}
+{"id": "T0077", "pattern": "[[:digit:]]+", "input": "digit:", "op": "matches", "expect": true, "note": "POSIX not supported, treated as nested class with literal chars"}
+{"id": "T0078", "pattern": "[[:alpha:]]+", "input": "alpha:", "op": "matches", "expect": true, "note": "POSIX not supported, treated as nested class with literal chars"}
 {"id": "T0079", "pattern": "\\d+", "input": "a1b22c333", "op": "replaceAll", "expect": "a#b#c#", "note": "replace all digits with #", "replacement": "#"}
 {"id": "T0080", "pattern": "(\\w+),(\\w+)", "input": "Doe,John", "op": "replaceAll", "expect": "John Doe", "note": "swap with $2 $1", "replacement": "$2 $1"}
 {"id": "T0081", "pattern": "(?<last>\\w+),(?<first>\\w+)", "input": "Doe,John", "op": "replaceAll", "expect": "John Doe", "note": "named groups in replacement ${name}", "replacement": "${first} ${last}"}
@@ -86,7 +86,7 @@
 {"id": "T0086", "pattern": "(a+)+b", "input": "aaaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": false, "note": "may be slow; keep input moderate in runner"}
 {"id": "T0087", "pattern": "(a++)+b", "input": "aaaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": false, "note": "possessive mitigates"}
 {"id": "T0089", "pattern": "\\X", "input": "😀", "op": "matches", "expect": true, "note": "grapheme cluster for emoji"}
-{"id": "T0090", "pattern": "(?i)istanbul", "input": "İSTANBUL", "op": "matches", "expect": true, "note": "Unicode case folding; depends on Unicode; Java uses Unicode case insensitivity"}
+{"id": "T0090", "pattern": "(?i)istanbul", "input": "İSTANBUL", "op": "matches", "expect": false, "note": "Java CASE_INSENSITIVE is ASCII-only; Unicode case folding requires (?iu)"}
 {"id": "T0091", "pattern": "\\G\\d{2}", "input": "12-34-56", "op": "find", "expect": [{"m": "12"}], "note": "\\G matches at end of previous match; typical tokenizer"}
 {"id": "T0092", "pattern": "<.*?>", "input": "<b>bold</b><i>it</i>", "op": "find", "expect": [{"m": "<b>"}, {"m": "</b>"}, {"m": "<i>"}, {"m": "</i>"}]}
 {"id": "T0093", "pattern": "(?U)\\bGrüße\\b", "input": "xx Grüße yy", "op": "find", "expect": [{"m": "Grüße"}], "note": "word boundary uses \\w definition; may vary with UNICODE_CHARACTER_CLASS. Keep as find in ASCII context; could fail. We'll use (?U) to ensure Unicode word chars."}
@@ -101,5 +101,5 @@
 {"id": "T0102", "pattern": "\\k<nope>", "input": "x", "op": "compile_error", "expect": "PatternSyntaxException", "note": "backref to unknown named group"}
 {"id": "T0103", "pattern": "(?<a>a", "input": "a", "op": "compile_error", "expect": "PatternSyntaxException", "note": "unclosed group"}
 {"id": "T0104", "pattern": "[z-a]", "input": "a", "op": "compile_error", "expect": "PatternSyntaxException", "note": "bad range"}
-{"id": "T0105", "pattern": "(?m)^\\s*$", "input": "a\n\nb\n \n", "op": "find", "expect": [{"m": ""}, {"m": " "}], "note": "blank lines"}
+{"id": "T0105", "pattern": "(?m)^\\s*$", "input": "a\n\nb\n \n", "op": "find", "expect": [{"m": ""}, {"m": " \n"}], "note": "blank lines - multiline \\s*$ includes \\n"}
 {"id": "T0106", "pattern": "^(\\d++)\\d$", "input": "1234", "op": "matches", "expect": false, "note": "possessive eats all digits; cannot backtrack to leave last digit"}

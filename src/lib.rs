@@ -23,6 +23,8 @@ struct Flags {
     dotall: bool,           // s / DOTALL
     comments: bool,         // x / COMMENTS
     unicode_class: bool,    // U / UNICODE_CHARACTER_CLASS
+    unix_lines: bool,       // d / UNIX_LINES
+    unicode_case: bool,     // u / UNICODE_CASE
 }
 
 // ==================== AST Types ====================
@@ -77,7 +79,16 @@ enum Node {
         index: usize,
         start: usize,
     },
-    RestoreFlags(Flags), // engine-internal: restore flags after FlagGroup
+    RestoreFlags(Flags),  // engine-internal: restore flags after FlagGroup
+    #[allow(dead_code)]
+    PositionCheck(usize), // engine-internal: assert current pos == target
+    GreedyCont {           // engine-internal: continue greedy quantifier loop
+        atom: Box<Node>,
+        min: u32,
+        max: u32,
+        count: u32,
+        rest: Vec<Node>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -116,10 +127,6 @@ enum CharClassItem {
     },
     Nested(CharClass),
     Intersection(Vec<CharClassItem>, Vec<CharClassItem>),
-    PosixClass {
-        name: String,
-        negated: bool,
-    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -279,6 +286,33 @@ impl Parser {
                     message: format!("Dangling meta character '{}'", c),
                 })
             }
+            '{' => {
+                // In Java, { starts a quantifier. If it's not valid quantifier syntax,
+                // it's an "Illegal repetition" error.
+                let saved = self.pos;
+                self.advance(); // consume '{'
+                // Try to parse as quantifier braces
+                match self.parse_quantifier_braces() {
+                    Ok(_) => {
+                        // Valid quantifier syntax but no preceding atom — treat
+                        // the whole thing as literal characters
+                        let literal_str: String = self.chars[saved..self.pos].iter().collect();
+                        let nodes: Vec<Node> = literal_str.chars().map(Node::Literal).collect();
+                        // Return as a non-capturing group of literals
+                        Ok(Node::Group {
+                            index: None,
+                            name: None,
+                            inner: Pattern { branches: vec![nodes] },
+                        })
+                    }
+                    Err(_) => {
+                        self.pos = saved;
+                        Err(PatternSyntaxError {
+                            message: format!("Illegal repetition near index {}", self.pos),
+                        })
+                    }
+                }
+            }
             _ => {
                 self.advance();
                 Ok(Node::Literal(c))
@@ -430,6 +464,13 @@ impl Parser {
             // Escaped metacharacters
             '\\' | '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '^' | '$' | '-' | '!' | '=' | '<' | '>' | '/' | '#' | ' ' | '&' | '~' | '@' | '`' | '\'' | '"' | ',' | ';' | ':' => {
                 Ok(Node::Literal(c))
+            }
+
+            'E' => {
+                // \E outside \Q is an error in Java
+                Err(PatternSyntaxError {
+                    message: format!("Illegal/unsupported escape sequence near index {}", self.pos - 1),
+                })
             }
 
             _ => {
@@ -642,8 +683,6 @@ impl Parser {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
-                            // Check for variable-length lookbehind
-                            self.check_lookbehind_length(&inner)?;
                             Ok(Node::Lookbehind {
                                 positive: true,
                                 inner,
@@ -654,7 +693,6 @@ impl Parser {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
-                            self.check_lookbehind_length(&inner)?;
                             Ok(Node::Lookbehind {
                                 positive: false,
                                 inner,
@@ -760,6 +798,16 @@ impl Parser {
                     if clearing { clear_flags.unicode_class = true; }
                     else { set_flags.unicode_class = true; }
                 }
+                Some('d') => {
+                    self.advance();
+                    if clearing { clear_flags.unix_lines = true; }
+                    else { set_flags.unix_lines = true; }
+                }
+                Some('u') => {
+                    self.advance();
+                    if clearing { clear_flags.unicode_case = true; }
+                    else { set_flags.unicode_case = true; }
+                }
                 Some('-') => {
                     self.advance();
                     clearing = true;
@@ -800,86 +848,15 @@ impl Parser {
         if set.dotall { self.flags.dotall = true; }
         if set.comments { self.flags.comments = true; }
         if set.unicode_class { self.flags.unicode_class = true; }
+        if set.unix_lines { self.flags.unix_lines = true; }
+        if set.unicode_case { self.flags.unicode_case = true; }
         if clear.case_insensitive { self.flags.case_insensitive = false; }
         if clear.multiline { self.flags.multiline = false; }
         if clear.dotall { self.flags.dotall = false; }
         if clear.comments { self.flags.comments = false; }
         if clear.unicode_class { self.flags.unicode_class = false; }
-    }
-
-    fn check_lookbehind_length(&self, pattern: &Pattern) -> Result<(), PatternSyntaxError> {
-        for branch in &pattern.branches {
-            for node in branch {
-                if self.has_variable_length(node) {
-                    return Err(PatternSyntaxError {
-                        message: "Look-behind group does not have an obvious maximum length".to_string(),
-                    });
-                }
-            }
-        }
-        Ok(())
-    }
-
-    fn has_variable_length(&self, node: &Node) -> bool {
-        match node {
-            Node::Quantified { min, max, .. } => *min != *max,
-            Node::Group { inner, .. } => {
-                // Check if all branches have same length
-                let lengths: Vec<Option<u32>> = inner.branches.iter()
-                    .map(|b| self.branch_fixed_length(b))
-                    .collect();
-                if lengths.iter().any(|l| l.is_none()) {
-                    return true;
-                }
-                let first = lengths[0];
-                !lengths.iter().all(|l| *l == first)
-            }
-            _ => false,
-        }
-    }
-
-    fn branch_fixed_length(&self, branch: &[Node]) -> Option<u32> {
-        let mut len = 0u32;
-        for node in branch {
-            match node {
-                Node::Literal(_) | Node::Dot | Node::CharClass(_) => len += 1,
-                Node::Quantified { min, max, inner, .. } => {
-                    if min != max { return None; }
-                    let inner_len = self.node_fixed_length(inner)?;
-                    len += min * inner_len;
-                }
-                Node::Group { inner, .. } => {
-                    let branch_lens: Vec<Option<u32>> = inner.branches.iter()
-                        .map(|b| self.branch_fixed_length(b))
-                        .collect();
-                    if branch_lens.iter().any(|l| l.is_none()) { return None; }
-                    let first = branch_lens[0]?;
-                    if !branch_lens.iter().all(|l| *l == Some(first)) { return None; }
-                    len += first;
-                }
-                Node::Anchor(_) | Node::Lookahead { .. } | Node::Lookbehind { .. } => {}
-                Node::LinebreakMatcher => return None, // variable length (\r\n vs \n)
-                Node::GraphemeCluster => return None,
-                _ => return None,
-            }
-        }
-        Some(len)
-    }
-
-    fn node_fixed_length(&self, node: &Node) -> Option<u32> {
-        match node {
-            Node::Literal(_) | Node::Dot | Node::CharClass(_) => Some(1),
-            Node::Group { inner, .. } => {
-                let first = self.branch_fixed_length(&inner.branches[0])?;
-                if inner.branches.iter().all(|b| self.branch_fixed_length(b) == Some(first)) {
-                    Some(first)
-                } else {
-                    None
-                }
-            }
-            Node::Anchor(_) => Some(0),
-            _ => None,
-        }
+        if clear.unix_lines { self.flags.unix_lines = false; }
+        if clear.unicode_case { self.flags.unicode_case = false; }
     }
 
     fn maybe_parse_quantifier(&mut self, node: Node) -> Result<Node, PatternSyntaxError> {
@@ -1000,12 +977,7 @@ impl Parser {
 
     fn parse_char_class_items(&mut self) -> Result<Vec<CharClassItem>, PatternSyntaxError> {
         let mut left_items = Vec::new();
-
-        // First character can be ] or - literally
-        if self.peek() == Some(']') && left_items.is_empty() {
-            // Empty class not allowed; this ] closes it
-            return Ok(left_items);
-        }
+        let mut at_start = true;
 
         loop {
             // Skip whitespace and comments in COMMENTS mode inside char classes
@@ -1016,7 +988,14 @@ impl Parser {
                 None => return Err(PatternSyntaxError {
                     message: "Unclosed character class".to_string(),
                 }),
-                Some(']') => break,
+                Some(']') if !at_start => break,
+                Some(']') if at_start => {
+                    // ] at start of class is literal
+                    self.advance();
+                    left_items.push(CharClassItem::Single(']'));
+                    at_start = false;
+                    continue;
+                }
                 Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => {
                     // Intersection — may be chained: [a-z&&[a-m]&&[g-z]]
                     self.advance(); // first &
@@ -1046,6 +1025,7 @@ impl Parser {
                     return Ok(result);
                 }
                 _ => {
+                    at_start = false;
                     let item = self.parse_char_class_item()?;
                     // Check for range
                     if self.peek() == Some('-') && self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] != ']' {
@@ -1168,32 +1148,8 @@ impl Parser {
                 }
             }
             Some('[') => {
-                // Check for POSIX class [[:alpha:]]
-                if self.pos + 2 < self.chars.len() && self.chars[self.pos + 1] == ':' {
-                    let saved = self.pos;
-                    self.advance(); // [
-                    self.advance(); // :
-                    let negated = if self.peek() == Some('^') {
-                        self.advance();
-                        true
-                    } else {
-                        false
-                    };
-                    let mut name = String::new();
-                    while let Some(c) = self.peek() {
-                        if c == ':' { break; }
-                        name.push(c);
-                        self.advance();
-                    }
-                    if self.peek() == Some(':') && self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == ']' {
-                        self.advance(); // :
-                        self.advance(); // ]
-                        return Ok(CharClassItem::PosixClass { name, negated });
-                    }
-                    // Not a POSIX class, revert
-                    self.pos = saved;
-                }
-                // Nested character class
+                // Java does not support POSIX bracket classes [[:alpha:]].
+                // It treats nested [ as a nested character class.
                 let nested = self.parse_char_class()?;
                 Ok(CharClassItem::Nested(nested))
             }
@@ -1215,6 +1171,11 @@ impl Parser {
                 if c == '}' { self.advance(); break; }
                 name.push(c);
                 self.advance();
+            }
+            if !is_valid_unicode_property(&name) {
+                return Err(PatternSyntaxError {
+                    message: format!("Unknown Unicode property: {}", name),
+                });
             }
             Ok(CharClassItem::UnicodeProperty { name, negated })
         } else {
@@ -1311,7 +1272,7 @@ impl Engine {
         match &nodes[0] {
             Node::Literal(ch) => {
                 if self.flags.case_insensitive {
-                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch) {
+                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case) {
                         self.match_nodes(&nodes[1..], pos + 1, state)
                     } else {
                         false
@@ -1325,7 +1286,7 @@ impl Engine {
 
             Node::Dot => {
                 if pos < self.input.len() {
-                    if self.flags.dotall || !is_line_terminator(self.input[pos]) {
+                    if self.flags.dotall || !self.is_lt(self.input[pos]) {
                         self.match_nodes(&nodes[1..], pos + 1, state)
                     } else {
                         false
@@ -1425,7 +1386,7 @@ impl Engine {
                     for &ch in &captured {
                         if p >= self.input.len() { return false; }
                         if self.flags.case_insensitive {
-                            if !chars_eq_ci(self.input[p], ch) { return false; }
+                            if !chars_eq_ci(self.input[p], ch, self.flags.unicode_case) { return false; }
                         } else if self.input[p] != ch {
                             return false;
                         }
@@ -1445,7 +1406,7 @@ impl Engine {
                         for &ch in &captured {
                             if p >= self.input.len() { return false; }
                             if self.flags.case_insensitive {
-                                if !chars_eq_ci(self.input[p], ch) { return false; }
+                                if !chars_eq_ci(self.input[p], ch, self.flags.unicode_case) { return false; }
                             } else if self.input[p] != ch {
                                 return false;
                             }
@@ -1524,6 +1485,19 @@ impl Engine {
                 }
                 self.match_nodes(&nodes[1..], p, state)
             }
+
+            Node::PositionCheck(target) => {
+                if pos == *target {
+                    self.match_nodes(&nodes[1..], pos, state)
+                } else {
+                    false
+                }
+            }
+
+            Node::GreedyCont { atom, min, max, count, rest } => {
+                // Continue the greedy quantifier loop from here
+                self.match_greedy(atom, *min, *max, *count, rest, pos, state)
+            }
         }
     }
 
@@ -1576,7 +1550,7 @@ impl Engine {
         match atom {
             Node::Literal(ch) => {
                 if self.flags.case_insensitive {
-                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch) {
+                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case) {
                         self.match_greedy(atom, min, max, count + 1, rest, pos + 1, state)
                     } else {
                         false
@@ -1588,7 +1562,7 @@ impl Engine {
                 }
             }
             Node::Dot => {
-                if pos < self.input.len() && (self.flags.dotall || self.input[pos] != '\n') {
+                if pos < self.input.len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
                     self.match_greedy(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
@@ -1605,13 +1579,13 @@ impl Engine {
                 let start = pos;
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
-                    // Match branch, then GroupEnd, then GreedyCont
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
-                    // After branch + GroupEnd, we need to continue with more greedy iterations
-                    // We'll use a helper: if branch matches, we get new_pos, then recurse
+                    // Match branch+GroupEnd, then try greedy continuation.
+                    // Use match_nodes_to_end to get the greedy match position,
+                    // then recurse. If recursion fails, try shorter branch matches.
                     let mut branch_state = state.clone();
                     if self.match_nodes_to_end(&combined, pos, &mut branch_state) {
                         let new_pos = branch_state.match_end;
@@ -1620,13 +1594,32 @@ impl Engine {
                             if self.match_greedy(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
-                        } else if new_pos == pos && count >= min {
-                            // Zero-width match - stop looping, try rest
+                            state.captures = saved.clone();
+                        } else if new_pos == pos && count + 1 >= min {
                             state.captures = branch_state.captures.clone();
                             if self.match_nodes(rest, pos, state) {
                                 return true;
                             }
+                            state.captures = saved.clone();
                         }
+                    }
+                    // Greedy didn't work with longest group match.
+                    // Now try matching group+continuation together so inner
+                    // quantifiers can backtrack across the boundary.
+                    let mut combined2 = branch.clone();
+                    if let Some(idx) = index {
+                        combined2.push(Node::GroupEnd { index: *idx, start });
+                    }
+                    // Build greedy continuation using GreedyCont internal node
+                    combined2.push(Node::GreedyCont {
+                        atom: Box::new(atom.clone()),
+                        min,
+                        max,
+                        count: count + 1,
+                        rest: rest.to_vec(),
+                    });
+                    if self.match_nodes(&combined2, pos, state) {
+                        return true;
                     }
                     state.captures = saved;
                 }
@@ -1654,7 +1647,7 @@ impl Engine {
                     for &ch in &captured {
                         if p >= self.input.len() { return false; }
                         if self.flags.case_insensitive {
-                            if !chars_eq_ci(self.input[p], ch) { return false; }
+                            if !chars_eq_ci(self.input[p], ch, self.flags.unicode_case) { return false; }
                         } else if self.input[p] != ch {
                             return false;
                         }
@@ -1673,6 +1666,10 @@ impl Engine {
                     if new_pos > pos {
                         state.captures = temp_state.captures;
                         self.match_greedy(atom, min, max, count + 1, rest, new_pos, state)
+                    } else if count + 1 >= min {
+                        // Zero-width match - count it, stop looping, try rest
+                        state.captures = temp_state.captures;
+                        self.match_nodes(rest, pos, state)
                     } else {
                         false
                     }
@@ -1729,7 +1726,7 @@ impl Engine {
         match atom {
             Node::Literal(ch) => {
                 if self.flags.case_insensitive {
-                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch) {
+                    if pos < self.input.len() && chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case) {
                         self.match_reluctant(atom, min, max, count + 1, rest, pos + 1, state)
                     } else {
                         false
@@ -1741,7 +1738,7 @@ impl Engine {
                 }
             }
             Node::Dot => {
-                if pos < self.input.len() && (self.flags.dotall || self.input[pos] != '\n') {
+                if pos < self.input.len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
                     self.match_reluctant(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
@@ -1833,33 +1830,93 @@ impl Engine {
         self.match_nodes(nodes, pos, state)
     }
 
+    /// Is this char a line terminator for the current flags?
+    fn is_lt(&self, c: char) -> bool {
+        if self.flags.unix_lines {
+            c == '\n'
+        } else {
+            is_line_terminator(c)
+        }
+    }
+
+    /// Check if position is right after a line terminator.
+    /// Handles \r\n as a single terminator (don't match between \r and \n).
+    fn is_after_line_terminator(&self, pos: usize) -> bool {
+        if pos == 0 { return false; }
+        let prev = self.input[pos - 1];
+        if self.flags.unix_lines {
+            return prev == '\n';
+        }
+        if prev == '\n' {
+            true
+        } else if prev == '\r' {
+            pos >= self.input.len() || self.input[pos] != '\n'
+        } else {
+            is_line_terminator(prev)
+        }
+    }
+
     fn check_anchor(&self, kind: AnchorKind, pos: usize) -> bool {
         match kind {
             AnchorKind::StartOfLine => {
                 if self.flags.multiline {
-                    pos == 0 || (pos > 0 && self.input[pos - 1] == '\n')
+                    // Multiline ^: match at start of non-empty input,
+                    // or after a line terminator if not at end of input
+                    if pos == 0 {
+                        !self.input.is_empty()
+                    } else {
+                        pos < self.input.len() && self.is_after_line_terminator(pos)
+                    }
                 } else {
                     pos == 0
                 }
             }
             AnchorKind::EndOfLine => {
                 if self.flags.multiline {
-                    if pos < self.input.len() {
-                        is_line_terminator(self.input[pos])
-                    } else {
-                        // At end of input: match $ only if input doesn't end with a line terminator
-                        self.input.is_empty() || !is_line_terminator(*self.input.last().unwrap())
-                    }
-                } else {
+                    // Multiline $: before any line terminator or at end of input
                     pos == self.input.len()
-                        || (pos == self.input.len() - 1 && self.input[pos] == '\n')
+                        || (pos < self.input.len() && self.is_lt(self.input[pos]))
+                } else {
+                    // Non-multiline $: match at end, or before final line terminator
+                    if pos == self.input.len() {
+                        return true;
+                    }
+                    let len = self.input.len();
+                    if self.flags.unix_lines {
+                        if len >= 1 && pos == len - 1 && self.input[pos] == '\n' {
+                            return true;
+                        }
+                    } else {
+                        if len >= 2 && pos == len - 2 && self.input[pos] == '\r' && self.input[pos + 1] == '\n' {
+                            return true;
+                        }
+                        if len >= 1 && pos == len - 1 && (self.input[pos] == '\n' || self.input[pos] == '\r') {
+                            return true;
+                        }
+                    }
+                    false
                 }
             }
             AnchorKind::StartOfInput => pos == 0,
             AnchorKind::EndOfInput => pos == self.input.len(),
             AnchorKind::EndOfInputBeforeFinalNewline => {
-                pos == self.input.len()
-                    || (pos == self.input.len() - 1 && self.input[pos] == '\n')
+                if pos == self.input.len() {
+                    return true;
+                }
+                let len = self.input.len();
+                if self.flags.unix_lines {
+                    if len >= 1 && pos == len - 1 && self.input[pos] == '\n' {
+                        return true;
+                    }
+                } else {
+                    if len >= 2 && pos == len - 2 && self.input[pos] == '\r' && self.input[pos + 1] == '\n' {
+                        return true;
+                    }
+                    if len >= 1 && pos == len - 1 && (self.input[pos] == '\n' || self.input[pos] == '\r') {
+                        return true;
+                    }
+                }
+                false
             }
             AnchorKind::WordBoundary => {
                 let before = if pos > 0 { is_word_char(self.input[pos - 1], self.flags.unicode_class) } else { false };
@@ -1878,13 +1935,13 @@ impl Engine {
     }
 
     fn check_lookbehind(&mut self, inner: &Pattern, pos: usize, state: &mut State) -> bool {
-        // Try all possible start positions
+        // Use PositionCheck as rest to force the inner match to end at pos.
+        // This allows greedy quantifiers to backtrack to the correct position.
+        let rest = [Node::PositionCheck(pos)];
         for start in (0..=pos).rev() {
             let mut temp_state = State::new(self.group_count);
             temp_state.captures = state.captures.clone();
-            if self.match_pattern(inner, &[], start, &mut temp_state)
-                && temp_state.match_end == pos {
-                // Copy captures from lookbehind
+            if self.match_pattern(inner, &rest, start, &mut temp_state) {
                 state.captures = temp_state.captures;
                 return true;
             }
@@ -1902,23 +1959,37 @@ impl Engine {
             match item {
                 CharClassItem::Single(c) => {
                     if self.flags.case_insensitive {
-                        if chars_eq_ci(ch, *c) { return true; }
+                        if chars_eq_ci(ch, *c, self.flags.unicode_case) { return true; }
                     } else if ch == *c {
                         return true;
                     }
                 }
                 CharClassItem::Range(start, end) => {
                     if self.flags.case_insensitive {
-                        let ch_lower = ch.to_lowercase().next().unwrap_or(ch);
-                        let ch_upper = ch.to_uppercase().next().unwrap_or(ch);
-                        let s_lower = start.to_lowercase().next().unwrap_or(*start);
-                        let e_lower = end.to_lowercase().next().unwrap_or(*end);
-                        let s_upper = start.to_uppercase().next().unwrap_or(*start);
-                        let e_upper = end.to_uppercase().next().unwrap_or(*end);
-                        if (ch_lower >= s_lower && ch_lower <= e_lower) ||
-                           (ch_upper >= s_upper && ch_upper <= e_upper) ||
-                           (ch >= *start && ch <= *end) {
-                            return true;
+                        if self.flags.unicode_case {
+                            let ch_lower = ch.to_lowercase().next().unwrap_or(ch);
+                            let ch_upper = ch.to_uppercase().next().unwrap_or(ch);
+                            let s_lower = start.to_lowercase().next().unwrap_or(*start);
+                            let e_lower = end.to_lowercase().next().unwrap_or(*end);
+                            let s_upper = start.to_uppercase().next().unwrap_or(*start);
+                            let e_upper = end.to_uppercase().next().unwrap_or(*end);
+                            if (ch_lower >= s_lower && ch_lower <= e_lower) ||
+                               (ch_upper >= s_upper && ch_upper <= e_upper) ||
+                               (ch >= *start && ch <= *end) {
+                                return true;
+                            }
+                        } else {
+                            let ch_lower = ch.to_ascii_lowercase();
+                            let ch_upper = ch.to_ascii_uppercase();
+                            let s_lower = start.to_ascii_lowercase();
+                            let e_lower = end.to_ascii_lowercase();
+                            let s_upper = start.to_ascii_uppercase();
+                            let e_upper = end.to_ascii_uppercase();
+                            if (ch_lower >= s_lower && ch_lower <= e_lower) ||
+                               (ch_upper >= s_upper && ch_upper <= e_upper) ||
+                               (ch >= *start && ch <= *end) {
+                                return true;
+                            }
                         }
                     } else if ch >= *start && ch <= *end {
                         return true;
@@ -1946,11 +2017,6 @@ impl Engine {
                         return true;
                     }
                 }
-                CharClassItem::PosixClass { name, negated } => {
-                    let matched = match_posix_class(name, ch);
-                    if *negated { if !matched { return true; } }
-                    else if matched { return true; }
-                }
             }
         }
         false
@@ -1959,14 +2025,19 @@ impl Engine {
 
 // ==================== Character Matching Helpers ====================
 
-fn chars_eq_ci(a: char, b: char) -> bool {
+fn chars_eq_ci(a: char, b: char, unicode_case: bool) -> bool {
     if a == b { return true; }
-    let a_lower = a.to_lowercase().next().unwrap_or(a);
-    let b_lower = b.to_lowercase().next().unwrap_or(b);
-    if a_lower == b_lower { return true; }
-    let a_upper = a.to_uppercase().next().unwrap_or(a);
-    let b_upper = b.to_uppercase().next().unwrap_or(b);
-    a_upper == b_upper
+    if unicode_case {
+        let a_lower = a.to_lowercase().next().unwrap_or(a);
+        let b_lower = b.to_lowercase().next().unwrap_or(b);
+        if a_lower == b_lower { return true; }
+        let a_upper = a.to_uppercase().next().unwrap_or(a);
+        let b_upper = b.to_uppercase().next().unwrap_or(b);
+        a_upper == b_upper
+    } else {
+        a.to_ascii_lowercase() == b.to_ascii_lowercase()
+            || a.to_ascii_uppercase() == b.to_ascii_uppercase()
+    }
 }
 
 fn is_line_terminator(c: char) -> bool {
@@ -2036,6 +2107,16 @@ fn match_predefined_class(pc: PredefinedClass, ch: char, unicode: bool) -> bool 
 }
 
 fn is_valid_unicode_property(name: &str) -> bool {
+    // Java-specific properties use exact case: javaLowerCase etc.
+    if name.starts_with("java") {
+        return matches!(name,
+            "javaLowerCase" | "javaUpperCase" | "javaTitleCase" |
+            "javaDigit" | "javaLetter" | "javaLetterOrDigit" |
+            "javaAlphabetic" | "javaWhitespace" | "javaSpaceChar" |
+            "javaMirrored" | "javaDefined" | "javaIdentifierIgnorable" |
+            "javaISOControl" | "javaUnicodeIdentifierStart" | "javaUnicodeIdentifierPart"
+        );
+    }
     let name = name.strip_prefix("Is").unwrap_or(name);
     let name_lower = name.to_lowercase();
     matches!(name_lower.as_str(),
@@ -2059,6 +2140,32 @@ fn is_valid_unicode_property(name: &str) -> bool {
 }
 
 fn match_unicode_property(name: &str, ch: char) -> bool {
+    // Java-specific properties (exact case)
+    match name {
+        "javaLowerCase" => return ch.is_lowercase(),
+        "javaUpperCase" => return ch.is_uppercase(),
+        "javaTitleCase" => {
+            let cat = unicode_general_category(ch);
+            return matches!(cat, UnicodeCategory::Lt);
+        }
+        "javaDigit" => return ch.is_ascii_digit() || ch.is_numeric(),
+        "javaLetter" => return ch.is_alphabetic(),
+        "javaLetterOrDigit" => return ch.is_alphanumeric(),
+        "javaAlphabetic" => return ch.is_alphabetic(),
+        "javaWhitespace" => return ch.is_whitespace(),
+        "javaSpaceChar" => {
+            let cat = unicode_general_category(ch);
+            return matches!(cat, UnicodeCategory::Zs | UnicodeCategory::Zl | UnicodeCategory::Zp);
+        }
+        "javaISOControl" => return ch.is_control(),
+        "javaDefined" => return ch != '\u{FFFF}',
+        "javaMirrored" => return false, // simplified
+        "javaIdentifierIgnorable" => return ch.is_control() && !ch.is_whitespace(),
+        "javaUnicodeIdentifierStart" => return ch.is_alphabetic(),
+        "javaUnicodeIdentifierPart" => return ch.is_alphanumeric() || ch == '_',
+        _ => {}
+    }
+
     // Handle "Is" prefix for script names
     let name = name.strip_prefix("Is").unwrap_or(name);
     // Handle "In" prefix for block names
@@ -2203,25 +2310,6 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
     }
 }
 
-fn match_posix_class(name: &str, ch: char) -> bool {
-    match name {
-        "digit" => ch.is_ascii_digit(),
-        "alpha" => ch.is_ascii_alphabetic(),
-        "alnum" => ch.is_ascii_alphanumeric(),
-        "upper" => ch.is_ascii_uppercase(),
-        "lower" => ch.is_ascii_lowercase(),
-        "space" => ch.is_ascii_whitespace(),
-        "blank" => ch == ' ' || ch == '\t',
-        "punct" => ch.is_ascii_punctuation(),
-        "graph" => ch.is_ascii_graphic(),
-        "print" => ch.is_ascii_graphic() || ch == ' ',
-        "cntrl" => ch.is_ascii_control(),
-        "xdigit" => ch.is_ascii_hexdigit(),
-        "ascii" => ch.is_ascii(),
-        _ => false,
-    }
-}
-
 // Unicode script detection helpers
 fn is_script_greek(ch: char) -> bool {
     ('\u{0370}'..='\u{03FF}').contains(&ch) ||
@@ -2353,6 +2441,8 @@ impl Regex {
                 's' => flags.dotall = true,
                 'x' => flags.comments = true,
                 'U' => flags.unicode_class = true,
+                'd' => flags.unix_lines = true,
+                'u' => flags.unicode_case = true,
                 _ => {}
             }
         }
@@ -2442,9 +2532,14 @@ impl Regex {
         while search_pos <= input_len {
             let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
 
-            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
+            if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
                 // Append text before match
                 result.extend(&input_chars[last_end..search_pos]);
+
+                // Set group 0 to the whole match
+                if !captures.is_empty() {
+                    captures[0] = Some((search_pos, end_pos));
+                }
 
                 // Build replacement
                 let replaced = self.build_replacement(replacement, &captures, &input_chars);
@@ -2831,9 +2926,12 @@ mod tests {
     }
 
     #[test]
-    fn test_posix_class() {
+    fn test_nested_char_class_with_colon() {
+        // Java doesn't support POSIX bracket classes [[:digit:]].
+        // [[:digit:]] is parsed as nested class containing :, d, i, g, t
         let regex = Regex::new("[[:digit:]]+").unwrap();
-        assert!(regex.matches("123"));
+        assert!(regex.matches("dig:t")); // contains chars from :,d,i,g,t
+        assert!(!regex.matches("023")); // 0,2,3 are not in the set
     }
 
     #[test]
@@ -2885,6 +2983,14 @@ mod tests {
         let matches = regex.find("Grüße");
         assert_eq!(matches.len(), 1);
         assert_eq!(matches[0].matched_text, "Grüße");
+    }
+
+    #[test]
+    fn test_variable_lookbehind() {
+        let regex = Regex::new("(?<=\\w+)\\d+").unwrap();
+        let matches = regex.find("a1");
+        assert_eq!(matches.len(), 1);
+        assert_eq!(matches[0].matched_text, "1");
     }
 }
 

@@ -124,7 +124,8 @@ fn run_test_file(path: &str) -> (usize, usize, Vec<String>) {
         let test: TestCase = match serde_json::from_str(line) {
             Ok(t) => t,
             Err(e) => {
-                failures.push(format!("Parse error: {} on line: {}", e, &line[..line.len().min(100)]));
+                let truncated: String = line.chars().take(100).collect();
+                failures.push(format!("Parse error: {} on line: {}", e, truncated));
                 total += 1;
                 continue;
             }

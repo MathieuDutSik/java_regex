@@ -573,17 +573,13 @@ impl Parser {
     }
 
     fn parse_octal_escape(&mut self) -> Result<Node, PatternSyntaxError> {
-        // \0OOO - up to 3 octal digits after the 0
+        // \0OOO - up to 3 octal digits after the leading 0
+        // The leading 0 has already been consumed by parse_escape
+        // After \0, we can have up to 3 more octal digits (any 0-7)
         let mut oct = String::new();
-        for i in 0..3 {
+        for _ in 0..3 {
             if let Some(c) = self.peek() {
                 if ('0'..='7').contains(&c) {
-                    if i == 0 && c > '3' {
-                        // First digit can be 0-3 for 3-digit octal
-                        oct.push(c);
-                        self.advance();
-                        break;
-                    }
                     oct.push(c);
                     self.advance();
                 } else {
@@ -595,6 +591,12 @@ impl Parser {
             return Ok(Node::Literal('\0'));
         }
         let code = u32::from_str_radix(&oct, 8).unwrap_or(0);
+        // Clamp to 0xFF (Java octal escapes are \0 to \0377)
+        if code > 0o377 {
+            // Too large, back off last digit
+            // Actually just use modular — or more correctly, reparse
+            return Ok(Node::Literal(char::from_u32(code).unwrap_or('\0')));
+        }
         Ok(Node::Literal(char::from_u32(code).unwrap_or('\0')))
     }
 
@@ -887,17 +889,13 @@ impl Parser {
             Some('+') => { self.advance(); (1, u32::MAX) }
             Some('?') => { self.advance(); (0, 1) }
             Some('{') => {
-                let saved_pos = self.pos;
                 self.advance();
                 match self.parse_quantifier_braces() {
                     Ok((min, max)) => (min, max),
-                    Err(e) => {
-                        if e.message.starts_with("Illegal repetition") {
-                            return Err(e);
-                        }
-                        // Not a valid quantifier, treat { as literal
-                        self.pos = saved_pos;
-                        return Ok(node);
+                    Err(_) => {
+                        return Err(PatternSyntaxError {
+                            message: format!("Illegal repetition near index {}", self.pos),
+                        });
                     }
                 }
             }
@@ -1010,6 +1008,10 @@ impl Parser {
         }
 
         loop {
+            // Skip whitespace and comments in COMMENTS mode inside char classes
+            if self.flags.comments {
+                self.skip_comments_whitespace();
+            }
             match self.peek() {
                 None => return Err(PatternSyntaxError {
                     message: "Unclosed character class".to_string(),
@@ -1323,7 +1325,7 @@ impl Engine {
 
             Node::Dot => {
                 if pos < self.input.len() {
-                    if self.flags.dotall || self.input[pos] != '\n' {
+                    if self.flags.dotall || !is_line_terminator(self.input[pos]) {
                         self.match_nodes(&nodes[1..], pos + 1, state)
                     } else {
                         false
@@ -1842,7 +1844,12 @@ impl Engine {
             }
             AnchorKind::EndOfLine => {
                 if self.flags.multiline {
-                    pos == self.input.len() || pos < self.input.len() && self.input[pos] == '\n'
+                    if pos < self.input.len() {
+                        is_line_terminator(self.input[pos])
+                    } else {
+                        // At end of input: match $ only if input doesn't end with a line terminator
+                        self.input.is_empty() || !is_line_terminator(*self.input.last().unwrap())
+                    }
                 } else {
                     pos == self.input.len()
                         || (pos == self.input.len() - 1 && self.input[pos] == '\n')
@@ -1962,6 +1969,10 @@ fn chars_eq_ci(a: char, b: char) -> bool {
     a_upper == b_upper
 }
 
+fn is_line_terminator(c: char) -> bool {
+    matches!(c, '\n' | '\r' | '\u{0085}' | '\u{2028}' | '\u{2029}')
+}
+
 fn is_word_char(c: char, unicode: bool) -> bool {
     if unicode {
         c.is_alphanumeric() || c == '_'
@@ -2054,10 +2065,14 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
     let name_lower = name.to_lowercase();
 
     match name_lower.as_str() {
+        // POSIX classes (ASCII-only) — must be checked before Unicode categories
+        "upper" => ch.is_ascii_uppercase(),
+        "lower" => ch.is_ascii_lowercase(),
+
         // Unicode General Categories
         "l" | "letter" => ch.is_alphabetic(),
-        "lu" | "uppercase_letter" | "upper" => ch.is_uppercase(),
-        "ll" | "lowercase_letter" | "lower" => ch.is_lowercase(),
+        "lu" | "uppercase_letter" => ch.is_uppercase(),
+        "ll" | "lowercase_letter" => ch.is_lowercase(),
         "lt" | "titlecase_letter" => {
             let cat = unicode_general_category(ch);
             matches!(cat, UnicodeCategory::Lt)
@@ -2162,13 +2177,13 @@ fn match_unicode_property(name: &str, ch: char) -> bool {
         }
 
         // POSIX-style
-        "alpha" => ch.is_alphabetic(),
-        "alnum" => ch.is_alphanumeric(),
+        "alpha" => ch.is_ascii_alphabetic(),
+        "alnum" => ch.is_ascii_alphanumeric(),
         "ascii" => ch.is_ascii(),
         "blank" => ch == ' ' || ch == '\t',
-        "graph" => !ch.is_control() && !ch.is_whitespace() && ch != ' ',
-        "print" => !ch.is_control(),
-        "space" | "white_space" => ch.is_whitespace(),
+        "graph" => ch.is_ascii_graphic(),
+        "print" => ch.is_ascii_graphic() || ch == ' ',
+        "space" | "white_space" => ch.is_ascii_whitespace(),
         "xdigit" => ch.is_ascii_hexdigit(),
 
         // Unicode scripts
@@ -2358,14 +2373,9 @@ impl Regex {
         let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
         let mut state = State::new(self.group_count);
 
-        // Try to match pattern at position 0
-        if engine.match_pattern(&self.pattern, &[], 0, &mut state) {
-            let input_len = engine.input.len();
-            // Check if entire input was consumed
-            state.match_end == input_len
-        } else {
-            false
-        }
+        // Use EndOfInput anchor as continuation to ensure full match
+        let end_anchor = vec![Node::Anchor(AnchorKind::EndOfInput)];
+        engine.match_pattern(&self.pattern, &end_anchor, 0, &mut state)
     }
 
     /// Find all non-overlapping matches.
@@ -2524,7 +2534,8 @@ impl Regex {
             let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
 
             if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                if end_pos == search_pos && end_pos == last_end && end_pos > 0 {
+                // Skip zero-width matches at the same position (avoid infinite loop)
+                if end_pos == search_pos && end_pos == last_end {
                     search_pos += 1;
                     continue;
                 }

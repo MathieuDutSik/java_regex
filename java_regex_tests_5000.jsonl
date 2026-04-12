@@ -5288,3 +5288,673 @@
 {"id": "T006287", "pattern": "[\\Q.+*\\E]", "input": ".", "op": "matches", "expect": true, "note": "quoted in class dot"}
 {"id": "T006288", "pattern": "[\\Q.+*\\E]", "input": "+", "op": "matches", "expect": true, "note": "quoted in class plus"}
 {"id": "T006289", "pattern": "[\\Q.+*\\E]", "input": "a", "op": "matches", "expect": false, "note": "quoted in class no match"}
+{"id": "T007000", "pattern": "a*", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa"}, {"m": ""}], "note": "greedy *"}
+{"id": "T007001", "pattern": "a*?", "input": "aaaa", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "reluctant *?"}
+{"id": "T007002", "pattern": "a*+b", "input": "aaab", "op": "matches", "expect": true, "note": "possessive *+ backtrack"}
+{"id": "T007003", "pattern": "a+", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa"}], "note": "greedy +"}
+{"id": "T007004", "pattern": "a+?", "input": "aaaa", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}, {"m": "a"}], "note": "reluctant +?"}
+{"id": "T007005", "pattern": "a++b", "input": "aaab", "op": "matches", "expect": true, "note": "possessive ++ backtrack"}
+{"id": "T007006", "pattern": "a?", "input": "aaaa", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}, {"m": "a"}, {"m": ""}], "note": "greedy ?"}
+{"id": "T007007", "pattern": "a??", "input": "aaaa", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "reluctant ??"}
+{"id": "T007008", "pattern": "a?+b", "input": "aaab", "op": "matches", "expect": false, "note": "possessive ?+ backtrack"}
+{"id": "T007009", "pattern": "a{2}", "input": "aaaa", "op": "find", "expect": [{"m": "aa"}, {"m": "aa"}], "note": "greedy {2}"}
+{"id": "T007010", "pattern": "a{2}?", "input": "aaaa", "op": "find", "expect": [{"m": "aa"}, {"m": "aa"}], "note": "reluctant {2}?"}
+{"id": "T007011", "pattern": "a{1,3}", "input": "aaaa", "op": "find", "expect": [{"m": "aaa"}, {"m": "a"}], "note": "greedy {1,3}"}
+{"id": "T007012", "pattern": "a{1,3}?", "input": "aaaa", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}, {"m": "a"}], "note": "reluctant {1,3}?"}
+{"id": "T007013", "pattern": "a{1,3}+b", "input": "aaab", "op": "matches", "expect": true, "note": "possessive {1,3}+ backtrack"}
+{"id": "T007014", "pattern": "a{0,}", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa"}, {"m": ""}], "note": "greedy {0,}"}
+{"id": "T007015", "pattern": "a{0,}?", "input": "aaaa", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "reluctant {0,}?"}
+{"id": "T007016", "pattern": "a{0,}+b", "input": "aaab", "op": "matches", "expect": true, "note": "possessive {0,}+ backtrack"}
+{"id": "T007017", "pattern": "a{2,}", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa"}], "note": "greedy {2,}"}
+{"id": "T007018", "pattern": "a{2,}?", "input": "aaaa", "op": "find", "expect": [{"m": "aa"}, {"m": "aa"}], "note": "reluctant {2,}?"}
+{"id": "T007019", "pattern": "a{2,}+b", "input": "aaab", "op": "matches", "expect": true, "note": "possessive {2,}+ backtrack"}
+{"id": "T007020", "pattern": "a*b", "input": "aab b ab", "op": "find", "expect": [{"m": "aab"}, {"m": "b"}, {"m": "ab"}], "note": "greedy star then b"}
+{"id": "T007021", "pattern": "a*?b", "input": "aab b ab", "op": "find", "expect": [{"m": "aab"}, {"m": "b"}, {"m": "ab"}], "note": "reluctant star then b"}
+{"id": "T007022", "pattern": "a+b", "input": "aab b ab", "op": "find", "expect": [{"m": "aab"}, {"m": "ab"}], "note": "greedy plus then b"}
+{"id": "T007023", "pattern": "a+?b", "input": "aab b ab", "op": "find", "expect": [{"m": "aab"}, {"m": "ab"}], "note": "reluctant plus then b"}
+{"id": "T007024", "pattern": "a{1,3}b", "input": "aaab ab aab", "op": "find", "expect": [{"m": "aaab"}, {"m": "ab"}, {"m": "aab"}], "note": "greedy counted then b"}
+{"id": "T007025", "pattern": "a{1,3}?b", "input": "aaab ab aab", "op": "find", "expect": [{"m": "aaab"}, {"m": "ab"}, {"m": "aab"}], "note": "reluctant counted then b"}
+{"id": "T007026", "pattern": "(a+)+b", "input": "aab", "op": "matches", "expect": true, "note": "nested plus match"}
+{"id": "T007027", "pattern": "(a+)+b", "input": "aa", "op": "matches", "expect": false, "note": "nested plus no match"}
+{"id": "T007028", "pattern": "(a*)*b", "input": "b", "op": "matches", "expect": true, "note": "nested star match empty"}
+{"id": "T007029", "pattern": "(a?)+b", "input": "ab", "op": "matches", "expect": true, "note": "nested optional plus"}
+{"id": "T007030", "pattern": "(a{1,2})+b", "input": "aab", "op": "matches", "expect": true, "note": "nested counted plus"}
+{"id": "T007031", "pattern": "[abc]", "input": "a", "op": "matches", "expect": true, "note": "cc basic a"}
+{"id": "T007032", "pattern": "[abc]", "input": "b", "op": "matches", "expect": true, "note": "cc basic b"}
+{"id": "T007033", "pattern": "[abc]", "input": "d", "op": "matches", "expect": false, "note": "cc basic d"}
+{"id": "T007034", "pattern": "[^abc]", "input": "d", "op": "matches", "expect": true, "note": "cc neg d"}
+{"id": "T007035", "pattern": "[^abc]", "input": "a", "op": "matches", "expect": false, "note": "cc neg a"}
+{"id": "T007036", "pattern": "[a-z]", "input": "a", "op": "matches", "expect": true, "note": "cc range start"}
+{"id": "T007037", "pattern": "[a-z]", "input": "z", "op": "matches", "expect": true, "note": "cc range end"}
+{"id": "T007038", "pattern": "[a-z]", "input": "A", "op": "matches", "expect": false, "note": "cc range no upper"}
+{"id": "T007039", "pattern": "[0-9a-fA-F]", "input": "f", "op": "matches", "expect": true, "note": "cc hex range"}
+{"id": "T007040", "pattern": "[0-9a-fA-F]", "input": "F", "op": "matches", "expect": true, "note": "cc hex range upper"}
+{"id": "T007041", "pattern": "[0-9a-fA-F]", "input": "g", "op": "matches", "expect": false, "note": "cc hex range no match"}
+{"id": "T007042", "pattern": "[-abc]", "input": "-", "op": "matches", "expect": true, "note": "cc leading dash"}
+{"id": "T007043", "pattern": "[abc-]", "input": "-", "op": "matches", "expect": true, "note": "cc trailing dash"}
+{"id": "T007044", "pattern": "[\\-abc]", "input": "-", "op": "matches", "expect": true, "note": "cc escaped dash"}
+{"id": "T007045", "pattern": "[\\]]", "input": "]", "op": "matches", "expect": true, "note": "cc escaped bracket"}
+{"id": "T007046", "pattern": "[\\[]", "input": "[", "op": "matches", "expect": true, "note": "cc escaped open bracket"}
+{"id": "T007047", "pattern": "[a\\-z]", "input": "-", "op": "matches", "expect": true, "note": "cc escaped dash middle"}
+{"id": "T007048", "pattern": "[.]", "input": ".", "op": "matches", "expect": true, "note": "cc dot literal"}
+{"id": "T007049", "pattern": "[.]", "input": "a", "op": "matches", "expect": false, "note": "cc dot not metachar"}
+{"id": "T007050", "pattern": "[(]", "input": "(", "op": "matches", "expect": true, "note": "cc paren literal"}
+{"id": "T007051", "pattern": "[*]", "input": "*", "op": "matches", "expect": true, "note": "cc star literal"}
+{"id": "T007052", "pattern": "[+]", "input": "+", "op": "matches", "expect": true, "note": "cc plus literal"}
+{"id": "T007053", "pattern": "[?]", "input": "?", "op": "matches", "expect": true, "note": "cc question literal"}
+{"id": "T007054", "pattern": "[{]", "input": "{", "op": "matches", "expect": true, "note": "cc brace literal"}
+{"id": "T007055", "pattern": "[a-c[x-z]]", "input": "a", "op": "matches", "expect": true, "note": "cc union a"}
+{"id": "T007056", "pattern": "[a-c[x-z]]", "input": "y", "op": "matches", "expect": true, "note": "cc union y"}
+{"id": "T007057", "pattern": "[a-c[x-z]]", "input": "d", "op": "matches", "expect": false, "note": "cc union no d"}
+{"id": "T007058", "pattern": "[a-z&&[aeiou]]", "input": "a", "op": "matches", "expect": true, "note": "cc intersect vowel a"}
+{"id": "T007059", "pattern": "[a-z&&[aeiou]]", "input": "b", "op": "matches", "expect": false, "note": "cc intersect no consonant"}
+{"id": "T007060", "pattern": "[a-z&&[^aeiou]]", "input": "b", "op": "matches", "expect": true, "note": "cc intersect consonant b"}
+{"id": "T007061", "pattern": "[a-z&&[^aeiou]]", "input": "a", "op": "matches", "expect": false, "note": "cc intersect no vowel"}
+{"id": "T007062", "pattern": "[\\w&&[^\\d]]", "input": "a", "op": "matches", "expect": true, "note": "cc intersect word-nondigit"}
+{"id": "T007063", "pattern": "[\\w&&[^\\d]]", "input": "5", "op": "matches", "expect": false, "note": "cc intersect no digit"}
+{"id": "T007064", "pattern": "[\\w&&[^\\d]]", "input": "_", "op": "matches", "expect": true, "note": "cc intersect underscore"}
+{"id": "T007065", "pattern": "[[a-z]]", "input": "a", "op": "matches", "expect": true, "note": "cc nested simple"}
+{"id": "T007066", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "g", "op": "matches", "expect": true, "note": "cc triple intersect g"}
+{"id": "T007067", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "m", "op": "matches", "expect": true, "note": "cc triple intersect m"}
+{"id": "T007068", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "a", "op": "matches", "expect": false, "note": "cc triple intersect no a"}
+{"id": "T007069", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "z", "op": "matches", "expect": false, "note": "cc triple intersect no z"}
+{"id": "T007070", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "f", "op": "matches", "expect": false, "note": "cc triple intersect no f"}
+{"id": "T007071", "pattern": "[a-z&&[a-m]&&[g-z]]", "input": "n", "op": "matches", "expect": false, "note": "cc triple intersect no n"}
+{"id": "T007072", "pattern": "[\\d\\s]", "input": "5", "op": "matches", "expect": true, "note": "cc predefined digit"}
+{"id": "T007073", "pattern": "[\\d\\s]", "input": " ", "op": "matches", "expect": true, "note": "cc predefined space"}
+{"id": "T007074", "pattern": "[\\d\\s]", "input": "a", "op": "matches", "expect": false, "note": "cc predefined no alpha"}
+{"id": "T007075", "pattern": "[a-z\\d]", "input": "5", "op": "matches", "expect": true, "note": "cc range and predefined"}
+{"id": "T007076", "pattern": "^a", "input": "a\na\na", "op": "find", "expect": [{"m": "a"}], "note": "caret default"}
+{"id": "T007077", "pattern": "^a", "input": "a\na\na", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}], "flags": "m", "note": "caret multiline"}
+{"id": "T007078", "pattern": "a$", "input": "a\na\na", "op": "find", "expect": [{"m": "a"}], "note": "dollar default"}
+{"id": "T007079", "pattern": "a$", "input": "a\na\na", "op": "find", "expect": [{"m": "a"}, {"m": "a"}, {"m": "a"}], "flags": "m", "note": "dollar multiline"}
+{"id": "T007080", "pattern": "^$", "input": "", "op": "matches", "expect": true, "note": "empty caret dollar"}
+{"id": "T007081", "pattern": "^$", "input": "\n", "op": "matches", "expect": false, "note": "caret dollar on newline"}
+{"id": "T007082", "pattern": "^$", "input": "\n", "op": "find", "expect": [{"m": ""}], "flags": "m", "note": "caret dollar multiline newline"}
+{"id": "T007083", "pattern": "^$", "input": "\n\n", "op": "find", "expect": [{"m": ""}, {"m": ""}], "flags": "m", "note": "caret dollar multiline double newline"}
+{"id": "T007084", "pattern": "^.*$", "input": "a\nb\nc", "op": "find", "expect": [{"m": "a"}, {"m": "b"}, {"m": "c"}], "flags": "m", "note": "multiline dotstar"}
+{"id": "T007085", "pattern": "\\Aa", "input": "abc", "op": "find", "expect": [{"m": "a"}], "note": "\\A matches"}
+{"id": "T007086", "pattern": "\\Aa", "input": "ba", "op": "find", "expect": [], "note": "\\A no match"}
+{"id": "T007087", "pattern": "a\\z", "input": "a", "op": "matches", "expect": true, "note": "\\z match"}
+{"id": "T007088", "pattern": "a\\z", "input": "a\n", "op": "matches", "expect": false, "note": "\\z no trailing newline"}
+{"id": "T007089", "pattern": "a\\Z", "input": "a", "op": "matches", "expect": true, "note": "\\Z match"}
+{"id": "T007090", "pattern": "a\\Z", "input": "a\n", "op": "matches", "expect": false, "note": "\\Z trailing newline"}
+{"id": "T007091", "pattern": "a\\Z", "input": "a\n\n", "op": "matches", "expect": false, "note": "\\Z two trailing newlines"}
+{"id": "T007092", "pattern": "a\\Z", "input": "ba\n", "op": "find", "expect": [{"m": "a"}], "note": "\\Z find"}
+{"id": "T007093", "pattern": "a\\z", "input": "ba\n", "op": "find", "expect": [], "note": "\\z find trailing"}
+{"id": "T007094", "pattern": "a\\z", "input": "ba", "op": "find", "expect": [{"m": "a"}], "note": "\\z find no trailing"}
+{"id": "T007095", "pattern": "\\bcat\\b", "input": "the cat sat", "op": "find", "expect": [{"m": "cat"}], "note": "word boundary simple"}
+{"id": "T007096", "pattern": "\\bcat\\b", "input": "category", "op": "find", "expect": [], "note": "word boundary prefix"}
+{"id": "T007097", "pattern": "\\bcat\\b", "input": "concatenate", "op": "find", "expect": [], "note": "word boundary middle"}
+{"id": "T007098", "pattern": "\\bcat\\b", "input": "the cat", "op": "find", "expect": [{"m": "cat"}], "note": "word boundary end"}
+{"id": "T007099", "pattern": "\\bcat\\b", "input": "cat", "op": "find", "expect": [{"m": "cat"}], "note": "word boundary only"}
+{"id": "T007100", "pattern": "\\Bcat\\B", "input": "concatenate", "op": "find", "expect": [{"m": "cat"}], "note": "non-word boundary"}
+{"id": "T007101", "pattern": "\\Bcat\\B", "input": "the cat sat", "op": "find", "expect": [], "note": "non-word boundary no match"}
+{"id": "T007102", "pattern": "\\b\\w+\\b", "input": "hello world 123", "op": "find", "expect": [{"m": "hello"}, {"m": "world"}, {"m": "123"}], "note": "word boundary all words"}
+{"id": "T007103", "pattern": "\\b", "input": "abc", "op": "find", "expect": [{"m": ""}, {"m": ""}], "note": "word boundary positions"}
+{"id": "T007104", "pattern": "\\B", "input": "abc", "op": "find", "expect": [{"m": ""}, {"m": ""}], "note": "non-word boundary positions"}
+{"id": "T007105", "pattern": "\\G\\w", "input": "abc def", "op": "find", "expect": [{"m": "a"}, {"m": "b"}, {"m": "c"}], "note": "\\G consecutive word chars"}
+{"id": "T007106", "pattern": "\\G.", "input": "abc", "op": "find", "expect": [{"m": "a"}, {"m": "b"}, {"m": "c"}], "note": "\\G consecutive dots"}
+{"id": "T007107", "pattern": "(a+)(b+)", "input": "aabb", "op": "find", "expect": [{"m": "aabb", "g": ["aa", "bb"]}], "note": "two capturing groups"}
+{"id": "T007108", "pattern": "((a)(b))", "input": "ab", "op": "find", "expect": [{"m": "ab", "g": ["ab", "a", "b"]}], "note": "nested capturing groups"}
+{"id": "T007109", "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)", "input": "abcdefghij", "op": "find", "expect": [{"m": "abcdefghij", "g": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]}], "note": "ten groups"}
+{"id": "T007110", "pattern": "(a)\\1", "input": "aa", "op": "find", "expect": [{"m": "aa", "g": ["a"]}], "note": "backref match"}
+{"id": "T007111", "pattern": "(a)\\1", "input": "ab", "op": "find", "expect": [], "note": "backref no match"}
+{"id": "T007112", "pattern": "(.)\\1", "input": "aa", "op": "matches", "expect": true, "note": "backref dot"}
+{"id": "T007113", "pattern": "(.)\\1", "input": "ab", "op": "matches", "expect": false, "note": "backref dot no match"}
+{"id": "T007114", "pattern": "(.)(.)\\2\\1", "input": "abba", "op": "matches", "expect": true, "note": "double backref palindrome"}
+{"id": "T007115", "pattern": "(.)(.)\\2\\1", "input": "abcd", "op": "matches", "expect": false, "note": "double backref no palindrome"}
+{"id": "T007116", "pattern": "(\\w+) \\1", "input": "the the cat cat dog", "op": "find", "expect": [{"m": "the the", "g": ["the"]}, {"m": "cat cat", "g": ["cat"]}], "note": "backref word repeat"}
+{"id": "T007117", "pattern": "(a+)\\1", "input": "aa", "op": "matches", "expect": true, "note": "backref quantified"}
+{"id": "T007118", "pattern": "(a+)\\1", "input": "aaa", "op": "matches", "expect": false, "note": "backref quantified 3"}
+{"id": "T007119", "pattern": "(a+)\\1", "input": "aaaa", "op": "matches", "expect": true, "note": "backref quantified 4"}
+{"id": "T007120", "pattern": "(a+?)\\1", "input": "aa", "op": "matches", "expect": true, "note": "backref reluctant"}
+{"id": "T007121", "pattern": "(a+?)\\1", "input": "aaa", "op": "matches", "expect": false, "note": "backref reluctant 3"}
+{"id": "T007122", "pattern": "(a+?)\\1", "input": "aaaa", "op": "matches", "expect": true, "note": "backref reluctant 4"}
+{"id": "T007123", "pattern": "(?<name>abc)\\k<name>", "input": "abcabc", "op": "matches", "expect": true, "note": "named backref"}
+{"id": "T007124", "pattern": "(?<name>abc)\\k<name>", "input": "abcdef", "op": "matches", "expect": false, "note": "named backref no match"}
+{"id": "T007125", "pattern": "(?<word>\\w+) (?<dup>\\k<word>)", "input": "hello hello world", "op": "find", "expect": [{"m": "hello hello", "g": ["hello", "hello"]}], "note": "named backref find"}
+{"id": "T007126", "pattern": "(?:a|b)+", "input": "aabba", "op": "find", "expect": [{"m": "aabba"}], "note": "non-cap alternation"}
+{"id": "T007127", "pattern": "(?:abc){3}", "input": "abcabcabc", "op": "matches", "expect": true, "note": "non-cap repeated"}
+{"id": "T007128", "pattern": "(?:abc){3}", "input": "abcabc", "op": "matches", "expect": false, "note": "non-cap repeated no match"}
+{"id": "T007129", "pattern": "(a)?(b)", "input": "b", "op": "matches", "expect": true, "note": "optional group unmatched"}
+{"id": "T007130", "pattern": "(a)?(b)", "input": "ab", "op": "matches", "expect": true, "note": "optional group matched"}
+{"id": "T007131", "pattern": "(a)?b", "input": "b ab b", "op": "find", "expect": [{"m": "b", "g": [null]}, {"m": "ab", "g": ["a"]}, {"m": "b", "g": [null]}], "note": "optional group find"}
+{"id": "T007132", "pattern": "(a(b)?)+", "input": "aab", "op": "matches", "expect": true, "note": "nested optional"}
+{"id": "T007133", "pattern": "(a(b)?)+", "input": "aa", "op": "matches", "expect": true, "note": "nested optional no b"}
+{"id": "T007134", "pattern": "(cat|dog)", "input": "I have a cat and a dog", "op": "find", "expect": [{"m": "cat", "g": ["cat"]}, {"m": "dog", "g": ["dog"]}], "note": "group alternation"}
+{"id": "T007135", "pattern": "(a|b)+", "input": "abba", "op": "matches", "expect": true, "note": "group alternation repeated"}
+{"id": "T007136", "pattern": "(a|b|c){3}", "input": "abc", "op": "matches", "expect": true, "note": "group alternation counted"}
+{"id": "T007137", "pattern": "\\w+(?=\\s)", "input": "hello world foo", "op": "find", "expect": [{"m": "hello"}, {"m": "world"}], "note": "pos lookahead space"}
+{"id": "T007138", "pattern": "a(?=b)", "input": "ab ac ad", "op": "find", "expect": [{"m": "a"}], "note": "pos lookahead b"}
+{"id": "T007139", "pattern": "\\d+(?=px)", "input": "12px 5em 20px", "op": "find", "expect": [{"m": "12"}, {"m": "20"}], "note": "pos lookahead px"}
+{"id": "T007140", "pattern": "(?=.*b)a.*", "input": "abc", "op": "matches", "expect": true, "note": "pos lookahead in matches"}
+{"id": "T007141", "pattern": "(?=.*z)a.*", "input": "abc", "op": "matches", "expect": false, "note": "pos lookahead fail in matches"}
+{"id": "T007142", "pattern": "\\w+(?!\\s)", "input": "hello world foo", "op": "find", "expect": [{"m": "hell"}, {"m": "worl"}, {"m": "foo"}], "note": "neg lookahead space"}
+{"id": "T007143", "pattern": "a(?!b)", "input": "ab ac ad", "op": "find", "expect": [{"m": "a"}, {"m": "a"}], "note": "neg lookahead b"}
+{"id": "T007144", "pattern": "\\d+(?!px)", "input": "12px 5em 20px", "op": "find", "expect": [{"m": "1"}, {"m": "5"}, {"m": "2"}], "note": "neg lookahead px"}
+{"id": "T007145", "pattern": "(?!.*z)a.*", "input": "abc", "op": "matches", "expect": true, "note": "neg lookahead in matches"}
+{"id": "T007146", "pattern": "(?<=@)\\w+", "input": "user@host other@domain", "op": "find", "expect": [{"m": "host"}, {"m": "domain"}], "note": "pos lookbehind at"}
+{"id": "T007147", "pattern": "(?<=\\$)\\d+", "input": "price $100 and $200", "op": "find", "expect": [{"m": "100"}, {"m": "200"}], "note": "pos lookbehind dollar"}
+{"id": "T007148", "pattern": "(?<=\\d)\\w+", "input": "a1bc d2ef", "op": "find", "expect": [{"m": "bc"}, {"m": "ef"}], "note": "pos lookbehind digit"}
+{"id": "T007149", "pattern": "(?<=ab)c", "input": "abc xbc", "op": "find", "expect": [{"m": "c"}], "note": "pos lookbehind ab"}
+{"id": "T007150", "pattern": "(?<!@)\\w+", "input": "user@host other", "op": "find", "expect": [{"m": "user"}, {"m": "ost"}, {"m": "other"}], "note": "neg lookbehind at"}
+{"id": "T007151", "pattern": "(?<!\\d)\\w+", "input": "abc 1def ghi", "op": "find", "expect": [{"m": "abc"}, {"m": "1def"}, {"m": "ghi"}], "note": "neg lookbehind digit"}
+{"id": "T007152", "pattern": "(?<!a)b", "input": "ab cb", "op": "find", "expect": [{"m": "b"}], "note": "neg lookbehind a"}
+{"id": "T007153", "pattern": "(?<=\\()\\w+(?=\\))", "input": "foo(bar) baz(qux)", "op": "find", "expect": [{"m": "bar"}, {"m": "qux"}], "note": "lookbehind+lookahead parens"}
+{"id": "T007154", "pattern": "(?<!\\d)\\d+(?!\\d)", "input": "abc123def456ghi", "op": "find", "expect": [{"m": "123"}, {"m": "456"}], "note": "lookbehind+lookahead digits"}
+{"id": "T007155", "pattern": "(?=a+b)a+", "input": "aab ab aaab", "op": "find", "expect": [{"m": "aa"}, {"m": "a"}, {"m": "aaa"}], "note": "lookahead quantifier"}
+{"id": "T007156", "pattern": "(?>a+)a", "input": "aaa", "op": "matches", "expect": false, "note": "atomic no backtrack a"}
+{"id": "T007157", "pattern": "(?>a+)b", "input": "aaab", "op": "matches", "expect": true, "note": "atomic then b"}
+{"id": "T007158", "pattern": "(?>a+)b", "input": "aaa", "op": "matches", "expect": false, "note": "atomic no b"}
+{"id": "T007159", "pattern": "(?>ab|a)b", "input": "ab", "op": "matches", "expect": false, "note": "atomic alt first"}
+{"id": "T007160", "pattern": "(?>ab|a)c", "input": "ac", "op": "matches", "expect": true, "note": "atomic alt second"}
+{"id": "T007161", "pattern": "(?>a|ab)b", "input": "ab", "op": "matches", "expect": true, "note": "atomic alt no backtrack"}
+{"id": "T007162", "pattern": "(?>\\d+)\\d", "input": "123", "op": "matches", "expect": false, "note": "atomic digits no backtrack"}
+{"id": "T007163", "pattern": "(?>\\d+)", "input": "abc123def", "op": "find", "expect": [{"m": "123"}], "note": "atomic find digits"}
+{"id": "T007164", "pattern": "(?>a{2,4})a", "input": "aaaa", "op": "matches", "expect": false, "note": "atomic counted no backtrack"}
+{"id": "T007165", "pattern": "abc", "input": "ABC", "op": "matches", "expect": true, "flags": "i", "note": "ci basic"}
+{"id": "T007166", "pattern": "abc", "input": "Abc", "op": "matches", "expect": true, "flags": "i", "note": "ci mixed"}
+{"id": "T007167", "pattern": "[a-z]+", "input": "ABC", "op": "matches", "expect": true, "flags": "i", "note": "ci range"}
+{"id": "T007168", "pattern": "[a-z]+", "input": "aBcDeF", "op": "matches", "expect": true, "flags": "i", "note": "ci range mixed"}
+{"id": "T007169", "pattern": "(abc)\\1", "input": "abcABC", "op": "matches", "expect": true, "flags": "i", "note": "ci backref"}
+{"id": "T007170", "pattern": "(abc)\\1", "input": "abcabc", "op": "matches", "expect": true, "flags": "i", "note": "ci backref same"}
+{"id": "T007171", "pattern": "a.b", "input": "a\nb", "op": "matches", "expect": true, "flags": "s", "note": "dotall newline"}
+{"id": "T007172", "pattern": "a.*b", "input": "a\n\nb", "op": "matches", "expect": true, "flags": "s", "note": "dotall multi newline"}
+{"id": "T007173", "pattern": ".", "input": "\n", "op": "matches", "expect": true, "flags": "s", "note": "dotall single newline"}
+{"id": "T007174", "pattern": "^\\w+", "input": "abc\ndef\nghi", "op": "find", "expect": [{"m": "abc"}, {"m": "def"}, {"m": "ghi"}], "flags": "m", "note": "multiline caret"}
+{"id": "T007175", "pattern": "\\w+$", "input": "abc\ndef\nghi", "op": "find", "expect": [{"m": "abc"}, {"m": "def"}, {"m": "ghi"}], "flags": "m", "note": "multiline dollar"}
+{"id": "T007176", "pattern": "^abc$", "input": "abc", "op": "matches", "expect": true, "flags": "m", "note": "multiline single line"}
+{"id": "T007177", "pattern": "a b c", "input": "abc", "op": "matches", "expect": true, "flags": "x", "note": "comments spaces"}
+{"id": "T007178", "pattern": "a # comment\nb", "input": "ab", "op": "matches", "expect": true, "flags": "x", "note": "comments hash"}
+{"id": "T007179", "pattern": "a\\ b", "input": "a b", "op": "matches", "expect": true, "flags": "x", "note": "comments escaped space"}
+{"id": "T007180", "pattern": "[a b]", "input": "a", "op": "matches", "expect": true, "flags": "x", "note": "comments class preserves space"}
+{"id": "T007181", "pattern": "[a b]", "input": " ", "op": "matches", "expect": false, "flags": "x", "note": "comments class space matches"}
+{"id": "T007182", "pattern": "(?i)abc", "input": "ABC", "op": "matches", "expect": true, "note": "inline ci"}
+{"id": "T007183", "pattern": "(?i)abc(?-i)def", "input": "ABCdef", "op": "matches", "expect": true, "note": "inline ci on off"}
+{"id": "T007184", "pattern": "(?i)abc(?-i)def", "input": "ABCDEF", "op": "matches", "expect": false, "note": "inline ci off no match"}
+{"id": "T007185", "pattern": "(?i:abc)def", "input": "ABCdef", "op": "matches", "expect": true, "note": "scoped ci"}
+{"id": "T007186", "pattern": "(?i:abc)def", "input": "ABCDEF", "op": "matches", "expect": false, "note": "scoped ci no leak"}
+{"id": "T007187", "pattern": "(?s)a.b", "input": "a\nb", "op": "matches", "expect": true, "note": "inline dotall"}
+{"id": "T007188", "pattern": "(?m)^b", "input": "a\nb", "op": "matches", "expect": false, "note": "inline multiline"}
+{"id": "T007189", "pattern": "(?im)^abc$", "input": "ABC", "op": "matches", "expect": true, "note": "inline multi flags"}
+{"id": "T007190", "pattern": "(?i)a(?-i:b)c", "input": "AbC", "op": "matches", "expect": true, "note": "nested flag scope ci"}
+{"id": "T007191", "pattern": "(?i)a(?-i:b)c", "input": "ABC", "op": "matches", "expect": false, "note": "nested flag scope no match B"}
+{"id": "T007192", "pattern": "a(?i:b)c", "input": "aBc", "op": "matches", "expect": true, "note": "scoped inner ci"}
+{"id": "T007193", "pattern": "a(?i:b)c", "input": "aBC", "op": "matches", "expect": false, "note": "scoped inner no leak"}
+{"id": "T007194", "pattern": "\\d", "input": "a", "op": "matches", "expect": false, "note": "\\d on a"}
+{"id": "T007195", "pattern": "\\D", "input": "a", "op": "matches", "expect": true, "note": "\\D on a"}
+{"id": "T007196", "pattern": "\\w", "input": "a", "op": "matches", "expect": true, "note": "\\w on a"}
+{"id": "T007197", "pattern": "\\W", "input": "a", "op": "matches", "expect": false, "note": "\\W on a"}
+{"id": "T007198", "pattern": "\\s", "input": "a", "op": "matches", "expect": false, "note": "\\s on a"}
+{"id": "T007199", "pattern": "\\S", "input": "a", "op": "matches", "expect": true, "note": "\\S on a"}
+{"id": "T007200", "pattern": "\\d", "input": "Z", "op": "matches", "expect": false, "note": "\\d on Z"}
+{"id": "T007201", "pattern": "\\D", "input": "Z", "op": "matches", "expect": true, "note": "\\D on Z"}
+{"id": "T007202", "pattern": "\\w", "input": "Z", "op": "matches", "expect": true, "note": "\\w on Z"}
+{"id": "T007203", "pattern": "\\W", "input": "Z", "op": "matches", "expect": false, "note": "\\W on Z"}
+{"id": "T007204", "pattern": "\\s", "input": "Z", "op": "matches", "expect": false, "note": "\\s on Z"}
+{"id": "T007205", "pattern": "\\S", "input": "Z", "op": "matches", "expect": true, "note": "\\S on Z"}
+{"id": "T007206", "pattern": "\\d", "input": "5", "op": "matches", "expect": true, "note": "\\d on 5"}
+{"id": "T007207", "pattern": "\\D", "input": "5", "op": "matches", "expect": false, "note": "\\D on 5"}
+{"id": "T007208", "pattern": "\\w", "input": "5", "op": "matches", "expect": true, "note": "\\w on 5"}
+{"id": "T007209", "pattern": "\\W", "input": "5", "op": "matches", "expect": false, "note": "\\W on 5"}
+{"id": "T007210", "pattern": "\\s", "input": "5", "op": "matches", "expect": false, "note": "\\s on 5"}
+{"id": "T007211", "pattern": "\\S", "input": "5", "op": "matches", "expect": true, "note": "\\S on 5"}
+{"id": "T007212", "pattern": "\\d", "input": " ", "op": "matches", "expect": false, "note": "\\d on  "}
+{"id": "T007213", "pattern": "\\D", "input": " ", "op": "matches", "expect": true, "note": "\\D on  "}
+{"id": "T007214", "pattern": "\\w", "input": " ", "op": "matches", "expect": false, "note": "\\w on  "}
+{"id": "T007215", "pattern": "\\W", "input": " ", "op": "matches", "expect": true, "note": "\\W on  "}
+{"id": "T007216", "pattern": "\\s", "input": " ", "op": "matches", "expect": true, "note": "\\s on  "}
+{"id": "T007217", "pattern": "\\S", "input": " ", "op": "matches", "expect": false, "note": "\\S on  "}
+{"id": "T007218", "pattern": "\\d", "input": "\t", "op": "matches", "expect": false, "note": "\\d on \\t"}
+{"id": "T007219", "pattern": "\\D", "input": "\t", "op": "matches", "expect": true, "note": "\\D on \\t"}
+{"id": "T007220", "pattern": "\\w", "input": "\t", "op": "matches", "expect": false, "note": "\\w on \\t"}
+{"id": "T007221", "pattern": "\\W", "input": "\t", "op": "matches", "expect": true, "note": "\\W on \\t"}
+{"id": "T007222", "pattern": "\\s", "input": "\t", "op": "matches", "expect": true, "note": "\\s on \\t"}
+{"id": "T007223", "pattern": "\\S", "input": "\t", "op": "matches", "expect": false, "note": "\\S on \\t"}
+{"id": "T007224", "pattern": "\\d", "input": "\n", "op": "matches", "expect": false, "note": "\\d on \\n"}
+{"id": "T007225", "pattern": "\\D", "input": "\n", "op": "matches", "expect": true, "note": "\\D on \\n"}
+{"id": "T007226", "pattern": "\\w", "input": "\n", "op": "matches", "expect": false, "note": "\\w on \\n"}
+{"id": "T007227", "pattern": "\\W", "input": "\n", "op": "matches", "expect": true, "note": "\\W on \\n"}
+{"id": "T007228", "pattern": "\\s", "input": "\n", "op": "matches", "expect": true, "note": "\\s on \\n"}
+{"id": "T007229", "pattern": "\\S", "input": "\n", "op": "matches", "expect": false, "note": "\\S on \\n"}
+{"id": "T007230", "pattern": "\\d", "input": "_", "op": "matches", "expect": false, "note": "\\d on _"}
+{"id": "T007231", "pattern": "\\D", "input": "_", "op": "matches", "expect": true, "note": "\\D on _"}
+{"id": "T007232", "pattern": "\\w", "input": "_", "op": "matches", "expect": true, "note": "\\w on _"}
+{"id": "T007233", "pattern": "\\W", "input": "_", "op": "matches", "expect": false, "note": "\\W on _"}
+{"id": "T007234", "pattern": "\\s", "input": "_", "op": "matches", "expect": false, "note": "\\s on _"}
+{"id": "T007235", "pattern": "\\S", "input": "_", "op": "matches", "expect": true, "note": "\\S on _"}
+{"id": "T007236", "pattern": "\\d", "input": "!", "op": "matches", "expect": false, "note": "\\d on !"}
+{"id": "T007237", "pattern": "\\D", "input": "!", "op": "matches", "expect": true, "note": "\\D on !"}
+{"id": "T007238", "pattern": "\\w", "input": "!", "op": "matches", "expect": false, "note": "\\w on !"}
+{"id": "T007239", "pattern": "\\W", "input": "!", "op": "matches", "expect": true, "note": "\\W on !"}
+{"id": "T007240", "pattern": "\\s", "input": "!", "op": "matches", "expect": false, "note": "\\s on !"}
+{"id": "T007241", "pattern": "\\S", "input": "!", "op": "matches", "expect": true, "note": "\\S on !"}
+{"id": "T007242", "pattern": "\\d", "input": "@", "op": "matches", "expect": false, "note": "\\d on @"}
+{"id": "T007243", "pattern": "\\D", "input": "@", "op": "matches", "expect": true, "note": "\\D on @"}
+{"id": "T007244", "pattern": "\\w", "input": "@", "op": "matches", "expect": false, "note": "\\w on @"}
+{"id": "T007245", "pattern": "\\W", "input": "@", "op": "matches", "expect": true, "note": "\\W on @"}
+{"id": "T007246", "pattern": "\\s", "input": "@", "op": "matches", "expect": false, "note": "\\s on @"}
+{"id": "T007247", "pattern": "\\S", "input": "@", "op": "matches", "expect": true, "note": "\\S on @"}
+{"id": "T007248", "pattern": "\\d", "input": "é", "op": "matches", "expect": false, "note": "\\d on é"}
+{"id": "T007249", "pattern": "\\D", "input": "é", "op": "matches", "expect": true, "note": "\\D on é"}
+{"id": "T007250", "pattern": "\\w", "input": "é", "op": "matches", "expect": false, "note": "\\w on é"}
+{"id": "T007251", "pattern": "\\W", "input": "é", "op": "matches", "expect": true, "note": "\\W on é"}
+{"id": "T007252", "pattern": "\\s", "input": "é", "op": "matches", "expect": false, "note": "\\s on é"}
+{"id": "T007253", "pattern": "\\S", "input": "é", "op": "matches", "expect": true, "note": "\\S on é"}
+{"id": "T007254", "pattern": "\\d", "input": "α", "op": "matches", "expect": false, "note": "\\d on α"}
+{"id": "T007255", "pattern": "\\D", "input": "α", "op": "matches", "expect": true, "note": "\\D on α"}
+{"id": "T007256", "pattern": "\\w", "input": "α", "op": "matches", "expect": false, "note": "\\w on α"}
+{"id": "T007257", "pattern": "\\W", "input": "α", "op": "matches", "expect": true, "note": "\\W on α"}
+{"id": "T007258", "pattern": "\\s", "input": "α", "op": "matches", "expect": false, "note": "\\s on α"}
+{"id": "T007259", "pattern": "\\S", "input": "α", "op": "matches", "expect": true, "note": "\\S on α"}
+{"id": "T007260", "pattern": "\\h", "input": " ", "op": "matches", "expect": true, "note": "\\h on  "}
+{"id": "T007261", "pattern": "\\H", "input": " ", "op": "matches", "expect": false, "note": "\\H on  "}
+{"id": "T007262", "pattern": "\\v", "input": " ", "op": "matches", "expect": false, "note": "\\v on  "}
+{"id": "T007263", "pattern": "\\V", "input": " ", "op": "matches", "expect": true, "note": "\\V on  "}
+{"id": "T007264", "pattern": "\\h", "input": "\t", "op": "matches", "expect": true, "note": "\\h on \\t"}
+{"id": "T007265", "pattern": "\\H", "input": "\t", "op": "matches", "expect": false, "note": "\\H on \\t"}
+{"id": "T007266", "pattern": "\\v", "input": "\t", "op": "matches", "expect": false, "note": "\\v on \\t"}
+{"id": "T007267", "pattern": "\\V", "input": "\t", "op": "matches", "expect": true, "note": "\\V on \\t"}
+{"id": "T007268", "pattern": "\\h", "input": "\n", "op": "matches", "expect": false, "note": "\\h on \\n"}
+{"id": "T007269", "pattern": "\\H", "input": "\n", "op": "matches", "expect": true, "note": "\\H on \\n"}
+{"id": "T007270", "pattern": "\\v", "input": "\n", "op": "matches", "expect": true, "note": "\\v on \\n"}
+{"id": "T007271", "pattern": "\\V", "input": "\n", "op": "matches", "expect": false, "note": "\\V on \\n"}
+{"id": "T007272", "pattern": "\\h", "input": "\r", "op": "matches", "expect": false, "note": "\\h on \\r"}
+{"id": "T007273", "pattern": "\\H", "input": "\r", "op": "matches", "expect": true, "note": "\\H on \\r"}
+{"id": "T007274", "pattern": "\\v", "input": "\r", "op": "matches", "expect": true, "note": "\\v on \\r"}
+{"id": "T007275", "pattern": "\\V", "input": "\r", "op": "matches", "expect": false, "note": "\\V on \\r"}
+{"id": "T007276", "pattern": "\\h", "input": "a", "op": "matches", "expect": false, "note": "\\h on a"}
+{"id": "T007277", "pattern": "\\H", "input": "a", "op": "matches", "expect": true, "note": "\\H on a"}
+{"id": "T007278", "pattern": "\\v", "input": "a", "op": "matches", "expect": false, "note": "\\v on a"}
+{"id": "T007279", "pattern": "\\V", "input": "a", "op": "matches", "expect": true, "note": "\\V on a"}
+{"id": "T007280", "pattern": "\\h", "input": " ", "op": "matches", "expect": true, "note": "\\h on  "}
+{"id": "T007281", "pattern": "\\H", "input": " ", "op": "matches", "expect": false, "note": "\\H on  "}
+{"id": "T007282", "pattern": "\\v", "input": " ", "op": "matches", "expect": false, "note": "\\v on  "}
+{"id": "T007283", "pattern": "\\V", "input": " ", "op": "matches", "expect": true, "note": "\\V on  "}
+{"id": "T007284", "pattern": "\\h", "input": " ", "op": "matches", "expect": true, "note": "\\h on  "}
+{"id": "T007285", "pattern": "\\H", "input": " ", "op": "matches", "expect": false, "note": "\\H on  "}
+{"id": "T007286", "pattern": "\\v", "input": " ", "op": "matches", "expect": false, "note": "\\v on  "}
+{"id": "T007287", "pattern": "\\V", "input": " ", "op": "matches", "expect": true, "note": "\\V on  "}
+{"id": "T007288", "pattern": "\\p{L}", "input": "A", "op": "matches", "expect": true, "note": "\\p{L} on A"}
+{"id": "T007289", "pattern": "\\p{L}", "input": "a", "op": "matches", "expect": true, "note": "\\p{L} on a"}
+{"id": "T007290", "pattern": "\\p{L}", "input": "5", "op": "matches", "expect": false, "note": "\\p{L} on 5"}
+{"id": "T007291", "pattern": "\\p{L}", "input": " ", "op": "matches", "expect": false, "note": "\\p{L} on  "}
+{"id": "T007292", "pattern": "\\p{L}", "input": "!", "op": "matches", "expect": false, "note": "\\p{L} on !"}
+{"id": "T007293", "pattern": "\\p{L}", "input": "+", "op": "matches", "expect": false, "note": "\\p{L} on +"}
+{"id": "T007294", "pattern": "\\p{L}", "input": "$", "op": "matches", "expect": false, "note": "\\p{L} on $"}
+{"id": "T007295", "pattern": "\\p{L}", "input": "_", "op": "matches", "expect": false, "note": "\\p{L} on _"}
+{"id": "T007296", "pattern": "\\p{L}", "input": "-", "op": "matches", "expect": false, "note": "\\p{L} on -"}
+{"id": "T007297", "pattern": "\\p{L}", "input": "(", "op": "matches", "expect": false, "note": "\\p{L} on ("}
+{"id": "T007298", "pattern": "\\p{L}", "input": "α", "op": "matches", "expect": true, "note": "\\p{L} on α"}
+{"id": "T007299", "pattern": "\\p{L}", "input": "А", "op": "matches", "expect": true, "note": "\\p{L} on А"}
+{"id": "T007300", "pattern": "\\p{L}", "input": "一", "op": "matches", "expect": true, "note": "\\p{L} on 一"}
+{"id": "T007301", "pattern": "\\p{L}", "input": "é", "op": "matches", "expect": true, "note": "\\p{L} on é"}
+{"id": "T007302", "pattern": "\\p{Lu}", "input": "A", "op": "matches", "expect": true, "note": "\\p{Lu} on A"}
+{"id": "T007303", "pattern": "\\p{Lu}", "input": "a", "op": "matches", "expect": false, "note": "\\p{Lu} on a"}
+{"id": "T007304", "pattern": "\\p{Lu}", "input": "5", "op": "matches", "expect": false, "note": "\\p{Lu} on 5"}
+{"id": "T007305", "pattern": "\\p{Lu}", "input": " ", "op": "matches", "expect": false, "note": "\\p{Lu} on  "}
+{"id": "T007306", "pattern": "\\p{Lu}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Lu} on !"}
+{"id": "T007307", "pattern": "\\p{Lu}", "input": "+", "op": "matches", "expect": false, "note": "\\p{Lu} on +"}
+{"id": "T007308", "pattern": "\\p{Lu}", "input": "$", "op": "matches", "expect": false, "note": "\\p{Lu} on $"}
+{"id": "T007309", "pattern": "\\p{Lu}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Lu} on _"}
+{"id": "T007310", "pattern": "\\p{Lu}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Lu} on -"}
+{"id": "T007311", "pattern": "\\p{Lu}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Lu} on ("}
+{"id": "T007312", "pattern": "\\p{Lu}", "input": "α", "op": "matches", "expect": false, "note": "\\p{Lu} on α"}
+{"id": "T007313", "pattern": "\\p{Lu}", "input": "А", "op": "matches", "expect": true, "note": "\\p{Lu} on А"}
+{"id": "T007314", "pattern": "\\p{Lu}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Lu} on 一"}
+{"id": "T007315", "pattern": "\\p{Lu}", "input": "é", "op": "matches", "expect": false, "note": "\\p{Lu} on é"}
+{"id": "T007316", "pattern": "\\p{Ll}", "input": "A", "op": "matches", "expect": false, "note": "\\p{Ll} on A"}
+{"id": "T007317", "pattern": "\\p{Ll}", "input": "a", "op": "matches", "expect": true, "note": "\\p{Ll} on a"}
+{"id": "T007318", "pattern": "\\p{Ll}", "input": "5", "op": "matches", "expect": false, "note": "\\p{Ll} on 5"}
+{"id": "T007319", "pattern": "\\p{Ll}", "input": " ", "op": "matches", "expect": false, "note": "\\p{Ll} on  "}
+{"id": "T007320", "pattern": "\\p{Ll}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Ll} on !"}
+{"id": "T007321", "pattern": "\\p{Ll}", "input": "+", "op": "matches", "expect": false, "note": "\\p{Ll} on +"}
+{"id": "T007322", "pattern": "\\p{Ll}", "input": "$", "op": "matches", "expect": false, "note": "\\p{Ll} on $"}
+{"id": "T007323", "pattern": "\\p{Ll}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Ll} on _"}
+{"id": "T007324", "pattern": "\\p{Ll}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Ll} on -"}
+{"id": "T007325", "pattern": "\\p{Ll}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Ll} on ("}
+{"id": "T007326", "pattern": "\\p{Ll}", "input": "α", "op": "matches", "expect": true, "note": "\\p{Ll} on α"}
+{"id": "T007327", "pattern": "\\p{Ll}", "input": "А", "op": "matches", "expect": false, "note": "\\p{Ll} on А"}
+{"id": "T007328", "pattern": "\\p{Ll}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Ll} on 一"}
+{"id": "T007329", "pattern": "\\p{Ll}", "input": "é", "op": "matches", "expect": true, "note": "\\p{Ll} on é"}
+{"id": "T007330", "pattern": "\\p{N}", "input": "A", "op": "matches", "expect": false, "note": "\\p{N} on A"}
+{"id": "T007331", "pattern": "\\p{N}", "input": "a", "op": "matches", "expect": false, "note": "\\p{N} on a"}
+{"id": "T007332", "pattern": "\\p{N}", "input": "5", "op": "matches", "expect": true, "note": "\\p{N} on 5"}
+{"id": "T007333", "pattern": "\\p{N}", "input": " ", "op": "matches", "expect": false, "note": "\\p{N} on  "}
+{"id": "T007334", "pattern": "\\p{N}", "input": "!", "op": "matches", "expect": false, "note": "\\p{N} on !"}
+{"id": "T007335", "pattern": "\\p{N}", "input": "+", "op": "matches", "expect": false, "note": "\\p{N} on +"}
+{"id": "T007336", "pattern": "\\p{N}", "input": "$", "op": "matches", "expect": false, "note": "\\p{N} on $"}
+{"id": "T007337", "pattern": "\\p{N}", "input": "_", "op": "matches", "expect": false, "note": "\\p{N} on _"}
+{"id": "T007338", "pattern": "\\p{N}", "input": "-", "op": "matches", "expect": false, "note": "\\p{N} on -"}
+{"id": "T007339", "pattern": "\\p{N}", "input": "(", "op": "matches", "expect": false, "note": "\\p{N} on ("}
+{"id": "T007340", "pattern": "\\p{N}", "input": "α", "op": "matches", "expect": false, "note": "\\p{N} on α"}
+{"id": "T007341", "pattern": "\\p{N}", "input": "А", "op": "matches", "expect": false, "note": "\\p{N} on А"}
+{"id": "T007342", "pattern": "\\p{N}", "input": "一", "op": "matches", "expect": false, "note": "\\p{N} on 一"}
+{"id": "T007343", "pattern": "\\p{N}", "input": "é", "op": "matches", "expect": false, "note": "\\p{N} on é"}
+{"id": "T007344", "pattern": "\\p{Nd}", "input": "A", "op": "matches", "expect": false, "note": "\\p{Nd} on A"}
+{"id": "T007345", "pattern": "\\p{Nd}", "input": "a", "op": "matches", "expect": false, "note": "\\p{Nd} on a"}
+{"id": "T007346", "pattern": "\\p{Nd}", "input": "5", "op": "matches", "expect": true, "note": "\\p{Nd} on 5"}
+{"id": "T007347", "pattern": "\\p{Nd}", "input": " ", "op": "matches", "expect": false, "note": "\\p{Nd} on  "}
+{"id": "T007348", "pattern": "\\p{Nd}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Nd} on !"}
+{"id": "T007349", "pattern": "\\p{Nd}", "input": "+", "op": "matches", "expect": false, "note": "\\p{Nd} on +"}
+{"id": "T007350", "pattern": "\\p{Nd}", "input": "$", "op": "matches", "expect": false, "note": "\\p{Nd} on $"}
+{"id": "T007351", "pattern": "\\p{Nd}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Nd} on _"}
+{"id": "T007352", "pattern": "\\p{Nd}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Nd} on -"}
+{"id": "T007353", "pattern": "\\p{Nd}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Nd} on ("}
+{"id": "T007354", "pattern": "\\p{Nd}", "input": "α", "op": "matches", "expect": false, "note": "\\p{Nd} on α"}
+{"id": "T007355", "pattern": "\\p{Nd}", "input": "А", "op": "matches", "expect": false, "note": "\\p{Nd} on А"}
+{"id": "T007356", "pattern": "\\p{Nd}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Nd} on 一"}
+{"id": "T007357", "pattern": "\\p{Nd}", "input": "é", "op": "matches", "expect": false, "note": "\\p{Nd} on é"}
+{"id": "T007358", "pattern": "\\p{P}", "input": "A", "op": "matches", "expect": false, "note": "\\p{P} on A"}
+{"id": "T007359", "pattern": "\\p{P}", "input": "a", "op": "matches", "expect": false, "note": "\\p{P} on a"}
+{"id": "T007360", "pattern": "\\p{P}", "input": "5", "op": "matches", "expect": false, "note": "\\p{P} on 5"}
+{"id": "T007361", "pattern": "\\p{P}", "input": " ", "op": "matches", "expect": false, "note": "\\p{P} on  "}
+{"id": "T007362", "pattern": "\\p{P}", "input": "!", "op": "matches", "expect": true, "note": "\\p{P} on !"}
+{"id": "T007363", "pattern": "\\p{P}", "input": "+", "op": "matches", "expect": false, "note": "\\p{P} on +"}
+{"id": "T007364", "pattern": "\\p{P}", "input": "$", "op": "matches", "expect": false, "note": "\\p{P} on $"}
+{"id": "T007365", "pattern": "\\p{P}", "input": "_", "op": "matches", "expect": true, "note": "\\p{P} on _"}
+{"id": "T007366", "pattern": "\\p{P}", "input": "-", "op": "matches", "expect": true, "note": "\\p{P} on -"}
+{"id": "T007367", "pattern": "\\p{P}", "input": "(", "op": "matches", "expect": true, "note": "\\p{P} on ("}
+{"id": "T007368", "pattern": "\\p{P}", "input": "α", "op": "matches", "expect": false, "note": "\\p{P} on α"}
+{"id": "T007369", "pattern": "\\p{P}", "input": "А", "op": "matches", "expect": false, "note": "\\p{P} on А"}
+{"id": "T007370", "pattern": "\\p{P}", "input": "一", "op": "matches", "expect": false, "note": "\\p{P} on 一"}
+{"id": "T007371", "pattern": "\\p{P}", "input": "é", "op": "matches", "expect": false, "note": "\\p{P} on é"}
+{"id": "T007372", "pattern": "\\p{S}", "input": "A", "op": "matches", "expect": false, "note": "\\p{S} on A"}
+{"id": "T007373", "pattern": "\\p{S}", "input": "a", "op": "matches", "expect": false, "note": "\\p{S} on a"}
+{"id": "T007374", "pattern": "\\p{S}", "input": "5", "op": "matches", "expect": false, "note": "\\p{S} on 5"}
+{"id": "T007375", "pattern": "\\p{S}", "input": " ", "op": "matches", "expect": false, "note": "\\p{S} on  "}
+{"id": "T007376", "pattern": "\\p{S}", "input": "!", "op": "matches", "expect": false, "note": "\\p{S} on !"}
+{"id": "T007377", "pattern": "\\p{S}", "input": "+", "op": "matches", "expect": true, "note": "\\p{S} on +"}
+{"id": "T007378", "pattern": "\\p{S}", "input": "$", "op": "matches", "expect": true, "note": "\\p{S} on $"}
+{"id": "T007379", "pattern": "\\p{S}", "input": "_", "op": "matches", "expect": false, "note": "\\p{S} on _"}
+{"id": "T007380", "pattern": "\\p{S}", "input": "-", "op": "matches", "expect": false, "note": "\\p{S} on -"}
+{"id": "T007381", "pattern": "\\p{S}", "input": "(", "op": "matches", "expect": false, "note": "\\p{S} on ("}
+{"id": "T007382", "pattern": "\\p{S}", "input": "α", "op": "matches", "expect": false, "note": "\\p{S} on α"}
+{"id": "T007383", "pattern": "\\p{S}", "input": "А", "op": "matches", "expect": false, "note": "\\p{S} on А"}
+{"id": "T007384", "pattern": "\\p{S}", "input": "一", "op": "matches", "expect": false, "note": "\\p{S} on 一"}
+{"id": "T007385", "pattern": "\\p{S}", "input": "é", "op": "matches", "expect": false, "note": "\\p{S} on é"}
+{"id": "T007386", "pattern": "\\p{Sm}", "input": "A", "op": "matches", "expect": false, "note": "\\p{Sm} on A"}
+{"id": "T007387", "pattern": "\\p{Sm}", "input": "a", "op": "matches", "expect": false, "note": "\\p{Sm} on a"}
+{"id": "T007388", "pattern": "\\p{Sm}", "input": "5", "op": "matches", "expect": false, "note": "\\p{Sm} on 5"}
+{"id": "T007389", "pattern": "\\p{Sm}", "input": " ", "op": "matches", "expect": false, "note": "\\p{Sm} on  "}
+{"id": "T007390", "pattern": "\\p{Sm}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Sm} on !"}
+{"id": "T007391", "pattern": "\\p{Sm}", "input": "+", "op": "matches", "expect": true, "note": "\\p{Sm} on +"}
+{"id": "T007392", "pattern": "\\p{Sm}", "input": "$", "op": "matches", "expect": false, "note": "\\p{Sm} on $"}
+{"id": "T007393", "pattern": "\\p{Sm}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Sm} on _"}
+{"id": "T007394", "pattern": "\\p{Sm}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Sm} on -"}
+{"id": "T007395", "pattern": "\\p{Sm}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Sm} on ("}
+{"id": "T007396", "pattern": "\\p{Sm}", "input": "α", "op": "matches", "expect": false, "note": "\\p{Sm} on α"}
+{"id": "T007397", "pattern": "\\p{Sm}", "input": "А", "op": "matches", "expect": false, "note": "\\p{Sm} on А"}
+{"id": "T007398", "pattern": "\\p{Sm}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Sm} on 一"}
+{"id": "T007399", "pattern": "\\p{Sm}", "input": "é", "op": "matches", "expect": false, "note": "\\p{Sm} on é"}
+{"id": "T007400", "pattern": "\\p{Sc}", "input": "A", "op": "matches", "expect": false, "note": "\\p{Sc} on A"}
+{"id": "T007401", "pattern": "\\p{Sc}", "input": "a", "op": "matches", "expect": false, "note": "\\p{Sc} on a"}
+{"id": "T007402", "pattern": "\\p{Sc}", "input": "5", "op": "matches", "expect": false, "note": "\\p{Sc} on 5"}
+{"id": "T007403", "pattern": "\\p{Sc}", "input": " ", "op": "matches", "expect": false, "note": "\\p{Sc} on  "}
+{"id": "T007404", "pattern": "\\p{Sc}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Sc} on !"}
+{"id": "T007405", "pattern": "\\p{Sc}", "input": "+", "op": "matches", "expect": false, "note": "\\p{Sc} on +"}
+{"id": "T007406", "pattern": "\\p{Sc}", "input": "$", "op": "matches", "expect": true, "note": "\\p{Sc} on $"}
+{"id": "T007407", "pattern": "\\p{Sc}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Sc} on _"}
+{"id": "T007408", "pattern": "\\p{Sc}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Sc} on -"}
+{"id": "T007409", "pattern": "\\p{Sc}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Sc} on ("}
+{"id": "T007410", "pattern": "\\p{Sc}", "input": "α", "op": "matches", "expect": false, "note": "\\p{Sc} on α"}
+{"id": "T007411", "pattern": "\\p{Sc}", "input": "А", "op": "matches", "expect": false, "note": "\\p{Sc} on А"}
+{"id": "T007412", "pattern": "\\p{Sc}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Sc} on 一"}
+{"id": "T007413", "pattern": "\\p{Sc}", "input": "é", "op": "matches", "expect": false, "note": "\\p{Sc} on é"}
+{"id": "T007414", "pattern": "\\p{Z}", "input": "A", "op": "matches", "expect": false, "note": "\\p{Z} on A"}
+{"id": "T007415", "pattern": "\\p{Z}", "input": "a", "op": "matches", "expect": false, "note": "\\p{Z} on a"}
+{"id": "T007416", "pattern": "\\p{Z}", "input": "5", "op": "matches", "expect": false, "note": "\\p{Z} on 5"}
+{"id": "T007417", "pattern": "\\p{Z}", "input": " ", "op": "matches", "expect": true, "note": "\\p{Z} on  "}
+{"id": "T007418", "pattern": "\\p{Z}", "input": "!", "op": "matches", "expect": false, "note": "\\p{Z} on !"}
+{"id": "T007419", "pattern": "\\p{Z}", "input": "+", "op": "matches", "expect": false, "note": "\\p{Z} on +"}
+{"id": "T007420", "pattern": "\\p{Z}", "input": "$", "op": "matches", "expect": false, "note": "\\p{Z} on $"}
+{"id": "T007421", "pattern": "\\p{Z}", "input": "_", "op": "matches", "expect": false, "note": "\\p{Z} on _"}
+{"id": "T007422", "pattern": "\\p{Z}", "input": "-", "op": "matches", "expect": false, "note": "\\p{Z} on -"}
+{"id": "T007423", "pattern": "\\p{Z}", "input": "(", "op": "matches", "expect": false, "note": "\\p{Z} on ("}
+{"id": "T007424", "pattern": "\\p{Z}", "input": "α", "op": "matches", "expect": false, "note": "\\p{Z} on α"}
+{"id": "T007425", "pattern": "\\p{Z}", "input": "А", "op": "matches", "expect": false, "note": "\\p{Z} on А"}
+{"id": "T007426", "pattern": "\\p{Z}", "input": "一", "op": "matches", "expect": false, "note": "\\p{Z} on 一"}
+{"id": "T007427", "pattern": "\\p{Z}", "input": "é", "op": "matches", "expect": false, "note": "\\p{Z} on é"}
+{"id": "T007428", "pattern": "\\p{C}", "input": "A", "op": "matches", "expect": false, "note": "\\p{C} on A"}
+{"id": "T007429", "pattern": "\\p{C}", "input": "a", "op": "matches", "expect": false, "note": "\\p{C} on a"}
+{"id": "T007430", "pattern": "\\p{C}", "input": "5", "op": "matches", "expect": false, "note": "\\p{C} on 5"}
+{"id": "T007431", "pattern": "\\p{C}", "input": " ", "op": "matches", "expect": false, "note": "\\p{C} on  "}
+{"id": "T007432", "pattern": "\\p{C}", "input": "!", "op": "matches", "expect": false, "note": "\\p{C} on !"}
+{"id": "T007433", "pattern": "\\p{C}", "input": "+", "op": "matches", "expect": false, "note": "\\p{C} on +"}
+{"id": "T007434", "pattern": "\\p{C}", "input": "$", "op": "matches", "expect": false, "note": "\\p{C} on $"}
+{"id": "T007435", "pattern": "\\p{C}", "input": "_", "op": "matches", "expect": false, "note": "\\p{C} on _"}
+{"id": "T007436", "pattern": "\\p{C}", "input": "-", "op": "matches", "expect": false, "note": "\\p{C} on -"}
+{"id": "T007437", "pattern": "\\p{C}", "input": "(", "op": "matches", "expect": false, "note": "\\p{C} on ("}
+{"id": "T007438", "pattern": "\\p{C}", "input": "α", "op": "matches", "expect": false, "note": "\\p{C} on α"}
+{"id": "T007439", "pattern": "\\p{C}", "input": "А", "op": "matches", "expect": false, "note": "\\p{C} on А"}
+{"id": "T007440", "pattern": "\\p{C}", "input": "一", "op": "matches", "expect": false, "note": "\\p{C} on 一"}
+{"id": "T007441", "pattern": "\\p{C}", "input": "é", "op": "matches", "expect": false, "note": "\\p{C} on é"}
+{"id": "T007442", "pattern": "\\P{L}", "input": "5", "op": "matches", "expect": true, "note": "neg prop letter"}
+{"id": "T007443", "pattern": "\\P{L}", "input": "a", "op": "matches", "expect": false, "note": "neg prop letter no"}
+{"id": "T007444", "pattern": "\\P{N}", "input": "a", "op": "matches", "expect": true, "note": "neg prop number"}
+{"id": "T007445", "pattern": "\\p{Alpha}", "input": "a", "op": "matches", "expect": true, "note": "posix Alpha on a"}
+{"id": "T007446", "pattern": "\\p{Alpha}", "input": "A", "op": "matches", "expect": true, "note": "posix Alpha on A"}
+{"id": "T007447", "pattern": "\\p{Alpha}", "input": "5", "op": "matches", "expect": false, "note": "posix Alpha on 5"}
+{"id": "T007448", "pattern": "\\p{Alpha}", "input": " ", "op": "matches", "expect": false, "note": "posix Alpha on  "}
+{"id": "T007449", "pattern": "\\p{Alpha}", "input": "!", "op": "matches", "expect": false, "note": "posix Alpha on !"}
+{"id": "T007450", "pattern": "\\p{Alpha}", "input": "\t", "op": "matches", "expect": false, "note": "posix Alpha on \t"}
+{"id": "T007451", "pattern": "\\p{Alpha}", "input": "f", "op": "matches", "expect": true, "note": "posix Alpha on f"}
+{"id": "T007452", "pattern": "\\p{Alpha}", "input": "é", "op": "matches", "expect": false, "note": "posix Alpha on é"}
+{"id": "T007453", "pattern": "\\p{Digit}", "input": "a", "op": "matches", "expect": false, "note": "posix Digit on a"}
+{"id": "T007454", "pattern": "\\p{Digit}", "input": "A", "op": "matches", "expect": false, "note": "posix Digit on A"}
+{"id": "T007455", "pattern": "\\p{Digit}", "input": "5", "op": "matches", "expect": true, "note": "posix Digit on 5"}
+{"id": "T007456", "pattern": "\\p{Digit}", "input": " ", "op": "matches", "expect": false, "note": "posix Digit on  "}
+{"id": "T007457", "pattern": "\\p{Digit}", "input": "!", "op": "matches", "expect": false, "note": "posix Digit on !"}
+{"id": "T007458", "pattern": "\\p{Digit}", "input": "\t", "op": "matches", "expect": false, "note": "posix Digit on \t"}
+{"id": "T007459", "pattern": "\\p{Digit}", "input": "f", "op": "matches", "expect": false, "note": "posix Digit on f"}
+{"id": "T007460", "pattern": "\\p{Digit}", "input": "é", "op": "matches", "expect": false, "note": "posix Digit on é"}
+{"id": "T007461", "pattern": "\\p{Alnum}", "input": "a", "op": "matches", "expect": true, "note": "posix Alnum on a"}
+{"id": "T007462", "pattern": "\\p{Alnum}", "input": "A", "op": "matches", "expect": true, "note": "posix Alnum on A"}
+{"id": "T007463", "pattern": "\\p{Alnum}", "input": "5", "op": "matches", "expect": true, "note": "posix Alnum on 5"}
+{"id": "T007464", "pattern": "\\p{Alnum}", "input": " ", "op": "matches", "expect": false, "note": "posix Alnum on  "}
+{"id": "T007465", "pattern": "\\p{Alnum}", "input": "!", "op": "matches", "expect": false, "note": "posix Alnum on !"}
+{"id": "T007466", "pattern": "\\p{Alnum}", "input": "\t", "op": "matches", "expect": false, "note": "posix Alnum on \t"}
+{"id": "T007467", "pattern": "\\p{Alnum}", "input": "f", "op": "matches", "expect": true, "note": "posix Alnum on f"}
+{"id": "T007468", "pattern": "\\p{Alnum}", "input": "é", "op": "matches", "expect": false, "note": "posix Alnum on é"}
+{"id": "T007469", "pattern": "\\p{Upper}", "input": "a", "op": "matches", "expect": false, "note": "posix Upper on a"}
+{"id": "T007470", "pattern": "\\p{Upper}", "input": "A", "op": "matches", "expect": true, "note": "posix Upper on A"}
+{"id": "T007471", "pattern": "\\p{Upper}", "input": "5", "op": "matches", "expect": false, "note": "posix Upper on 5"}
+{"id": "T007472", "pattern": "\\p{Upper}", "input": " ", "op": "matches", "expect": false, "note": "posix Upper on  "}
+{"id": "T007473", "pattern": "\\p{Upper}", "input": "!", "op": "matches", "expect": false, "note": "posix Upper on !"}
+{"id": "T007474", "pattern": "\\p{Upper}", "input": "\t", "op": "matches", "expect": false, "note": "posix Upper on \t"}
+{"id": "T007475", "pattern": "\\p{Upper}", "input": "f", "op": "matches", "expect": false, "note": "posix Upper on f"}
+{"id": "T007476", "pattern": "\\p{Upper}", "input": "é", "op": "matches", "expect": false, "note": "posix Upper on é"}
+{"id": "T007477", "pattern": "\\p{Lower}", "input": "a", "op": "matches", "expect": true, "note": "posix Lower on a"}
+{"id": "T007478", "pattern": "\\p{Lower}", "input": "A", "op": "matches", "expect": false, "note": "posix Lower on A"}
+{"id": "T007479", "pattern": "\\p{Lower}", "input": "5", "op": "matches", "expect": false, "note": "posix Lower on 5"}
+{"id": "T007480", "pattern": "\\p{Lower}", "input": " ", "op": "matches", "expect": false, "note": "posix Lower on  "}
+{"id": "T007481", "pattern": "\\p{Lower}", "input": "!", "op": "matches", "expect": false, "note": "posix Lower on !"}
+{"id": "T007482", "pattern": "\\p{Lower}", "input": "\t", "op": "matches", "expect": false, "note": "posix Lower on \t"}
+{"id": "T007483", "pattern": "\\p{Lower}", "input": "f", "op": "matches", "expect": true, "note": "posix Lower on f"}
+{"id": "T007484", "pattern": "\\p{Lower}", "input": "é", "op": "matches", "expect": false, "note": "posix Lower on é"}
+{"id": "T007485", "pattern": "\\p{Punct}", "input": "a", "op": "matches", "expect": false, "note": "posix Punct on a"}
+{"id": "T007486", "pattern": "\\p{Punct}", "input": "A", "op": "matches", "expect": false, "note": "posix Punct on A"}
+{"id": "T007487", "pattern": "\\p{Punct}", "input": "5", "op": "matches", "expect": false, "note": "posix Punct on 5"}
+{"id": "T007488", "pattern": "\\p{Punct}", "input": " ", "op": "matches", "expect": false, "note": "posix Punct on  "}
+{"id": "T007489", "pattern": "\\p{Punct}", "input": "!", "op": "matches", "expect": true, "note": "posix Punct on !"}
+{"id": "T007490", "pattern": "\\p{Punct}", "input": "\t", "op": "matches", "expect": false, "note": "posix Punct on \t"}
+{"id": "T007491", "pattern": "\\p{Punct}", "input": "f", "op": "matches", "expect": false, "note": "posix Punct on f"}
+{"id": "T007492", "pattern": "\\p{Punct}", "input": "é", "op": "matches", "expect": false, "note": "posix Punct on é"}
+{"id": "T007493", "pattern": "\\p{Space}", "input": "a", "op": "matches", "expect": false, "note": "posix Space on a"}
+{"id": "T007494", "pattern": "\\p{Space}", "input": "A", "op": "matches", "expect": false, "note": "posix Space on A"}
+{"id": "T007495", "pattern": "\\p{Space}", "input": "5", "op": "matches", "expect": false, "note": "posix Space on 5"}
+{"id": "T007496", "pattern": "\\p{Space}", "input": " ", "op": "matches", "expect": true, "note": "posix Space on  "}
+{"id": "T007497", "pattern": "\\p{Space}", "input": "!", "op": "matches", "expect": false, "note": "posix Space on !"}
+{"id": "T007498", "pattern": "\\p{Space}", "input": "\t", "op": "matches", "expect": true, "note": "posix Space on \t"}
+{"id": "T007499", "pattern": "\\p{Space}", "input": "f", "op": "matches", "expect": false, "note": "posix Space on f"}
+{"id": "T007500", "pattern": "\\p{Space}", "input": "é", "op": "matches", "expect": false, "note": "posix Space on é"}
+{"id": "T007501", "pattern": "\\p{Blank}", "input": "a", "op": "matches", "expect": false, "note": "posix Blank on a"}
+{"id": "T007502", "pattern": "\\p{Blank}", "input": "A", "op": "matches", "expect": false, "note": "posix Blank on A"}
+{"id": "T007503", "pattern": "\\p{Blank}", "input": "5", "op": "matches", "expect": false, "note": "posix Blank on 5"}
+{"id": "T007504", "pattern": "\\p{Blank}", "input": " ", "op": "matches", "expect": true, "note": "posix Blank on  "}
+{"id": "T007505", "pattern": "\\p{Blank}", "input": "!", "op": "matches", "expect": false, "note": "posix Blank on !"}
+{"id": "T007506", "pattern": "\\p{Blank}", "input": "\t", "op": "matches", "expect": true, "note": "posix Blank on \t"}
+{"id": "T007507", "pattern": "\\p{Blank}", "input": "f", "op": "matches", "expect": false, "note": "posix Blank on f"}
+{"id": "T007508", "pattern": "\\p{Blank}", "input": "é", "op": "matches", "expect": false, "note": "posix Blank on é"}
+{"id": "T007509", "pattern": "\\p{XDigit}", "input": "a", "op": "matches", "expect": true, "note": "posix XDigit on a"}
+{"id": "T007510", "pattern": "\\p{XDigit}", "input": "A", "op": "matches", "expect": true, "note": "posix XDigit on A"}
+{"id": "T007511", "pattern": "\\p{XDigit}", "input": "5", "op": "matches", "expect": true, "note": "posix XDigit on 5"}
+{"id": "T007512", "pattern": "\\p{XDigit}", "input": " ", "op": "matches", "expect": false, "note": "posix XDigit on  "}
+{"id": "T007513", "pattern": "\\p{XDigit}", "input": "!", "op": "matches", "expect": false, "note": "posix XDigit on !"}
+{"id": "T007514", "pattern": "\\p{XDigit}", "input": "\t", "op": "matches", "expect": false, "note": "posix XDigit on \t"}
+{"id": "T007515", "pattern": "\\p{XDigit}", "input": "f", "op": "matches", "expect": true, "note": "posix XDigit on f"}
+{"id": "T007516", "pattern": "\\p{XDigit}", "input": "é", "op": "matches", "expect": false, "note": "posix XDigit on é"}
+{"id": "T007517", "pattern": "\\p{ASCII}", "input": "a", "op": "matches", "expect": true, "note": "posix ASCII on a"}
+{"id": "T007518", "pattern": "\\p{ASCII}", "input": "A", "op": "matches", "expect": true, "note": "posix ASCII on A"}
+{"id": "T007519", "pattern": "\\p{ASCII}", "input": "5", "op": "matches", "expect": true, "note": "posix ASCII on 5"}
+{"id": "T007520", "pattern": "\\p{ASCII}", "input": " ", "op": "matches", "expect": true, "note": "posix ASCII on  "}
+{"id": "T007521", "pattern": "\\p{ASCII}", "input": "!", "op": "matches", "expect": true, "note": "posix ASCII on !"}
+{"id": "T007522", "pattern": "\\p{ASCII}", "input": "\t", "op": "matches", "expect": true, "note": "posix ASCII on \t"}
+{"id": "T007523", "pattern": "\\p{ASCII}", "input": "f", "op": "matches", "expect": true, "note": "posix ASCII on f"}
+{"id": "T007524", "pattern": "\\p{ASCII}", "input": "é", "op": "matches", "expect": false, "note": "posix ASCII on é"}
+{"id": "T007525", "pattern": "\\p{IsLatin}", "input": "a", "op": "matches", "expect": true, "note": "script Latin a"}
+{"id": "T007526", "pattern": "\\p{IsLatin}", "input": "α", "op": "matches", "expect": false, "note": "script Latin no greek"}
+{"id": "T007527", "pattern": "\\p{IsGreek}", "input": "α", "op": "matches", "expect": true, "note": "script Greek alpha"}
+{"id": "T007528", "pattern": "\\p{IsGreek}", "input": "a", "op": "matches", "expect": false, "note": "script Greek no latin"}
+{"id": "T007529", "pattern": "\\p{IsCyrillic}", "input": "А", "op": "matches", "expect": true, "note": "script Cyrillic"}
+{"id": "T007530", "pattern": "\\x41", "input": "A", "op": "matches", "expect": true, "note": "hex escape A"}
+{"id": "T007531", "pattern": "\\x61", "input": "a", "op": "matches", "expect": true, "note": "hex escape a"}
+{"id": "T007532", "pattern": "\\x20", "input": " ", "op": "matches", "expect": true, "note": "hex escape space"}
+{"id": "T007533", "pattern": "\\0101", "input": "A", "op": "matches", "expect": true, "note": "octal A"}
+{"id": "T007534", "pattern": "\\060", "input": "0", "op": "matches", "expect": true, "note": "octal zero"}
+{"id": "T007535", "pattern": "\\u0041", "input": "A", "op": "matches", "expect": true, "note": "unicode escape A"}
+{"id": "T007536", "pattern": "\\u03B1", "input": "α", "op": "matches", "expect": true, "note": "unicode escape alpha"}
+{"id": "T007537", "pattern": "\\t", "input": "\t", "op": "matches", "expect": true, "note": "tab"}
+{"id": "T007538", "pattern": "\\n", "input": "\n", "op": "matches", "expect": true, "note": "newline"}
+{"id": "T007539", "pattern": "\\r", "input": "\r", "op": "matches", "expect": true, "note": "cr"}
+{"id": "T007540", "pattern": "\\\\", "input": "\\", "op": "matches", "expect": true, "note": "backslash"}
+{"id": "T007541", "pattern": "\\.", "input": ".", "op": "matches", "expect": true, "note": "escaped dot"}
+{"id": "T007542", "pattern": "\\*", "input": "*", "op": "matches", "expect": true, "note": "escaped star"}
+{"id": "T007543", "pattern": "\\+", "input": "+", "op": "matches", "expect": true, "note": "escaped plus"}
+{"id": "T007544", "pattern": "\\?", "input": "?", "op": "matches", "expect": true, "note": "escaped question"}
+{"id": "T007545", "pattern": "\\(", "input": "(", "op": "matches", "expect": true, "note": "escaped open paren"}
+{"id": "T007546", "pattern": "\\)", "input": ")", "op": "matches", "expect": true, "note": "escaped close paren"}
+{"id": "T007547", "pattern": "\\[", "input": "[", "op": "matches", "expect": true, "note": "escaped open bracket"}
+{"id": "T007548", "pattern": "\\]", "input": "]", "op": "matches", "expect": true, "note": "escaped close bracket"}
+{"id": "T007549", "pattern": "\\{", "input": "{", "op": "matches", "expect": true, "note": "escaped open brace"}
+{"id": "T007550", "pattern": "\\}", "input": "}", "op": "matches", "expect": true, "note": "escaped close brace"}
+{"id": "T007551", "pattern": "\\|", "input": "|", "op": "matches", "expect": true, "note": "escaped pipe"}
+{"id": "T007552", "pattern": "\\^", "input": "^", "op": "matches", "expect": true, "note": "escaped caret"}
+{"id": "T007553", "pattern": "\\$", "input": "$", "op": "matches", "expect": true, "note": "escaped dollar"}
+{"id": "T007554", "pattern": "\\Q.*+?\\E", "input": ".*+?", "op": "matches", "expect": true, "note": "quote metachar"}
+{"id": "T007555", "pattern": "\\Q[abc]\\E", "input": "[abc]", "op": "matches", "expect": true, "note": "quote brackets"}
+{"id": "T007556", "pattern": "\\Q(a|b)\\E", "input": "(a|b)", "op": "matches", "expect": true, "note": "quote group"}
+{"id": "T007557", "pattern": "\\Qabc\\E", "input": "abc", "op": "matches", "expect": true, "note": "quote plain"}
+{"id": "T007558", "pattern": "abc\\Qdef\\Eghi", "input": "abcdefghi", "op": "matches", "expect": true, "note": "quote middle"}
+{"id": "T007559", "pattern": "\\Qabc", "input": "abc", "op": "matches", "expect": true, "note": "quote no end"}
+{"id": "T007560", "pattern": "a\\Q+\\Eb", "input": "a+b", "op": "matches", "expect": true, "note": "quote single char"}
+{"id": "T007561", "pattern": "\\Q.\\E", "input": "a.b.c", "op": "find", "expect": [{"m": "."}, {"m": "."}], "note": "quote dot find"}
+{"id": "T007562", "pattern": "\\R", "input": "\n", "op": "matches", "expect": true, "note": "linebreak LF"}
+{"id": "T007563", "pattern": "\\R", "input": "\r", "op": "matches", "expect": true, "note": "linebreak CR"}
+{"id": "T007564", "pattern": "\\R", "input": "\r\n", "op": "matches", "expect": true, "note": "linebreak CRLF"}
+{"id": "T007565", "pattern": "\\R", "input": "", "op": "matches", "expect": true, "note": "linebreak NEL"}
+{"id": "T007566", "pattern": "\\R", "input": " ", "op": "matches", "expect": true, "note": "linebreak LS"}
+{"id": "T007567", "pattern": "\\R", "input": " ", "op": "matches", "expect": true, "note": "linebreak PS"}
+{"id": "T007568", "pattern": "\\R", "input": " ", "op": "matches", "expect": false, "note": "linebreak no space"}
+{"id": "T007569", "pattern": "\\R", "input": "a", "op": "matches", "expect": false, "note": "linebreak no alpha"}
+{"id": "T007570", "pattern": "\\R", "input": "a\nb\r\nc\rd", "op": "find", "expect": [{"m": "\n"}, {"m": "\r\n"}, {"m": "\r"}], "note": "linebreak find all"}
+{"id": "T007571", "pattern": "a\\Rb", "input": "a\nb", "op": "matches", "expect": true, "note": "linebreak between"}
+{"id": "T007572", "pattern": "a\\Rb", "input": "a\r\nb", "op": "matches", "expect": true, "note": "linebreak CRLF between"}
+{"id": "T007573", "pattern": "a|b", "input": "a", "op": "matches", "expect": true, "note": "alt a"}
+{"id": "T007574", "pattern": "a|b", "input": "b", "op": "matches", "expect": true, "note": "alt b"}
+{"id": "T007575", "pattern": "a|b", "input": "c", "op": "matches", "expect": false, "note": "alt no c"}
+{"id": "T007576", "pattern": "abc|def|ghi", "input": "def", "op": "matches", "expect": true, "note": "alt triple"}
+{"id": "T007577", "pattern": "abc|def|ghi", "input": "xyz", "op": "matches", "expect": false, "note": "alt triple no match"}
+{"id": "T007578", "pattern": "cat|dog|bird", "input": "I have a dog and a cat", "op": "find", "expect": [{"m": "dog"}, {"m": "cat"}], "note": "alt find multiple"}
+{"id": "T007579", "pattern": "a|", "input": "a", "op": "matches", "expect": true, "note": "alt empty second a"}
+{"id": "T007580", "pattern": "a|", "input": "", "op": "matches", "expect": true, "note": "alt empty second empty"}
+{"id": "T007581", "pattern": "|a", "input": "", "op": "matches", "expect": true, "note": "alt empty first empty"}
+{"id": "T007582", "pattern": "|a", "input": "a", "op": "matches", "expect": true, "note": "alt empty first a"}
+{"id": "T007583", "pattern": "||", "input": "", "op": "matches", "expect": true, "note": "alt double empty"}
+{"id": "T007584", "pattern": "a||b", "input": "", "op": "matches", "expect": true, "note": "alt middle empty"}
+{"id": "T007585", "pattern": "ab|a", "input": "ab", "op": "find", "expect": [{"m": "ab"}], "note": "alt ordering first"}
+{"id": "T007586", "pattern": "a|ab", "input": "ab", "op": "find", "expect": [{"m": "a"}], "note": "alt ordering shorter first"}
+{"id": "T007587", "pattern": "(\\w+)", "input": "hello world", "op": "replaceAll", "replacement": "[$1]", "expect": "[hello] [world]", "note": "replace group bracket"}
+{"id": "T007588", "pattern": "(\\d+)", "input": "a1b22c333", "op": "replaceAll", "replacement": "N", "expect": "aNbNcN", "note": "replace digits"}
+{"id": "T007589", "pattern": "(a)(b)", "input": "ab", "op": "replaceAll", "replacement": "$2$1", "expect": "ba", "note": "replace swap"}
+{"id": "T007590", "pattern": "(?<x>\\w+)", "input": "hello", "op": "replaceAll", "replacement": "${x}!", "expect": "hello!", "note": "replace named group"}
+{"id": "T007591", "pattern": "\\b", "input": "a b", "op": "replaceAll", "replacement": "|", "expect": "|a| |b|", "note": "replace word boundary"}
+{"id": "T007592", "pattern": "^", "input": "abc", "op": "replaceAll", "replacement": "X", "expect": "Xabc", "note": "replace start"}
+{"id": "T007593", "pattern": "$", "input": "abc", "op": "replaceAll", "replacement": "X", "expect": "abcX", "note": "replace end"}
+{"id": "T007594", "pattern": "", "input": "abc", "op": "replaceAll", "replacement": "-", "expect": "-a-b-c-", "note": "replace empty"}
+{"id": "T007595", "pattern": "a*", "input": "bbb", "op": "replaceAll", "replacement": "X", "expect": "XbXbXbX", "note": "replace star on non-match"}
+{"id": "T007596", "pattern": "a+", "input": "aabaa", "op": "replaceAll", "replacement": "x", "expect": "xbx", "note": "replace greedy"}
+{"id": "T007597", "pattern": "(\\d)(\\d)", "input": "1234", "op": "replaceAll", "replacement": "$2$1", "expect": "2143", "note": "replace swap digits"}
+{"id": "T007598", "pattern": ".", "input": "abc", "op": "replaceAll", "replacement": "x", "expect": "xxx", "note": "replace dot"}
+{"id": "T007599", "pattern": "(.)", "input": "abc", "op": "replaceAll", "replacement": "$1$1", "expect": "aabbcc", "note": "replace double"}
+{"id": "T007600", "pattern": ",", "input": "a,b,c", "op": "split", "expect": ["a", "b", "c"], "note": "split comma"}
+{"id": "T007601", "pattern": ",", "input": "a,,b", "op": "split", "expect": ["a", "", "b"], "note": "split empty between"}
+{"id": "T007602", "pattern": ",", "input": ",a,b,", "op": "split", "expect": ["", "a", "b"], "note": "split leading trailing"}
+{"id": "T007603", "pattern": ",", "input": "abc", "op": "split", "expect": ["abc"], "note": "split no match"}
+{"id": "T007604", "pattern": ",", "input": ",", "op": "split", "expect": [], "note": "split only delimiter"}
+{"id": "T007605", "pattern": ",", "input": ",,", "op": "split", "expect": [], "note": "split double delimiter"}
+{"id": "T007606", "pattern": ",", "input": "", "op": "split", "expect": [""], "note": "split empty input"}
+{"id": "T007607", "pattern": "\\s+", "input": "a  b\tc", "op": "split", "expect": ["a", "b", "c"], "note": "split whitespace"}
+{"id": "T007608", "pattern": "\\b", "input": "abc def", "op": "split", "expect": ["abc", " ", "def"], "note": "split word boundary"}
+{"id": "T007609", "pattern": "(?<=,)", "input": "a,b,c", "op": "split", "expect": ["a,", "b,", "c"], "note": "split lookbehind comma"}
+{"id": "T007610", "pattern": "(?=,)", "input": "a,b,c", "op": "split", "expect": ["a", ",b", ",c"], "note": "split lookahead comma"}
+{"id": "T007611", "pattern": "(,)", "input": "a,b,c", "op": "split", "expect": ["a", "b", "c"], "note": "split capturing group"}
+{"id": "T007612", "pattern": "o", "input": "boo:and:foo", "op": "split", "expect": ["b", "", ":and:f"], "note": "split on o"}
+{"id": "T007613", "pattern": "x", "input": "axbxcx", "op": "split", "expect": ["a", "b", "c"], "note": "split trailing empty"}
+{"id": "T007614", "pattern": "a", "input": "a", "op": "split", "expect": [], "note": "split single delim"}
+{"id": "T007615", "pattern": "a", "input": "aaa", "op": "split", "expect": [], "note": "split all delim"}
+{"id": "T007616", "pattern": ".", "input": "a", "op": "matches", "expect": true, "note": "dot alpha"}
+{"id": "T007617", "pattern": ".", "input": " ", "op": "matches", "expect": true, "note": "dot space"}
+{"id": "T007618", "pattern": ".", "input": "\t", "op": "matches", "expect": true, "note": "dot tab"}
+{"id": "T007619", "pattern": ".", "input": "\n", "op": "matches", "expect": false, "note": "dot no newline"}
+{"id": "T007620", "pattern": ".", "input": "\r", "op": "matches", "expect": false, "note": "dot no cr"}
+{"id": "T007621", "pattern": ".", "input": "", "op": "matches", "expect": false, "note": "dot NEL"}
+{"id": "T007622", "pattern": ".", "input": "\n", "op": "matches", "expect": true, "flags": "s", "note": "dot dotall newline"}
+{"id": "T007623", "pattern": ".", "input": "\r", "op": "matches", "expect": true, "flags": "s", "note": "dot dotall cr"}
+{"id": "T007624", "pattern": ".+", "input": "abc\ndef", "op": "find", "expect": [{"m": "abc"}, {"m": "def"}], "note": "dot plus no newline"}
+{"id": "T007625", "pattern": ".+", "input": "abc\ndef", "op": "find", "expect": [{"m": "abc\ndef"}], "flags": "s", "note": "dot plus dotall"}
+{"id": "T007626", "pattern": "(", "op": "compile_error", "expect": true, "note": "unclosed group"}
+{"id": "T007627", "pattern": ")", "op": "compile_error", "expect": true, "note": "unmatched close"}
+{"id": "T007628", "pattern": "[", "op": "compile_error", "expect": true, "note": "unclosed class"}
+{"id": "T007629", "pattern": "[abc", "op": "compile_error", "expect": true, "note": "unclosed class 2"}
+{"id": "T007630", "pattern": "*", "op": "compile_error", "expect": true, "note": "dangling star"}
+{"id": "T007631", "pattern": "+", "op": "compile_error", "expect": true, "note": "dangling plus"}
+{"id": "T007632", "pattern": "?", "op": "compile_error", "expect": true, "note": "dangling question"}
+{"id": "T007633", "pattern": "a{3,2}", "op": "compile_error", "expect": true, "note": "min gt max"}
+{"id": "T007634", "pattern": "[z-a]", "op": "compile_error", "expect": true, "note": "reversed range"}
+{"id": "T007635", "pattern": "\\", "op": "compile_error", "expect": true, "note": "trailing backslash"}
+{"id": "T007636", "pattern": "\\p{Invalid}", "op": "compile_error", "expect": true, "note": "bad unicode property"}
+{"id": "T007637", "pattern": "(?q)", "op": "compile_error", "expect": true, "note": "bad flag"}
+{"id": "T007638", "pattern": "(?P<n>a)", "op": "compile_error", "expect": true, "note": "python named group"}
+{"id": "T007639", "pattern": "a{,}", "op": "compile_error", "expect": true, "note": "empty counted"}
+{"id": "T007640", "pattern": "", "input": "", "op": "matches", "expect": true, "note": "empty both"}
+{"id": "T007641", "pattern": "", "input": "a", "op": "matches", "expect": false, "note": "empty pattern non-empty"}
+{"id": "T007642", "pattern": "", "input": "abc", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "empty pattern find"}
+{"id": "T007643", "pattern": "a{0}", "input": "", "op": "matches", "expect": true, "note": "zero count"}
+{"id": "T007644", "pattern": "a{0}", "input": "b", "op": "matches", "expect": false, "note": "zero count non-empty"}
+{"id": "T007645", "pattern": "a{0,0}", "input": "", "op": "matches", "expect": true, "note": "zero-zero"}
+{"id": "T007646", "pattern": "()*", "input": "", "op": "matches", "expect": true, "note": "empty group star"}
+{"id": "T007647", "pattern": "a*", "input": "bbb", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}, {"m": ""}], "note": "star zero-width find"}
+{"id": "T007648", "pattern": "a*", "input": "", "op": "find", "expect": [{"m": ""}], "note": "star empty find"}
+{"id": "T007649", "pattern": "a+", "input": "", "op": "find", "expect": [], "note": "plus empty find"}
+{"id": "T007650", "pattern": "(?=a)", "input": "aaa", "op": "find", "expect": [{"m": ""}, {"m": ""}, {"m": ""}], "note": "lookahead zero-width find"}
+{"id": "T007651", "pattern": "\\b", "input": "", "op": "matches", "expect": false, "note": "boundary empty"}
+{"id": "T007652", "pattern": ".{0}", "input": "", "op": "matches", "expect": true, "note": "dot zero count"}
+{"id": "T007653", "pattern": "(a{10}){2}", "input": "aaaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": true, "note": "long repetition"}
+{"id": "T007654", "pattern": "(a{10}){2}", "input": "aaaaaaaaaaaaaaaaaaa", "op": "matches", "expect": false, "note": "long repetition short"}
+{"id": "T007655", "pattern": "(a+)(a+)", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa", "g": ["aaa", "a"]}], "note": "greedy backtrack groups"}
+{"id": "T007656", "pattern": "(a+?)(a+)", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa", "g": ["a", "aaa"]}], "note": "reluctant first group"}
+{"id": "T007657", "pattern": "(a+)(a+?)", "input": "aaaa", "op": "find", "expect": [{"m": "aaaa", "g": ["aaa", "a"]}], "note": "reluctant second group"}
+{"id": "T007658", "pattern": "(a+?)(a+?)", "input": "aaaa", "op": "find", "expect": [{"m": "aa", "g": ["a", "a"]}, {"m": "aa", "g": ["a", "a"]}], "note": "both reluctant"}
+{"id": "T007659", "pattern": "é", "input": "É", "op": "matches", "expect": true, "flags": "iu", "note": "ci unicode e-acute"}
+{"id": "T007660", "pattern": "\\p{L}+", "input": "café", "op": "matches", "expect": true, "flags": "U", "note": "unicode word cafe"}
+{"id": "T007661", "pattern": "https?://[\\w./-]+", "input": "visit https://example.com/path and http://foo.bar", "op": "find", "expect": [{"m": "https://example.com/path"}, {"m": "http://foo.bar"}], "note": "url-like find"}
+{"id": "T007662", "pattern": "[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}", "input": "user@example.com", "op": "matches", "expect": true, "note": "email match"}
+{"id": "T007663", "pattern": "[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}", "input": "bad@", "op": "matches", "expect": false, "note": "email no match"}
+{"id": "T007664", "pattern": "\\d{1,3}(\\.\\d{1,3}){3}", "input": "192.168.1.1", "op": "matches", "expect": true, "note": "ip match"}
+{"id": "T007665", "pattern": "\\d{1,3}(\\.\\d{1,3}){3}", "input": "999.999.999.999", "op": "matches", "expect": true, "note": "ip match large"}
+{"id": "T007666", "pattern": "\\d{1,3}(\\.\\d{1,3}){3}", "input": "1.2.3", "op": "matches", "expect": false, "note": "ip no match short"}
+{"id": "T007667", "pattern": "\\d{4}-\\d{2}-\\d{2}", "input": "today is 2024-01-15 and tomorrow 2024-01-16", "op": "find", "expect": [{"m": "2024-01-15"}, {"m": "2024-01-16"}], "note": "date find"}
+{"id": "T007668", "pattern": "\"[^\"]*\"", "input": "she said \"hello\" and \"bye\"", "op": "find", "expect": [{"m": "\"hello\""}, {"m": "\"bye\""}], "note": "quoted strings"}
+{"id": "T007669", "pattern": "<(\\w+)>.*?</\\1>", "input": "<b>bold</b> and <i>italic</i>", "op": "find", "expect": [{"m": "<b>bold</b>", "g": ["b"]}, {"m": "<i>italic</i>", "g": ["i"]}], "note": "html-like tags"}

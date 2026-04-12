@@ -13,7 +13,7 @@
 {"id": "T0013", "pattern": "abc\\z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\z is absolute end"}
 {"id": "T0014", "pattern": "abc\\Z", "input": "abc\n", "op": "matches", "expect": false, "note": "\\Z allows final newline"}
 {"id": "T0015", "pattern": "\\bcat\\b", "input": "a cat! bobcat cat_", "op": "find", "expect": [{"m": "cat"}], "note": "cat_ is word char '_' so boundary fails at end"}
-{"id": "T0016", "pattern": "\\Bcat\\B", "input": "bobcat", "op": "find", "expect": [{"m": "cat"}]}
+{"id": "T0016", "pattern": "\\Bcat\\B", "input": "bobcat", "op": "find", "expect": []}
 {"id": "T0017", "pattern": "[abc]+", "input": "abac", "op": "matches", "expect": true}
 {"id": "T0018", "pattern": "[^abc]+", "input": "def", "op": "matches", "expect": true}
 {"id": "T0019", "pattern": "[a-z]+", "input": "azby", "op": "matches", "expect": true}
@@ -49,9 +49,9 @@
 {"id": "T0049", "pattern": "(?<w>\\w+)\\s+\\k<w>", "input": "hey hey", "op": "matches", "expect": true, "note": "named group backref (\\k<name>)"}
 {"id": "T0050", "pattern": "(?<w>\\w+)\\s+\\k<w>", "input": "hey ho", "op": "matches", "expect": false}
 {"id": "T0051", "pattern": "\\w+(?=:)", "input": "key:value", "op": "find", "expect": [{"m": "key"}], "note": "positive lookahead"}
-{"id": "T0052", "pattern": "\\w+(?!:)", "input": "key:value", "op": "find", "expect": [{"m": "key"}, {"m": "value"}], "note": "negative lookahead (substrings)"}
+{"id": "T0052", "pattern": "\\w+(?!:)", "input": "key:value", "op": "find", "expect": [{"m": "ke"}, {"m": "value"}], "note": "negative lookahead (substrings)"}
 {"id": "T0053", "pattern": "(?<=\\$)\\d+", "input": "cost $123 and $7", "op": "find", "expect": [{"m": "123"}, {"m": "7"}], "note": "lookbehind"}
-{"id": "T0054", "pattern": "(?<!\\$)\\d+", "input": "cost $123 and 7", "op": "find", "expect": [{"m": "7"}], "note": "negative lookbehind still matches digits in $123 after '$'? No, because first digit preceded by '$' so 123 should not match; but '7' should."}
+{"id": "T0054", "pattern": "(?<!\\$)\\d+", "input": "cost $123 and 7", "op": "find", "expect": [{"m": "23"}, {"m": "7"}], "note": "negative lookbehind still matches digits in $123 after '$'? No, because first digit preceded by '$' so 123 should not match; but '7' should."}
 {"id": "T0055", "pattern": "(?<=\\w+)\\d+", "input": "a1", "op": "compile_error", "expect": "PatternSyntaxException", "note": "variable-length lookbehind not allowed"}
 {"id": "T0056", "pattern": "(?>a|ab)c", "input": "abc", "op": "matches", "expect": false, "note": "atomic group prevents backtracking from 'ab' alternative; picks 'a' then fails on 'c' with remaining 'bc'"}
 {"id": "T0057", "pattern": "(a|ab)c", "input": "abc", "op": "matches", "expect": true, "note": "non-atomic allows backtracking to 'ab'"}
@@ -63,7 +63,7 @@
 {"id": "T0063", "pattern": "(?x)a \\s+ b", "input": "a   b", "op": "matches", "expect": true, "note": "COMMENTS mode ignores spaces"}
 {"id": "T0064", "pattern": "(?x)a \\s+ b # comment", "input": "a   b", "op": "matches", "expect": true}
 {"id": "T0065", "pattern": "\\p{L}+", "input": "Grüße", "op": "find", "expect": [{"m": "Grüße"}], "note": "letters incl umlaut/ß"}
-{"id": "T0066", "pattern": "\\p{Lu}+", "input": "ABCäÖ", "op": "find", "expect": [{"m": "ABC"}], "note": "uppercase letters"}
+{"id": "T0066", "pattern": "\\p{Lu}+", "input": "ABCäÖ", "op": "find", "expect": [{"m": "ABC"}, {"m": "Ö"}], "note": "uppercase letters"}
 {"id": "T0067", "pattern": "\\p{IsGreek}+", "input": "αβγ delta", "op": "find", "expect": [{"m": "αβγ"}]}
 {"id": "T0068", "pattern": "\\X", "input": "🇭🇷", "op": "find", "expect": [{"m": "🇭🇷"}], "note": "\\X (Unicode extended grapheme cluster) supported since Java 9"}
 {"id": "T0069", "pattern": "(?U)\\w+", "input": "čćžšđ_123", "op": "matches", "expect": true, "note": "UNICODE_CHARACTER_CLASS via (?U) expands \\w"}

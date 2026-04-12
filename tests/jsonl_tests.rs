@@ -174,3 +174,6 @@ fn test_jsonl_gen6() { run_and_assert("tests/java_regex_tests_gen6.jsonl"); }
 
 #[test]
 fn test_jsonl_gen7() { run_and_assert("tests/java_regex_tests_gen7.jsonl"); }
+
+#[test]
+fn test_jsonl_gen8() { run_and_assert("tests/java_regex_tests_gen8.jsonl"); }

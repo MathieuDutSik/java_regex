@@ -1,0 +1,206 @@
+{"id":"t13000","pattern":"[a-z]+","input":"AbCdE","op":"matches","expect":true,"flags":"i","note":"ci + char class range"}
+{"id":"t13001","pattern":"[A-Z]+","input":"aBcDe","op":"matches","expect":true,"flags":"i","note":"ci + upper range matches lower"}
+{"id":"t13002","pattern":"[a-m]+","input":"ABCxyz","op":"find","expect":[{"m":"ABC"}],"flags":"i","note":"ci + partial range find"}
+{"id":"t13003","pattern":"[\\w]+","input":"Hello","op":"matches","expect":true,"flags":"i","note":"ci + predefined class"}
+{"id":"t13004","pattern":"\\p{L}+","input":"Hello","op":"matches","expect":true,"flags":"i","note":"ci + unicode property"}
+{"id":"t13005","pattern":"[a-z&&[^aeiou]]+","input":"BCD","op":"matches","expect":true,"flags":"i","note":"ci + intersection"}
+{"id":"t13006","pattern":"[a-z&&[^aeiou]]+","input":"AEI","op":"matches","expect":false,"flags":"i","note":"ci + intersection vowels excluded"}
+{"id":"t13007","pattern":"(?<=^)\\w+","input":"abc\ndef\nghi","op":"find","expect":[{"m":"abc"},{"m":"def"},{"m":"ghi"}],"flags":"m","note":"multiline + lookbehind ^"}
+{"id":"t13008","pattern":"\\w+(?=$)","input":"abc\ndef\nghi","op":"find","expect":[{"m":"abc"},{"m":"def"},{"m":"ghi"}],"flags":"m","note":"multiline + lookahead $"}
+{"id":"t13009","pattern":"(?<=\\n)\\w+","input":"abc\ndef\nghi","op":"find","expect":[{"m":"def"},{"m":"ghi"}],"flags":"","note":"lookbehind \\n no multiline"}
+{"id":"t13010","pattern":"(?=\\n).","input":"abc\ndef","op":"find","expect":[],"flags":"","note":"lookahead \\n"}
+{"id":"t13011","pattern":"(?<=^|\\n)\\w+","input":"abc\ndef","op":"find","expect":[{"m":"abc"},{"m":"def"}],"flags":"m","note":"lookbehind ^ or \\n multiline"}
+{"id":"t13012","pattern":"(?<!^)\\w+","input":"abc\ndef\nghi","op":"find","expect":[{"m":"bc"},{"m":"ef"},{"m":"hi"}],"flags":"m","note":"neg lookbehind ^ multiline"}
+{"id":"t13013","pattern":"^.+$","input":"abc\ndef\nghi","op":"find","expect":[{"m":"abc\ndef\nghi"}],"flags":"ms","note":"dotall+multiline dotstar"}
+{"id":"t13014","pattern":"^.*$","input":"abc\ndef\nghi","op":"find","expect":[{"m":"abc"},{"m":"def"},{"m":"ghi"}],"flags":"m","note":"multiline only dotstar"}
+{"id":"t13015","pattern":"^.*$","input":"abc\ndef","op":"matches","expect":true,"flags":"s","note":"dotall only anchored"}
+{"id":"t13016","pattern":"^abc.def$","input":"abc\ndef","op":"matches","expect":true,"flags":"s","note":"dotall dot matches nl"}
+{"id":"t13017","pattern":"^abc.def$","input":"abc\ndef","op":"matches","expect":true,"flags":"ms","note":"dotall+multiline single match"}
+{"id":"t13018","pattern":"^.+?$","input":"abc\ndef\nghi","op":"find","expect":[{"m":"abc"},{"m":"def"},{"m":"ghi"}],"flags":"m","note":"multiline reluctant line"}
+{"id":"t13019","pattern":"\\d+(?=px)","input":"12px 34em 56px","op":"find","expect":[{"m":"12"},{"m":"56"}],"flags":"","note":"greedy + lookahead"}
+{"id":"t13020","pattern":"\\d+?(?=px)","input":"12px 34em 56px","op":"find","expect":[{"m":"12"},{"m":"56"}],"flags":"","note":"reluctant + lookahead"}
+{"id":"t13021","pattern":"(?<=\\$)\\d+\\.\\d+","input":"$12.50 and $3.99","op":"find","expect":[{"m":"12.50"},{"m":"3.99"}],"flags":"","note":"lookbehind + quantified"}
+{"id":"t13022","pattern":"(?=a+b)a+b","input":"aaab","op":"matches","expect":true,"flags":"","note":"lookahead duplicates pattern"}
+{"id":"t13023","pattern":"(?!x+)\\w+","input":"hello","op":"matches","expect":true,"flags":"","note":"neg lookahead + quantifier"}
+{"id":"t13024","pattern":"(?<=a{2})\\w","input":"aab aaaabc","op":"find","expect":[{"m":"b"},{"m":"a"},{"m":"a"},{"m":"b"}],"flags":"","note":"lookbehind bounded + find"}
+{"id":"t13025","pattern":"(\\w)\\1{3}","input":"aaaa","op":"matches","expect":true,"flags":"","note":"backref + quantifier 3"}
+{"id":"t13026","pattern":"(\\w)\\1{3}","input":"aaa","op":"matches","expect":false,"flags":"","note":"backref + quantifier 3 fail"}
+{"id":"t13027","pattern":"(\\w)\\1+","input":"aabbccddee","op":"find","expect":[{"m":"aa"},{"m":"bb"},{"m":"cc"},{"m":"dd"},{"m":"ee"}],"flags":"","note":"backref + plus find"}
+{"id":"t13028","pattern":"(\\w+)_\\1","input":"abc_abc","op":"matches","expect":true,"flags":"","note":"backref word underscore"}
+{"id":"t13029","pattern":"(\\w+)_\\1","input":"ABC_abc","op":"matches","expect":true,"flags":"i","note":"backref ci"}
+{"id":"t13030","pattern":"(a+)b\\1","input":"aabaa","op":"matches","expect":true,"flags":"","note":"backref greedy length"}
+{"id":"t13031","pattern":"(a+?)b\\1","input":"aabaa","op":"matches","expect":true,"flags":"","note":"backref reluctant length"}
+{"id":"t13032","pattern":"(a+)b\\1","input":"aaaba","op":"matches","expect":false,"flags":"","note":"backref greedy mismatch len"}
+{"id":"t13033","pattern":"a++(?=b)","input":"aab","op":"matches","expect":false,"flags":"","note":"possessive + lookahead"}
+{"id":"t13034","pattern":"a++(?=a)","input":"aaa","op":"matches","expect":false,"flags":"","note":"possessive + lookahead fail"}
+{"id":"t13035","pattern":"(?>a+)(?=b)","input":"aab","op":"matches","expect":false,"flags":"","note":"atomic + lookahead"}
+{"id":"t13036","pattern":"(?>a+)(?=a)","input":"aaa","op":"matches","expect":false,"flags":"","note":"atomic + lookahead fail"}
+{"id":"t13037","pattern":"(?<=a)(?>\\w+)b","input":"abcb","op":"matches","expect":false,"flags":"","note":"lookbehind + atomic"}
+{"id":"t13038","pattern":"[a-z]++(?=\\d)","input":"abc1","op":"matches","expect":false,"flags":"","note":"possessive class + lookahead"}
+{"id":"t13039","pattern":"((a)(b))\\1","input":"abab","op":"matches","expect":true,"flags":"","note":"nested group backref outer"}
+{"id":"t13040","pattern":"((a)(b))\\2\\3","input":"abab","op":"matches","expect":true,"flags":"","note":"nested group backref inner"}
+{"id":"t13041","pattern":"(a(b(c)))\\1","input":"abcabc","op":"matches","expect":true,"flags":"","note":"deeply nested backref"}
+{"id":"t13042","pattern":"(a(b(c)))\\3\\2\\1","input":"abccbabc","op":"matches","expect":false,"flags":"","note":"deeply nested all backrefs"}
+{"id":"t13043","pattern":"((\\w)\\2)+","input":"aabbccdd","op":"find","expect":[{"m":"aabbccdd"}],"flags":"","note":"nested doubled pairs"}
+{"id":"t13044","pattern":"(?:(a)(b)\\2\\1)+","input":"abba","op":"matches","expect":true,"flags":"","note":"non-capturing outer backref"}
+{"id":"t13045","pattern":"[a-z&&[^aeiou]]","input":"B","op":"matches","expect":true,"flags":"i","note":"intersection + ci upper"}
+{"id":"t13046","pattern":"[a-z&&[^aeiou]]","input":"E","op":"matches","expect":false,"flags":"i","note":"intersection + ci vowel excluded"}
+{"id":"t13047","pattern":"[\\p{L}&&[\\p{Lu}]]","input":"A","op":"matches","expect":true,"flags":"","note":"property intersection upper"}
+{"id":"t13048","pattern":"[\\p{L}&&[\\p{Lu}]]","input":"a","op":"matches","expect":false,"flags":"","note":"property intersection lower fails"}
+{"id":"t13049","pattern":"[\\w&&[^\\d]&&[^_]]","input":"a","op":"matches","expect":true,"flags":"","note":"triple intersection letter"}
+{"id":"t13050","pattern":"[\\w&&[^\\d]&&[^_]]","input":"_","op":"matches","expect":false,"flags":"","note":"triple intersection underscore fails"}
+{"id":"t13051","pattern":"[\\w&&[^\\d]&&[^_]]","input":"3","op":"matches","expect":false,"flags":"","note":"triple intersection digit fails"}
+{"id":"t13052","pattern":"(?<=\\b)(\\w)","input":"hello world","op":"replaceAll","expect":"hello world","replacement":"$1","flags":"","note":"replace capitalize (literal)"}
+{"id":"t13053","pattern":"(\\w+)","input":"Hello World","op":"replaceAll","expect":"[Hello] [World]","replacement":"[$1]","flags":"i","note":"replace ci bracket"}
+{"id":"t13054","pattern":"^(\\w+)","input":"abc\ndef\nghi","op":"replaceAll","expect":">>abc\n>>def\n>>ghi","replacement":">>$1","flags":"m","note":"replace multiline prefix"}
+{"id":"t13055","pattern":"(\\w+)$","input":"abc\ndef\nghi","op":"replaceAll","expect":"abc<<\ndef<<\nghi<<","replacement":"$1<<","flags":"m","note":"replace multiline suffix"}
+{"id":"t13056","pattern":"(?<=\\d)(\\d{3})","input":"1234567","op":"replaceAll","expect":"1,234,567","replacement":",$1","flags":"","note":"replace thousands sep"}
+{"id":"t13057","pattern":"\\b(\\w)(\\w*)","input":"hello world","op":"replaceAll","expect":"hello world","replacement":"$1$2","flags":"","note":"replace identity via groups"}
+{"id":"t13058","pattern":"(\\w+?)\\1+","input":"abababcdcd","op":"replaceAll","expect":"abcd","replacement":"$1","flags":"","note":"replace dedup via backref"}
+{"id":"t13059","pattern":".","input":"a\nb","op":"replaceAll","expect":"xxx","replacement":"x","flags":"s","note":"replace dotall every char"}
+{"id":"t13060","pattern":"(?<=\\d)(?=\\D)","input":"123abc456def","op":"split","expect":["123","abc456","def"],"flags":"","note":"split digit-letter boundary"}
+{"id":"t13061","pattern":"(?<=\\D)(?=\\d)","input":"abc123def456","op":"split","expect":["abc","123def","456"],"flags":"","note":"split letter-digit boundary"}
+{"id":"t13062","pattern":"(?i)(?<=a)(?=b)","input":"AB ab Ab aB","op":"split","expect":["A","B a","b A","b a","B"],"flags":"","note":"split ci lookbehind+lookahead"}
+{"id":"t13063","pattern":"(?=\\p{Lu})","input":"camelCaseTest","op":"split","expect":["camel","Case","Test"],"flags":"","note":"split before uppercase"}
+{"id":"t13064","pattern":"(?m)^","input":"abc\ndef\nghi","op":"split","expect":["abc\n","def\n","ghi"],"flags":"","note":"split multiline line starts"}
+{"id":"t13065","pattern":"\\R","input":"a\nb\r\nc\rd","op":"split","expect":["a","b","c","d"],"flags":"","note":"split on \\R linebreak"}
+{"id":"t13066","pattern":"(?<=;)|(?<=,)","input":"a;b,c;d","op":"split","expect":["a;","b,","c;","d"],"flags":"","note":"split after semicolon or comma"}
+{"id":"t13067","pattern":"\\Q.+*\\E{2}","input":".+*.+*","op":"matches","expect":false,"flags":"","note":"quoted then quantified"}
+{"id":"t13068","pattern":"(\\Q.\\E)+","input":"...","op":"matches","expect":true,"flags":"","note":"group quoted dot plus"}
+{"id":"t13069","pattern":"(?i)\\Qabc\\E","input":"ABC","op":"matches","expect":true,"flags":"","note":"ci + quoted"}
+{"id":"t13070","pattern":"(?i)\\Qabc\\E","input":"abc","op":"matches","expect":true,"flags":"","note":"ci + quoted lower"}
+{"id":"t13071","pattern":"\\Q(\\E\\w+\\Q)\\E","input":"(hello) (world)","op":"find","expect":[{"m":"(hello)"},{"m":"(world)"}],"flags":"","note":"quoted parens around word"}
+{"id":"t13072","pattern":"\\Q.\\E","input":"a.b.c","op":"replaceAll","expect":"a!b!c","replacement":"!","flags":"","note":"replace quoted dot"}
+{"id":"t13073","pattern":"\\Q|\\E","input":"a|b|c","op":"split","expect":["a","b","c"],"flags":"","note":"split on quoted pipe"}
+{"id":"t13074","pattern":"(?x) a  b  c  # simple\n","input":"abc","op":"matches","expect":true,"flags":"","note":"comments + trailing comment"}
+{"id":"t13075","pattern":"(?x) ( a ) ( b ) \\1 \\2","input":"abab","op":"matches","expect":true,"flags":"","note":"comments + groups + backrefs"}
+{"id":"t13076","pattern":"(?x) \\d+ # digits","input":"123","op":"matches","expect":true,"flags":"","note":"comments + predefined class"}
+{"id":"t13077","pattern":"(?x) [a-z] + # letters","input":"hello","op":"matches","expect":true,"flags":"","note":"comments + char class"}
+{"id":"t13078","pattern":"(?x) \\b \\w+ \\b","input":"hello world","op":"find","expect":[{"m":"hello"},{"m":"world"}],"flags":"","note":"comments + word boundary"}
+{"id":"t13079","pattern":"(?x) a (?= b )","input":"ab","op":"matches","expect":false,"flags":"","note":"comments + lookahead"}
+{"id":"t13080","pattern":"(?xi) A B C","input":"abc","op":"matches","expect":true,"flags":"","note":"comments + ci"}
+{"id":"t13081","pattern":"(?<=a|bb)c","input":"ac bbc xc","op":"find","expect":[{"m":"c"},{"m":"c"}],"flags":"","note":"lookbehind alternation"}
+{"id":"t13082","pattern":"(?<=\\d|\\s)\\w","input":"1a b2","op":"find","expect":[{"m":"a"},{"m":"b"}],"flags":"","note":"lookbehind alt classes"}
+{"id":"t13083","pattern":"\\w+(?=,|$)","input":"a,b,c","op":"find","expect":[{"m":"a"},{"m":"b"},{"m":"c"}],"flags":"m","note":"lookahead alt comma or eol"}
+{"id":"t13084","pattern":"(?<!\\d|\\s)\\w+","input":"abc 1def ghi","op":"find","expect":[{"m":"abc"},{"m":"ef"},{"m":"hi"}],"flags":"","note":"neg lookbehind alt"}
+{"id":"t13085","pattern":"(?<=a|b|c)d","input":"cd","op":"matches","expect":false,"flags":"","note":"lookbehind triple alt"}
+{"id":"t13086","pattern":"(?<=a|b|c)d","input":"xd","op":"matches","expect":false,"flags":"","note":"lookbehind triple alt fail"}
+{"id":"t13087","pattern":"^\\w+$","input":"abc\n\ndef\n","op":"find","expect":[{"m":"abc"},{"m":"def"}],"flags":"m","note":"multiline skip empty ^\\w+$"}
+{"id":"t13088","pattern":"\\A\\w+\\z","input":"hello","op":"matches","expect":true,"flags":"","note":"\\A \\z exact match"}
+{"id":"t13089","pattern":"\\A\\w+\\z","input":"hello\n","op":"matches","expect":false,"flags":"","note":"\\A \\z with trailing nl"}
+{"id":"t13090","pattern":"\\A\\w+\\Z","input":"hello\n","op":"matches","expect":false,"flags":"","note":"\\A \\Z with trailing nl"}
+{"id":"t13091","pattern":"\\G\\w","input":"abc def","op":"find","expect":[{"m":"a"},{"m":"b"},{"m":"c"}],"flags":"","note":"\\G stops at space"}
+{"id":"t13092","pattern":"^","input":"a\r\nb\rcd","op":"find","expect":[{"m":""},{"m":""},{"m":""},{"m":""}],"flags":"m","note":"multiline ^ all terminators"}
+{"id":"t13093","pattern":"$","input":"a\r\nb\rcd","op":"find","expect":[{"m":""},{"m":""},{"m":""},{"m":""}],"flags":"m","note":"multiline $ all terminators"}
+{"id":"t13094","pattern":"^","input":"a\r\nb\rcd","op":"find","expect":[{"m":""},{"m":""}],"flags":"dm","note":"unix_lines multiline ^ only nl"}
+{"id":"t13095","pattern":"$","input":"a\r\nb\rcd","op":"find","expect":[{"m":""},{"m":""}],"flags":"dm","note":"unix_lines multiline $ only nl"}
+{"id":"t13096","pattern":"(a)\\1","input":"aA","op":"matches","expect":true,"flags":"i","note":"ci backref case differs"}
+{"id":"t13097","pattern":"(a)\\1","input":"Aa","op":"matches","expect":true,"flags":"i","note":"ci backref case differs 2"}
+{"id":"t13098","pattern":"([a-z])\\1","input":"bB","op":"matches","expect":true,"flags":"i","note":"ci backref class"}
+{"id":"t13099","pattern":"(?<x>\\w)\\k<x>","input":"zZ","op":"matches","expect":true,"flags":"i","note":"ci named backref"}
+{"id":"t13100","pattern":"(abc)\\1","input":"abcABC","op":"matches","expect":true,"flags":"i","note":"ci backref word"}
+{"id":"t13101","pattern":"(abc)\\1","input":"abcABD","op":"matches","expect":false,"flags":"i","note":"ci backref word fail"}
+{"id":"t13102","pattern":"(\\w)\\1","input":"aAbBcx","op":"find","expect":[{"m":"aA"},{"m":"bB"}],"flags":"i","note":"ci backref find pairs"}
+{"id":"t13103","pattern":"\\w+","input":"café","op":"matches","expect":true,"flags":"U","note":"unicode_class word"}
+{"id":"t13104","pattern":"\\w+","input":"café","op":"matches","expect":false,"flags":"","note":"ascii word with accent"}
+{"id":"t13105","pattern":"\\d+","input":"٠١","op":"matches","expect":true,"flags":"U","note":"unicode_class arabic digits"}
+{"id":"t13106","pattern":"\\b\\w+\\b","input":"café","op":"matches","expect":true,"flags":"U","note":"unicode_class word boundary"}
+{"id":"t13107","pattern":"\\b\\w+\\b","input":"CAFÉ","op":"matches","expect":true,"flags":"Ui","note":"unicode_class + ci"}
+{"id":"t13108","pattern":"\\w+","input":"hello café world","op":"find","expect":[{"m":"hello"},{"m":"café"},{"m":"world"}],"flags":"U","note":"unicode_class find words"}
+{"id":"t13109","pattern":"\\s","input":" ","op":"matches","expect":true,"flags":"U","note":"unicode_class nbsp is space"}
+{"id":"t13110","pattern":"(a+b)+","input":"abaab","op":"matches","expect":true,"flags":"","note":"nested plus plus"}
+{"id":"t13111","pattern":"(a+b)+","input":"abaaba","op":"matches","expect":false,"flags":"","note":"nested plus plus trail a"}
+{"id":"t13112","pattern":"(a*b)+","input":"babb","op":"matches","expect":true,"flags":"","note":"nested star plus"}
+{"id":"t13113","pattern":"(a{1,2}b){2,3}","input":"abaab","op":"matches","expect":true,"flags":"","note":"nested bounded bounded"}
+{"id":"t13114","pattern":"(a{1,2}b){2,3}","input":"abababab","op":"matches","expect":false,"flags":"","note":"nested bounded too many"}
+{"id":"t13115","pattern":"((a|b)+c)+","input":"abcbacc","op":"matches","expect":false,"flags":"","note":"nested alt plus plus"}
+{"id":"t13116","pattern":"(a+?b)+","input":"abaab","op":"matches","expect":true,"flags":"","note":"nested reluctant plus"}
+{"id":"t13117","pattern":"(a??b)+","input":"babb","op":"matches","expect":true,"flags":"","note":"nested optional reluctant plus"}
+{"id":"t13118","pattern":"(?:a|)+","input":"b","op":"find","expect":[{"m":""},{"m":""}],"flags":"","note":"empty alt plus on non-match"}
+{"id":"t13119","pattern":"(?:a|)","input":"bcd","op":"replaceAll","expect":"XbXcXdX","replacement":"X","flags":"","note":"replace empty alt"}
+{"id":"t13120","pattern":"(?=a)?","input":"abc","op":"find","expect":[{"m":""},{"m":""},{"m":""},{"m":""}],"flags":"","note":"optional lookahead"}
+{"id":"t13121","pattern":"\\b?","input":"abc","op":"find","expect":[{"m":""},{"m":""},{"m":""},{"m":""}],"flags":"","note":"optional word boundary"}
+{"id":"t13122","pattern":"()*","input":"ab","op":"find","expect":[{"m":""},{"m":""},{"m":""}],"flags":"","note":"empty group star"}
+{"id":"t13123","pattern":"()*","input":"ab","op":"replaceAll","expect":"XaXbX","replacement":"X","flags":"","note":"replace empty group star"}
+{"id":"t13124","pattern":"\\R+","input":"\r\n\n\r","op":"matches","expect":true,"flags":"","note":"linebreak plus"}
+{"id":"t13125","pattern":"\\R","input":"\r\n","op":"find","expect":[{"m":"\r\n"}],"flags":"","note":"linebreak crlf single match"}
+{"id":"t13126","pattern":"a\\Rb","input":"a\r\nb","op":"matches","expect":true,"flags":"","note":"linebreak in middle crlf"}
+{"id":"t13127","pattern":"a\\Rb","input":"a\nb","op":"matches","expect":true,"flags":"","note":"linebreak in middle lf"}
+{"id":"t13128","pattern":"a\\Rb","input":"a\rb","op":"matches","expect":true,"flags":"","note":"linebreak in middle cr"}
+{"id":"t13129","pattern":"\\R","input":"a\r\nb\nc\rd","op":"replaceAll","expect":"a\nb\nc\nd","replacement":"\n","flags":"","note":"replace linebreak normalize"}
+{"id":"t13130","pattern":"\\R","input":"a\r\nb\nc","op":"split","expect":["a","b","c"],"flags":"","note":"split linebreak mixed"}
+{"id":"t13131","pattern":"(?s)a\\Rb","input":"a\nb","op":"matches","expect":true,"flags":"","note":"dotall + linebreak"}
+{"id":"t13132","pattern":"\\R{2}","input":"\n\n\r\n\n","op":"find","expect":[{"m":"\n\n"},{"m":"\r\n\n"}],"flags":"","note":"linebreak quantified 2"}
+{"id":"t13133","pattern":"(?<=a+)b","input":"aab ab b","op":"find","expect":[{"m":"b"},{"m":"b"}],"flags":"","note":"var lookbehind a+ b"}
+{"id":"t13134","pattern":"(?<=a{1,3})b","input":"ab aab aaab aaaab","op":"find","expect":[{"m":"b"},{"m":"b"},{"m":"b"},{"m":"b"}],"flags":"","note":"bounded lookbehind"}
+{"id":"t13135","pattern":"(?<=\\w+)\\d","input":"abc1 def2","op":"find","expect":[{"m":"1"},{"m":"2"}],"flags":"","note":"var lookbehind word digit"}
+{"id":"t13136","pattern":"(?<!a+)b","input":"aab cb xb","op":"find","expect":[{"m":"b"},{"m":"b"}],"flags":"","note":"neg var lookbehind"}
+{"id":"t13137","pattern":"(?<=a.*b)c","input":"abc axbc","op":"find","expect":[{"m":"c"},{"m":"c"}],"flags":"","note":"lookbehind dotstar"}
+{"id":"t13138","pattern":"(\\d{2})/(\\d{2})/(\\d{4})","input":"01/15/2024","op":"replaceAll","expect":"2024-01-15","replacement":"$3-$1-$2","flags":"","note":"date reformat"}
+{"id":"t13139","pattern":"(?<h>\\d{2}):(?<m>\\d{2})","input":"14:30","op":"replaceAll","expect":"14h30m","replacement":"${h}h${m}m","flags":"","note":"time reformat named"}
+{"id":"t13140","pattern":"(\\w)(\\w)(\\w)","input":"abcdef","op":"replaceAll","expect":"cbafed","replacement":"$3$2$1","flags":"","note":"reverse triples"}
+{"id":"t13141","pattern":"(a+)(b+)","input":"aaabbb","op":"replaceAll","expect":"A=aaa B=bbb","replacement":"A=$1 B=$2","flags":"","note":"labeled captures"}
+{"id":"t13142","pattern":"(?i:a(?-i:b)c)d","input":"AbCd","op":"matches","expect":true,"flags":"","note":"scoped flag nested toggle"}
+{"id":"t13143","pattern":"(?i:a(?-i:b)c)d","input":"ABCd","op":"matches","expect":false,"flags":"","note":"scoped B must be lowercase"}
+{"id":"t13144","pattern":"(?i:a(?-i:b)c)d","input":"ABCD","op":"matches","expect":false,"flags":"","note":"d must be lowercase"}
+{"id":"t13145","pattern":"a(?i)b(?-i)c(?i)d","input":"aBcD","op":"matches","expect":true,"flags":"","note":"toggle toggle toggle"}
+{"id":"t13146","pattern":"(?s:a.b)c.d","input":"a\nbcxd","op":"matches","expect":true,"flags":"","note":"scoped dotall nl then normal"}
+{"id":"t13147","pattern":"(?s:a.b)c.d","input":"a\nbc\nd","op":"matches","expect":false,"flags":"","note":"scoped dotall off for c.d"}
+{"id":"t13148","pattern":"(?m:^a)b","input":"ab","op":"matches","expect":true,"flags":"","note":"scoped multiline"}
+{"id":"t13149","pattern":"[\\Qa-z\\E]","input":"a","op":"matches","expect":true,"flags":"","note":"QE in class a"}
+{"id":"t13150","pattern":"[\\Qa-z\\E]","input":"-","op":"matches","expect":true,"flags":"","note":"QE in class dash"}
+{"id":"t13151","pattern":"[\\Qa-z\\E]","input":"z","op":"matches","expect":true,"flags":"","note":"QE in class z"}
+{"id":"t13152","pattern":"[\\Qa-z\\E]","input":"b","op":"matches","expect":false,"flags":"","note":"QE in class b not in range"}
+{"id":"t13153","pattern":"[a\\Q]\\E]","input":"]","op":"matches","expect":true,"flags":"","note":"QE close bracket in class"}
+{"id":"t13154","pattern":"[\\Q\\\\E]","input":"\\","op":"matches","expect":true,"flags":"","note":"QE backslash in class"}
+{"id":"t13155","pattern":"\\b(?=\\d)\\w+","input":"abc 123 def","op":"find","expect":[{"m":"123"}],"flags":"","note":"boundary + lookahead digit"}
+{"id":"t13156","pattern":"\\b(?!\\d)\\w+","input":"abc 123 def","op":"find","expect":[{"m":"abc"},{"m":"def"}],"flags":"","note":"boundary + neg lookahead digit"}
+{"id":"t13157","pattern":"(?<=\\b)\\w(?=\\b)","input":"a bc d","op":"find","expect":[{"m":"a"},{"m":"d"}],"flags":"","note":"boundary lookbehind+ahead single"}
+{"id":"t13158","pattern":"\\b\\w+\\b(?=\\s|$)","input":"one two three","op":"find","expect":[{"m":"one"},{"m":"two"},{"m":"three"}],"flags":"","note":"boundary + lookahead space/end"}
+{"id":"t13159","pattern":"\\b(\\w)","input":"hello world","op":"replaceAll","expect":"[h]ello [w]orld","replacement":"[$1]","flags":"","note":"replace first char at boundary"}
+{"id":"t13160","pattern":"a?a?a?aaa","input":"aaa","op":"matches","expect":true,"flags":"","note":"optional then required"}
+{"id":"t13161","pattern":"(a?){5}","input":"aaa","op":"matches","expect":true,"flags":"","note":"optional quantified > input"}
+{"id":"t13162","pattern":"(a{0,3}){3}","input":"aaa","op":"matches","expect":true,"flags":"","note":"bounded zero min nested"}
+{"id":"t13163","pattern":"(?:a|b)*","input":"c","op":"find","expect":[{"m":""},{"m":""}],"flags":"","note":"alt star on non-match"}
+{"id":"t13164","pattern":"(?:)+","input":"","op":"matches","expect":true,"flags":"","note":"empty noncap plus on empty"}
+{"id":"t13165","pattern":"(a{2}|a){3}","input":"aaaa","op":"matches","expect":true,"flags":"","note":"alt quantifier backtrack"}
+{"id":"t13166","pattern":"(a{2}|a){3}","input":"aaa","op":"matches","expect":true,"flags":"","note":"alt quantifier pick singles"}
+{"id":"t13167","pattern":"(a{2}|a){3}","input":"aaaaa","op":"matches","expect":true,"flags":"","note":"alt quantifier 5 chars"}
+{"id":"t13168","pattern":"a*","input":"","op":"find","expect":[{"m":""}],"flags":"","note":"star on empty string"}
+{"id":"t13169","pattern":"a*","input":"","op":"replaceAll","expect":"X","replacement":"X","flags":"","note":"replace star on empty"}
+{"id":"t13170","pattern":"a*","input":"b","op":"find","expect":[{"m":""},{"m":""}],"flags":"","note":"star on non-matching"}
+{"id":"t13171","pattern":"a*","input":"b","op":"replaceAll","expect":"XbX","replacement":"X","flags":"","note":"replace star on non-matching char"}
+{"id":"t13172","pattern":"a*","input":"aab","op":"find","expect":[{"m":"aa"},{"m":""},{"m":""}],"flags":"","note":"star mixed match"}
+{"id":"t13173","pattern":"a*","input":"aab","op":"replaceAll","expect":"XXbX","replacement":"X","flags":"","note":"replace star mixed"}
+{"id":"t13174","pattern":"\\b","input":"ab","op":"replaceAll","expect":"|ab|","replacement":"|","flags":"","note":"replace at word boundaries"}
+{"id":"t13175","pattern":"^","input":"a\nb\nc","op":"replaceAll","expect":"> a\n> b\n> c","replacement":"> ","flags":"m","note":"replace multiline caret"}
+{"id":"t13176","pattern":"(?iu)ß","input":"SS","op":"matches","expect":false,"flags":"","note":"unicode case sharp s"}
+{"id":"t13177","pattern":"(?i)ß","input":"SS","op":"matches","expect":false,"flags":"","note":"ascii case sharp s (no match)"}
+{"id":"t13178","pattern":"(?iu)[a-z]+","input":"CAFÉ","op":"matches","expect":false,"flags":"","note":"unicode case range"}
+{"id":"t13179","pattern":"(?i)[a-z]+","input":"CAFÉ","op":"matches","expect":false,"flags":"","note":"ascii case range accent fails"}
+{"id":"t13180","pattern":"\\p{Lu}","input":"a","op":"matches","expect":true,"flags":"iu","note":"ci+uc on uppercase property"}
+{"id":"t13181","pattern":"[\\p{L}&&[\\p{Lu}]]","input":"A","op":"matches","expect":true,"flags":"","note":"property intersect upper"}
+{"id":"t13182","pattern":"[\\p{L}&&[\\p{Lu}]]","input":"a","op":"matches","expect":false,"flags":"","note":"property intersect lower fails"}
+{"id":"t13183","pattern":"(a+)+b","input":"aaab","op":"matches","expect":true,"flags":"","note":"catastrophic-like but small"}
+{"id":"t13184","pattern":"(a+)+b","input":"aaa","op":"matches","expect":false,"flags":"","note":"catastrophic-like fail small"}
+{"id":"t13185","pattern":"(a*)*b","input":"b","op":"matches","expect":true,"flags":"","note":"nested star star"}
+{"id":"t13186","pattern":"(a|aa)+b","input":"aab","op":"matches","expect":true,"flags":"","note":"alt overlap + end"}
+{"id":"t13187","pattern":"(a|a)+b","input":"aab","op":"matches","expect":true,"flags":"","note":"dup alt + end"}
+{"id":"t13188","pattern":"(?:a{1,2}){1,2}b","input":"aab","op":"matches","expect":true,"flags":"","note":"nested bounded bounded 2"}
+{"id":"t13189","pattern":"(?:a{1,2}){1,2}b","input":"aaab","op":"matches","expect":true,"flags":"","note":"nested bounded 3 a's"}
+{"id":"t13190","pattern":"(?:a{1,2}){1,2}b","input":"aaaab","op":"matches","expect":true,"flags":"","note":"nested bounded 4 a's"}
+{"id":"t13191","pattern":"(?:a{1,2}){1,2}b","input":"aaaaab","op":"matches","expect":false,"flags":"","note":"nested bounded 5 a's fail"}
+{"id":"t13192","pattern":"^\\w+$","input":"abc\r\ndef\r\nghi","op":"find","expect":[{"m":"abc"},{"m":"def"},{"m":"ghi"}],"flags":"m","note":"multiline crlf words"}
+{"id":"t13193","pattern":"^$","input":"abc\r\n\r\ndef","op":"find","expect":[{"m":""}],"flags":"m","note":"multiline crlf empty line"}
+{"id":"t13194","pattern":"\\w+$","input":"abc\r\ndef\r\n","op":"find","expect":[{"m":"abc"},{"m":"def"}],"flags":"m","note":"multiline $ before crlf"}
+{"id":"t13195","pattern":"^abc$","input":"abc\r\n","op":"matches","expect":false,"flags":"m","note":"multiline match before crlf"}
+{"id":"t13196","pattern":"$","input":"a\r\nb","op":"replaceAll","expect":"a!\r\nb!","replacement":"!","flags":"m","note":"replace multiline $ crlf"}
+{"id":"t13197","pattern":"^","input":"a\r\nb","op":"replaceAll","expect":">a\r\n>b","replacement":">","flags":"m","note":"replace multiline ^ crlf"}
+{"id":"t13198","pattern":"(?<=\\w)(?=\\W)|(?<=\\W)(?=\\w)","input":"hello world! bye.","op":"split","expect":["hello"," ","world","! ","bye","."],"flags":"","note":"split word nonword"}
+{"id":"t13199","pattern":"(?=[A-Z])","input":"camelCaseString","op":"split","expect":["camel","Case","String"],"flags":"","note":"split before capital"}
+{"id":"t13200","pattern":"(.)","input":"abc","op":"split","expect":[],"flags":"","note":"split capturing each char"}
+{"id":"t13201","pattern":"(?<=.)","input":"abc","op":"split","expect":["a","b","c"],"flags":"","note":"split after each char"}
+{"id":"t13202","pattern":"a","input":"aaa","op":"split","expect":[],"flags":"","note":"split all separators"}
+{"id":"t13203","pattern":"x","input":"x","op":"split","expect":[],"flags":"","note":"split single sep"}
+{"id":"t13204","pattern":"x","input":"xx","op":"split","expect":[],"flags":"","note":"split double sep"}
+{"id":"t13205","pattern":"\\b","input":"a b c","op":"split","expect":["a"," ","b"," ","c"],"flags":"","note":"split word boundary spaces"}

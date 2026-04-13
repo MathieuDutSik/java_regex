@@ -783,6 +783,9 @@ impl Parser {
                         if items.len() == 1 { return Ok(items.into_iter().next().unwrap()); }
                         Ok(CharClassItem::Nested(CharClass { negated: false, items }))
                     }
+                    '1'..='9' => Err(PatternSyntaxError {
+                        message: format!("Illegal backreference in character class near index {}", self.pos - 1),
+                    }),
                     _ => Ok(CharClassItem::Single(c)),
                 }
             }

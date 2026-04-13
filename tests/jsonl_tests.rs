@@ -177,3 +177,18 @@ fn test_jsonl_gen7() { run_and_assert("tests/java_regex_tests_gen7.jsonl"); }
 
 #[test]
 fn test_jsonl_gen8() { run_and_assert("tests/java_regex_tests_gen8.jsonl"); }
+
+#[test]
+fn test_jsonl_gen9() { run_and_assert("tests/java_regex_tests_gen9.jsonl"); }
+
+#[test]
+fn test_jsonl_gen10() { run_and_assert("tests/java_regex_tests_gen10.jsonl"); }
+
+#[test]
+fn test_jsonl_gen11() { run_and_assert("tests/java_regex_tests_gen11.jsonl"); }
+
+#[test]
+fn test_jsonl_gen12() { run_and_assert("tests/java_regex_tests_gen12.jsonl"); }
+
+#[test]
+fn test_jsonl_gen13() { run_and_assert("tests/java_regex_tests_gen13.jsonl"); }

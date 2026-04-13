@@ -91,12 +91,17 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
             "javaISOControl" | "javaUnicodeIdentifierStart" | "javaUnicodeIdentifierPart"
         );
     }
+    // Script names require "Is" prefix in Java
+    let name_lower_full = name.to_lowercase();
+    if is_script_name(&name_lower_full) {
+        return true;
+    }
     let name = name.strip_prefix("Is").unwrap_or(name);
     let name_lower = name.to_lowercase();
     matches!(name_lower.as_str(),
         "l" | "letter" | "lu" | "uppercase_letter" | "upper" | "ll" | "lowercase_letter" | "lower" |
         "lt" | "titlecase_letter" | "lm" | "modifier_letter" | "lo" | "other_letter" |
-        "m" | "mark" | "mn" | "nonspacing_mark" | "mc" | "spacing_mark" |
+        "m" | "mark" | "mn" | "nonspacing_mark" | "mc" | "spacing_mark" | "me" | "enclosing_mark" |
         "n" | "number" | "nd" | "decimal_digit_number" | "digit" | "nl" | "letter_number" | "no" | "other_number" |
         "p" | "punctuation" | "punct" |
         "pc" | "connector_punctuation" | "pd" | "dash_punctuation" |
@@ -105,11 +110,7 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
         "s" | "symbol" | "sm" | "math_symbol" | "sc" | "currency_symbol" | "sk" | "modifier_symbol" | "so" | "other_symbol" |
         "z" | "separator" | "zs" | "space_separator" | "zl" | "line_separator" | "zp" | "paragraph_separator" |
         "c" | "control" | "other" | "cc" | "cntrl" | "cf" | "format" | "co" | "private_use" | "cn" | "unassigned" |
-        "alpha" | "alnum" | "ascii" | "blank" | "graph" | "print" | "space" | "white_space" | "xdigit" |
-        "greek" | "isgreek" | "latin" | "islatin" | "cyrillic" | "iscyrillic" |
-        "han" | "ishan" | "arabic" | "isarabic" | "armenian" | "isarmenian" |
-        "hebrew" | "ishebrew" | "thai" | "isthai" | "hiragana" | "ishiragana" |
-        "katakana" | "iskatakana" | "devanagari" | "isdevanagari"
+        "alpha" | "alnum" | "ascii" | "blank" | "graph" | "print" | "space" | "white_space" | "xdigit"
     )
 }
 
@@ -134,6 +135,14 @@ pub fn match_unicode_property(name: &str, ch: char) -> bool {
         _ => {}
     }
 
+    // Script names require "Is" prefix in Java (e.g. \p{IsLatin} not \p{Latin})
+    if let Some(script) = name.strip_prefix("Is").or_else(|| name.strip_prefix("is")) {
+        let script_lower = script.to_lowercase();
+        if let Some(result) = match_script(&script_lower, ch) {
+            return result;
+        }
+    }
+
     let name = name.strip_prefix("Is").unwrap_or(name);
     let name_lower = name.to_lowercase();
 
@@ -149,22 +158,6 @@ pub fn match_unicode_property(name: &str, ch: char) -> bool {
         "print" => return ch.is_ascii_graphic() || ch == ' ',
         "space" | "white_space" => return ch.is_ascii_whitespace(),
         "xdigit" => return ch.is_ascii_hexdigit(),
-        _ => {}
-    }
-
-    // Unicode scripts
-    match name_lower.as_str() {
-        "greek" | "isgreek" => return is_script_greek(ch),
-        "latin" | "islatin" => return is_script_latin(ch),
-        "cyrillic" | "iscyrillic" => return is_script_cyrillic(ch),
-        "han" | "ishan" => return is_script_han(ch),
-        "arabic" | "isarabic" => return is_script_arabic(ch),
-        "armenian" | "isarmenian" => return ('\u{0530}'..='\u{058F}').contains(&ch) || ('\u{FB00}'..='\u{FB17}').contains(&ch),
-        "hebrew" | "ishebrew" => return ('\u{0590}'..='\u{05FF}').contains(&ch) || ('\u{FB1D}'..='\u{FB4F}').contains(&ch),
-        "thai" | "isthai" => return ('\u{0E00}'..='\u{0E7F}').contains(&ch),
-        "hiragana" | "ishiragana" => return ('\u{3040}'..='\u{309F}').contains(&ch),
-        "katakana" | "iskatakana" => return ('\u{30A0}'..='\u{30FF}').contains(&ch),
-        "devanagari" | "isdevanagari" => return ('\u{0900}'..='\u{097F}').contains(&ch),
         _ => {}
     }
 
@@ -186,6 +179,7 @@ fn match_ugc_category(name: &str, cat: UGC) -> bool {
         "m" | "mark" => matches!(cat, UGC::NonspacingMark | UGC::SpacingMark | UGC::EnclosingMark),
         "mn" | "nonspacing_mark" => matches!(cat, UGC::NonspacingMark),
         "mc" | "spacing_mark" => matches!(cat, UGC::SpacingMark),
+        "me" | "enclosing_mark" => matches!(cat, UGC::EnclosingMark),
         "n" | "number" => matches!(cat, UGC::DecimalNumber | UGC::LetterNumber | UGC::OtherNumber),
         "nd" | "decimal_digit_number" | "digit" => matches!(cat, UGC::DecimalNumber),
         "nl" | "letter_number" => matches!(cat, UGC::LetterNumber),
@@ -244,4 +238,36 @@ fn is_script_han(ch: char) -> bool {
 fn is_script_arabic(ch: char) -> bool {
     ('\u{0600}'..='\u{06FF}').contains(&ch) ||
     ('\u{0750}'..='\u{077F}').contains(&ch)
+}
+
+/// Check if a lowercased name (after stripping "Is" prefix) is a known script.
+fn is_script_name(name_lower_full: &str) -> bool {
+    // Script names must start with "is" in Java
+    if let Some(script) = name_lower_full.strip_prefix("is") {
+        matches!(script,
+            "greek" | "latin" | "cyrillic" | "han" | "arabic" |
+            "armenian" | "hebrew" | "thai" | "hiragana" | "katakana" | "devanagari"
+        )
+    } else {
+        false
+    }
+}
+
+/// Match a script name (already stripped of "Is" prefix, lowercased).
+/// Returns Some(bool) if it's a known script, None otherwise.
+fn match_script(script_lower: &str, ch: char) -> Option<bool> {
+    match script_lower {
+        "greek" => Some(is_script_greek(ch)),
+        "latin" => Some(is_script_latin(ch)),
+        "cyrillic" => Some(is_script_cyrillic(ch)),
+        "han" => Some(is_script_han(ch)),
+        "arabic" => Some(is_script_arabic(ch)),
+        "armenian" => Some(('\u{0530}'..='\u{058F}').contains(&ch) || ('\u{FB00}'..='\u{FB17}').contains(&ch)),
+        "hebrew" => Some(('\u{0590}'..='\u{05FF}').contains(&ch) || ('\u{FB1D}'..='\u{FB4F}').contains(&ch)),
+        "thai" => Some(('\u{0E00}'..='\u{0E7F}').contains(&ch)),
+        "hiragana" => Some(('\u{3040}'..='\u{309F}').contains(&ch)),
+        "katakana" => Some(('\u{30A0}'..='\u{30FF}').contains(&ch)),
+        "devanagari" => Some(('\u{0900}'..='\u{097F}').contains(&ch)),
+        _ => None,
+    }
 }

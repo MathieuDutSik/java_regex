@@ -3,6 +3,18 @@ use std::collections::HashMap;
 use crate::types::*;
 use crate::unicode::*;
 
+fn single_char_lowercase(c: char) -> Option<char> {
+    let mut iter = c.to_lowercase();
+    let first = iter.next()?;
+    if iter.next().is_some() { None } else { Some(first) }
+}
+
+fn single_char_uppercase(c: char) -> Option<char> {
+    let mut iter = c.to_uppercase();
+    let first = iter.next()?;
+    if iter.next().is_some() { None } else { Some(first) }
+}
+
 pub struct Engine {
     pub input: Vec<char>,
     pub flags: Flags,
@@ -695,15 +707,20 @@ impl Engine {
     fn match_char_range(&self, ch: char, start: char, end: char) -> bool {
         if self.flags.case_insensitive {
             if self.flags.unicode_case {
-                let ch_lower = ch.to_lowercase().next().unwrap_or(ch);
-                let ch_upper = ch.to_uppercase().next().unwrap_or(ch);
-                let s_lower = start.to_lowercase().next().unwrap_or(start);
-                let e_lower = end.to_lowercase().next().unwrap_or(end);
-                let s_upper = start.to_uppercase().next().unwrap_or(start);
-                let e_upper = end.to_uppercase().next().unwrap_or(end);
-                (ch_lower >= s_lower && ch_lower <= e_lower) ||
-                (ch_upper >= s_upper && ch_upper <= e_upper) ||
-                (ch >= start && ch <= end)
+                if ch >= start && ch <= end { return true; }
+                let ch_lower = single_char_lowercase(ch);
+                let s_lower = single_char_lowercase(start);
+                let e_lower = single_char_lowercase(end);
+                if let (Some(cl), Some(sl), Some(el)) = (ch_lower, s_lower, e_lower) {
+                    if cl >= sl && cl <= el { return true; }
+                }
+                let ch_upper = single_char_uppercase(ch);
+                let s_upper = single_char_uppercase(start);
+                let e_upper = single_char_uppercase(end);
+                if let (Some(cu), Some(su), Some(eu)) = (ch_upper, s_upper, e_upper) {
+                    if cu >= su && cu <= eu { return true; }
+                }
+                false
             } else {
                 let ch_lower = ch.to_ascii_lowercase();
                 let ch_upper = ch.to_ascii_uppercase();

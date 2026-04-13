@@ -157,14 +157,18 @@ impl Parser {
                 let saved = self.pos;
                 self.advance();
                 match self.parse_quantifier_braces() {
-                    Ok(_) => {
-                        let literal_str: String = self.chars[saved..self.pos].iter().collect();
-                        let nodes: Vec<Node> = literal_str.chars().map(Node::Literal).collect();
-                        Ok(Node::Group {
+                    Ok((min, max)) => {
+                        let kind = match self.peek() {
+                            Some('?') => { self.advance(); QuantKind::Reluctant }
+                            Some('+') => { self.advance(); QuantKind::Possessive }
+                            _ => QuantKind::Greedy,
+                        };
+                        let empty = Node::Group {
                             index: None,
                             name: None,
-                            inner: Pattern { branches: vec![nodes] },
-                        })
+                            inner: Pattern { branches: vec![vec![]] },
+                        };
+                        Ok(Node::Quantified { inner: Box::new(empty), min, max, kind })
                     }
                     Err(_) => {
                         self.pos = saved;
@@ -303,7 +307,7 @@ impl Parser {
                     else { break; }
                 }
             }
-            if hex.is_empty() {
+            if hex.len() != 2 {
                 return Err(PatternSyntaxError { message: "Invalid hex escape".to_string() });
             }
             let code = u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
@@ -328,20 +332,27 @@ impl Parser {
     }
 
     fn parse_octal_char(&mut self) -> Result<char, PatternSyntaxError> {
+        // Java's octal: \0 already consumed, read up to 3 more digits.
+        // If first digit is 0-3, read up to 2 more (total value ≤ 0377).
+        // If first digit is 4-7, read only 1 more (total value ≤ 077).
+        let first = match self.peek() {
+            Some(c) if ('0'..='7').contains(&c) => { self.advance(); c }
+            _ => {
+                return Err(PatternSyntaxError {
+                    message: format!("Illegal octal escape sequence near index {}", self.pos),
+                });
+            }
+        };
+        let max_more = if ('0'..='3').contains(&first) { 2 } else { 1 };
         let mut oct = String::new();
-        for _ in 0..3 {
+        oct.push(first);
+        for _ in 0..max_more {
             if let Some(c) = self.peek() {
                 if ('0'..='7').contains(&c) { oct.push(c); self.advance(); }
                 else { break; }
             }
         }
-        if oct.is_empty() {
-            return Ok('\0');
-        }
         let code = u32::from_str_radix(&oct, 8).unwrap_or(0);
-        if code > 0o377 {
-            return Ok(char::from_u32(code).unwrap_or('\0'));
-        }
         Ok(char::from_u32(code).unwrap_or('\0'))
     }
 
@@ -434,6 +445,11 @@ impl Parser {
         }
         if name.is_empty() {
             return Err(PatternSyntaxError { message: "Empty group name".to_string() });
+        }
+        if name.starts_with(|c: char| c.is_ascii_digit()) {
+            return Err(PatternSyntaxError {
+                message: format!("Group name must start with a letter, not '{}'", name.chars().next().unwrap()),
+            });
         }
         Ok(name)
     }

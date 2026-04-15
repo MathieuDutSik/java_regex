@@ -222,3 +222,34 @@ fn test_diff() { run_and_assert("tests/java_regex_tests_diff.jsonl"); }
 
 #[test]
 fn test_diff2() { run_and_assert("tests/java_regex_tests_diff2.jsonl"); }
+
+#[test]
+fn test_diff_s100() { run_and_assert("tests/java_regex_tests_diff_s100.jsonl"); }
+#[test]
+fn test_diff_s200() { run_and_assert("tests/java_regex_tests_diff_s200.jsonl"); }
+#[test]
+fn test_diff_s300() { run_and_assert("tests/java_regex_tests_diff_s300.jsonl"); }
+#[test]
+fn test_diff_s400() { run_and_assert("tests/java_regex_tests_diff_s400.jsonl"); }
+#[test]
+fn test_diff_s500() { run_and_assert("tests/java_regex_tests_diff_s500.jsonl"); }
+#[test]
+fn test_diff_s600() { run_and_assert("tests/java_regex_tests_diff_s600.jsonl"); }
+#[test]
+fn test_diff_s700() { run_and_assert("tests/java_regex_tests_diff_s700.jsonl"); }
+#[test]
+fn test_diff_s800() { run_and_assert("tests/java_regex_tests_diff_s800.jsonl"); }
+#[test]
+fn test_diff_s900() { run_and_assert("tests/java_regex_tests_diff_s900.jsonl"); }
+#[test]
+fn test_diff_s1000() { run_and_assert("tests/java_regex_tests_diff_s1000.jsonl"); }
+#[test]
+fn test_diff_s2001() { run_and_assert("tests/java_regex_tests_diff_s2001.jsonl"); }
+#[test]
+fn test_diff_s2002() { run_and_assert("tests/java_regex_tests_diff_s2002.jsonl"); }
+#[test]
+fn test_diff_s2003() { run_and_assert("tests/java_regex_tests_diff_s2003.jsonl"); }
+#[test]
+fn test_diff_s2004() { run_and_assert("tests/java_regex_tests_diff_s2004.jsonl"); }
+#[test]
+fn test_diff_s2005() { run_and_assert("tests/java_regex_tests_diff_s2005.jsonl"); }

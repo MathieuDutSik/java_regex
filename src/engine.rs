@@ -448,11 +448,15 @@ impl Engine {
                     if new_pos > pos {
                         state.captures = temp_state.captures;
                         self.match_greedy(atom, min, max, count + 1, rest, new_pos, state)
-                    } else if count + 1 >= min {
-                        state.captures = temp_state.captures;
-                        self.match_nodes(rest, pos, state)
                     } else {
-                        false
+                        // Zero-width match — count as matched up to max, then try rest
+                        state.captures = temp_state.captures;
+                        let effective = (count + 1).max(min);
+                        if effective >= min {
+                            self.match_nodes(rest, pos, state)
+                        } else {
+                            false
+                        }
                     }
                 } else {
                     false
@@ -530,6 +534,15 @@ impl Engine {
                             if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
+                        } else {
+                            // Zero-width group match — treat as satisfied, try rest
+                            state.captures = branch_state.captures.clone();
+                            let effective = (count + 1).max(min);
+                            if effective >= min {
+                                if self.match_nodes(rest, pos, state) {
+                                    return true;
+                                }
+                            }
                         }
                     }
                     state.captures = saved;
@@ -544,7 +557,14 @@ impl Engine {
                         state.captures = temp_state.captures;
                         self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state)
                     } else {
-                        false
+                        // Zero-width match — treat as satisfied, try rest
+                        state.captures = temp_state.captures;
+                        let effective = (count + 1).max(min);
+                        if effective >= min {
+                            self.match_nodes(rest, pos, state)
+                        } else {
+                            false
+                        }
                     }
                 } else {
                     false
@@ -564,10 +584,11 @@ impl Engine {
             let mut temp_state = state.clone();
             if self.match_nodes(std::slice::from_ref(atom), current_pos, &mut temp_state) {
                 let new_pos = temp_state.match_end;
-                if new_pos <= current_pos { break; }
                 state.captures = temp_state.captures;
                 current_pos = new_pos;
                 count += 1;
+                // Zero-width match: keep counting but don't loop forever
+                if new_pos == current_pos && count >= min { break; }
             } else {
                 break;
             }
@@ -698,7 +719,11 @@ impl Engine {
                 CharClassItem::UnicodeProperty { name, negated } => {
                     let mut matched = match_unicode_property(name, ch);
                     if !matched && self.flags.case_insensitive {
-                        if self.flags.unicode_case {
+                        // For Lu/Ll/Lt, case-insensitive matching treats them as LC (cased letter)
+                        let name_lower = name.to_lowercase();
+                        if matches!(name_lower.as_str(), "lu" | "uppercase_letter" | "ll" | "lowercase_letter" | "lt" | "titlecase_letter") {
+                            matched = match_unicode_property("lc", ch);
+                        } else if self.flags.unicode_case {
                             let upper = ch.to_uppercase().next().unwrap_or(ch);
                             let lower = ch.to_lowercase().next().unwrap_or(ch);
                             if upper != ch { matched = match_unicode_property(name, upper); }

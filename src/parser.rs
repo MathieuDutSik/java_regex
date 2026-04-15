@@ -693,15 +693,16 @@ impl Parser {
                     at_start = false;
                     continue;
                 }
+                Some('[') => {
+                    let nested = self.parse_char_class()?;
+                    left_items.push(CharClassItem::Nested(nested));
+                    at_start = false;
+                    continue;
+                }
                 Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => {
                     self.advance();
                     self.advance();
-                    let right_items = if self.peek() == Some('[') {
-                        let nested = self.parse_char_class()?;
-                        vec![CharClassItem::Nested(nested)]
-                    } else {
-                        self.parse_char_class_items()?
-                    };
+                    let right_items = self.parse_intersection_rhs()?;
                     let mut result = vec![CharClassItem::Intersection(left_items, right_items)];
                     while self.pos + 1 < self.chars.len()
                         && self.peek() == Some('&')
@@ -709,12 +710,7 @@ impl Parser {
                     {
                         self.advance();
                         self.advance();
-                        let next_items = if self.peek() == Some('[') {
-                            let nested = self.parse_char_class()?;
-                            vec![CharClassItem::Nested(nested)]
-                        } else {
-                            self.parse_char_class_items()?
-                        };
+                        let next_items = self.parse_intersection_rhs()?;
                         result = vec![CharClassItem::Intersection(result, next_items)];
                     }
                     return Ok(result);
@@ -747,6 +743,44 @@ impl Parser {
         }
 
         Ok(left_items)
+    }
+
+    /// Parse the right-hand side of &&. This collects nested [...] groups and bare
+    /// items until the next && or enclosing ].
+    fn parse_intersection_rhs(&mut self) -> Result<Vec<CharClassItem>, PatternSyntaxError> {
+        let mut items = Vec::new();
+        loop {
+            match self.peek() {
+                None => return Err(PatternSyntaxError { message: "Unclosed character class".to_string() }),
+                Some(']') => break,
+                Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => break,
+                Some('[') => {
+                    let nested = self.parse_char_class()?;
+                    items.push(CharClassItem::Nested(nested));
+                }
+                _ => {
+                    let item = self.parse_char_class_item()?;
+                    if self.peek() == Some('-') && self.pos + 1 < self.chars.len()
+                        && self.chars[self.pos + 1] != ']'
+                        && self.chars[self.pos + 1] != '['
+                    {
+                        if let CharClassItem::Single(start) = item {
+                            self.advance();
+                            let end_item = self.parse_char_class_item()?;
+                            if let CharClassItem::Single(end) = end_item {
+                                items.push(CharClassItem::Range(start, end));
+                                continue;
+                            }
+                        }
+                    }
+                    items.push(item);
+                }
+            }
+        }
+        if items.is_empty() {
+            return Err(PatternSyntaxError { message: "Empty intersection operand".to_string() });
+        }
+        Ok(items)
     }
 
     fn parse_char_class_item(&mut self) -> Result<CharClassItem, PatternSyntaxError> {

@@ -104,6 +104,7 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
     let name_lower = name.to_lowercase();
     matches!(name_lower.as_str(),
         "l" | "letter" | "lu" | "uppercase_letter" | "upper" | "ll" | "lowercase_letter" | "lower" |
+        "lc" | "cased_letter" |
         "lt" | "titlecase_letter" | "lm" | "modifier_letter" | "lo" | "other_letter" |
         "m" | "mark" | "mn" | "nonspacing_mark" | "mc" | "spacing_mark" | "me" | "enclosing_mark" |
         "n" | "number" | "nd" | "decimal_digit_number" | "digit" | "nl" | "letter_number" | "no" | "other_number" |
@@ -114,7 +115,8 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
         "s" | "symbol" | "sm" | "math_symbol" | "sc" | "currency_symbol" | "sk" | "modifier_symbol" | "so" | "other_symbol" |
         "z" | "separator" | "zs" | "space_separator" | "zl" | "line_separator" | "zp" | "paragraph_separator" |
         "c" | "control" | "other" | "cc" | "cntrl" | "cf" | "format" | "co" | "private_use" | "cn" | "unassigned" |
-        "alpha" | "alnum" | "ascii" | "blank" | "graph" | "print" | "space" | "white_space" | "xdigit"
+        "alpha" | "alnum" | "ascii" | "blank" | "graph" | "print" | "space" | "white_space" | "xdigit" |
+        "l1" | "latin1"
     )
 }
 
@@ -181,6 +183,7 @@ pub fn match_unicode_property(name: &str, ch: char) -> bool {
         "print" => return ch.is_ascii_graphic() || ch == ' ',
         "space" | "white_space" => return ch.is_ascii_whitespace(),
         "xdigit" => return ch.is_ascii_hexdigit(),
+        "l1" | "latin1" => return (ch as u32) <= 0xFF,
         _ => {}
     }
 
@@ -196,6 +199,7 @@ fn match_ugc_category(name: &str, cat: UGC) -> bool {
             UGC::ModifierLetter | UGC::OtherLetter),
         "lu" | "uppercase_letter" => matches!(cat, UGC::UppercaseLetter),
         "ll" | "lowercase_letter" => matches!(cat, UGC::LowercaseLetter),
+        "lc" | "cased_letter" => matches!(cat, UGC::UppercaseLetter | UGC::LowercaseLetter | UGC::TitlecaseLetter),
         "lt" | "titlecase_letter" => matches!(cat, UGC::TitlecaseLetter),
         "lm" | "modifier_letter" => matches!(cat, UGC::ModifierLetter),
         "lo" | "other_letter" => matches!(cat, UGC::OtherLetter),
@@ -349,6 +353,20 @@ fn match_block(block_norm: &str, ch: char) -> Option<bool> {
         "latinextendedadditional" => Some(('\u{1E00}'..='\u{1EFF}').contains(&ch)),
         "armenian" => Some(('\u{0530}'..='\u{058F}').contains(&ch)),
         "hebrew" => Some(('\u{0590}'..='\u{05FF}').contains(&ch)),
+        "bengali" => Some(('\u{0980}'..='\u{09FF}').contains(&ch)),
+        "tamil" => Some(('\u{0B80}'..='\u{0BFF}').contains(&ch)),
+        "telugu" => Some(('\u{0C00}'..='\u{0C7F}').contains(&ch)),
+        "georgian" => Some(('\u{10A0}'..='\u{10FF}').contains(&ch)),
+        "hanguljamoextended-a" => Some(('\u{A960}'..='\u{A97F}').contains(&ch)),
+        "hanguljamoextended-b" => Some(('\u{D7B0}'..='\u{D7FF}').contains(&ch)),
+        "highsurrogates" => { let c = ch as u32; Some((0xD800..=0xDB7F).contains(&c)) }
+        "highprivateusesurrogates" => { let c = ch as u32; Some((0xDB80..=0xDBFF).contains(&c)) }
+        "lowsurrogates" => { let c = ch as u32; Some((0xDC00..=0xDFFF).contains(&c)) }
+        "halfwidthandfullwidthforms" => Some(('\u{FF00}'..='\u{FFEF}').contains(&ch)),
+        "specials" => Some(('\u{FFF0}'..='\u{FFFF}').contains(&ch)),
+        "deseret" => Some(('\u{10400}'..='\u{1044F}').contains(&ch)),
+        "olditalic" => Some(('\u{10300}'..='\u{1032F}').contains(&ch)),
+        "gothic" => Some(('\u{10330}'..='\u{1034F}').contains(&ch)),
         _ => None,
     }
 }

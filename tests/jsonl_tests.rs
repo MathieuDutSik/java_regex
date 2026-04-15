@@ -213,3 +213,12 @@ fn test_jsonl_gen19() { run_and_assert("tests/java_regex_tests_gen19.jsonl"); }
 
 #[test]
 fn test_jsonl_gen20() { run_and_assert("tests/java_regex_tests_gen20.jsonl"); }
+
+#[test]
+fn test_openjdk() { run_and_assert("tests/java_regex_tests_openjdk.jsonl"); }
+
+#[test]
+fn test_diff() { run_and_assert("tests/java_regex_tests_diff.jsonl"); }
+
+#[test]
+fn test_diff2() { run_and_assert("tests/java_regex_tests_diff2.jsonl"); }

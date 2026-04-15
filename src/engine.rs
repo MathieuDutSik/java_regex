@@ -22,6 +22,8 @@ pub struct Engine {
     pub named_groups: HashMap<String, usize>,
     steps: u64,
     max_steps: u64,
+    depth: u32,
+    max_depth: u32,
     pub search_start: usize,
 }
 
@@ -49,6 +51,8 @@ impl Engine {
             named_groups,
             steps: 0,
             max_steps: 5_000_000,
+            depth: 0,
+            max_depth: 500,
             search_start: 0,
         }
     }
@@ -83,6 +87,17 @@ impl Engine {
 
     fn match_nodes(&mut self, nodes: &[Node], pos: usize, state: &mut State) -> bool {
         if !self.step() { return false; }
+        self.depth += 1;
+        if self.depth > self.max_depth {
+            self.depth -= 1;
+            return false;
+        }
+        let result = self.match_nodes_inner(nodes, pos, state);
+        self.depth -= 1;
+        result
+    }
+
+    fn match_nodes_inner(&mut self, nodes: &[Node], pos: usize, state: &mut State) -> bool {
 
         if nodes.is_empty() {
             state.match_end = pos;
@@ -682,11 +697,19 @@ impl Engine {
                 }
                 CharClassItem::UnicodeProperty { name, negated } => {
                     let mut matched = match_unicode_property(name, ch);
-                    if !matched && self.flags.case_insensitive && self.flags.unicode_case {
-                        let upper = ch.to_uppercase().next().unwrap_or(ch);
-                        let lower = ch.to_lowercase().next().unwrap_or(ch);
-                        if upper != ch { matched = match_unicode_property(name, upper); }
-                        if !matched && lower != ch { matched = match_unicode_property(name, lower); }
+                    if !matched && self.flags.case_insensitive {
+                        if self.flags.unicode_case {
+                            let upper = ch.to_uppercase().next().unwrap_or(ch);
+                            let lower = ch.to_lowercase().next().unwrap_or(ch);
+                            if upper != ch { matched = match_unicode_property(name, upper); }
+                            if !matched && lower != ch { matched = match_unicode_property(name, lower); }
+                        } else {
+                            // ASCII case folding
+                            let upper = ch.to_ascii_uppercase();
+                            let lower = ch.to_ascii_lowercase();
+                            if upper != ch { matched = match_unicode_property(name, upper); }
+                            if !matched && lower != ch { matched = match_unicode_property(name, lower); }
+                        }
                     }
                     if *negated { if !matched { return true; } }
                     else if matched { return true; }

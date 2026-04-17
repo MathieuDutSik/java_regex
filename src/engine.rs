@@ -287,8 +287,24 @@ impl Engine {
                 }
             }
 
-            Node::GreedyCont { atom, min, max, count, rest } => {
-                self.match_greedy(atom, *min, *max, *count, rest, pos, state)
+            Node::GreedyCont { atom, min, max, count, rest, prev_pos } => {
+                if pos == *prev_pos {
+                    // No progress made — atom matched zero-width. Since it can
+                    // match empty forever, treat as having reached min, try rest.
+                    self.match_nodes(rest, pos, state)
+                } else {
+                    self.match_greedy(atom, *min, *max, *count, rest, pos, state)
+                }
+            }
+
+            Node::ReluctantCont { atom, min, max, count, rest, prev_pos } => {
+                if pos == *prev_pos {
+                    // No progress made — atom matched zero-width. Since it can
+                    // match empty forever, treat as having reached min, try rest.
+                    self.match_nodes(rest, pos, state)
+                } else {
+                    self.match_reluctant(atom, *min, *max, *count, rest, pos, state)
+                }
             }
         }
     }
@@ -402,6 +418,7 @@ impl Engine {
                         min, max,
                         count: count + 1,
                         rest: rest.to_vec(),
+                        prev_pos: pos,
                     });
                     if self.match_nodes(&combined2, pos, state) {
                         return true;
@@ -526,24 +543,17 @@ impl Engine {
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
-                    let mut branch_state = state.clone();
-                    if self.match_nodes_to_end(&combined, pos, &mut branch_state) {
-                        let new_pos = branch_state.match_end;
-                        if new_pos > pos {
-                            state.captures = branch_state.captures.clone();
-                            if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
-                                return true;
-                            }
-                        } else {
-                            // Zero-width group match — treat as satisfied, try rest
-                            state.captures = branch_state.captures.clone();
-                            let effective = (count + 1).max(min);
-                            if effective >= min {
-                                if self.match_nodes(rest, pos, state) {
-                                    return true;
-                                }
-                            }
-                        }
+
+                    // Use ReluctantCont to enable backtracking within the group
+                    combined.push(Node::ReluctantCont {
+                        atom: Box::new(atom.clone()),
+                        min, max,
+                        count: count + 1,
+                        rest: rest.to_vec(),
+                        prev_pos: pos,
+                    });
+                    if self.match_nodes(&combined, pos, state) {
+                        return true;
                     }
                     state.captures = saved;
                 }

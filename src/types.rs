@@ -82,6 +82,15 @@ pub enum Node {
         max: u32,
         count: u32,
         rest: Vec<Node>,
+        prev_pos: usize,
+    },
+    ReluctantCont {        // engine-internal: continue reluctant quantifier loop
+        atom: Box<Node>,
+        min: u32,
+        max: u32,
+        count: u32,
+        rest: Vec<Node>,
+        prev_pos: usize,
     },
 }
 

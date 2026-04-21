@@ -595,10 +595,10 @@ impl Engine {
             if self.match_nodes(std::slice::from_ref(atom), current_pos, &mut temp_state) {
                 let new_pos = temp_state.match_end;
                 state.captures = temp_state.captures;
-                current_pos = new_pos;
                 count += 1;
-                // Zero-width match: keep counting but don't loop forever
+                // Zero-width match: stop to avoid infinite loop
                 if new_pos == current_pos && count >= min { break; }
+                current_pos = new_pos;
             } else {
                 break;
             }
@@ -733,7 +733,8 @@ impl Engine {
                         let name_lower = name.to_lowercase();
                         if matches!(name_lower.as_str(), "lu" | "uppercase_letter" | "ll" | "lowercase_letter" | "lt" | "titlecase_letter") {
                             matched = match_unicode_property("lc", ch);
-                        } else if self.flags.unicode_case {
+                        } else if self.flags.unicode_case || name.starts_with("java") {
+                            // Unicode case folding for unicode_case mode and java* properties
                             let upper = ch.to_uppercase().next().unwrap_or(ch);
                             let lower = ch.to_lowercase().next().unwrap_or(ch);
                             if upper != ch { matched = match_unicode_property(name, upper); }

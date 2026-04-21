@@ -124,8 +124,10 @@ impl Regex {
         let mut last_end = 0;
         let mut search_pos = 0;
 
+        let mut prev_match_end = 0;
         while search_pos <= input_len {
             let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+            engine.search_start = prev_match_end;
 
             if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
                 result.extend(&input_chars[last_end..search_pos]);
@@ -138,6 +140,7 @@ impl Regex {
                 result.push_str(&replaced);
 
                 last_end = end_pos;
+                prev_match_end = end_pos;
                 if end_pos == search_pos {
                     if search_pos < input_len {
                         result.push(input_chars[search_pos]);
@@ -212,19 +215,23 @@ impl Regex {
         let input_chars: Vec<char> = input.chars().collect();
         let input_len = input_chars.len();
         let mut parts = Vec::new();
-        let mut last_end = 0;
+        let mut index = 0; // last match end, equivalent to Java's index
         let mut search_pos = 0;
 
+        let mut prev_match_end = 0;
         while search_pos <= input_len {
             let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+            engine.search_start = prev_match_end;
 
             if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                if end_pos == search_pos && end_pos == last_end {
+                // Java: skip zero-width match at the beginning of input
+                if index == 0 && search_pos == 0 && end_pos == 0 {
                     search_pos += 1;
                     continue;
                 }
-                parts.push(input_chars[last_end..search_pos].iter().collect());
-                last_end = end_pos;
+                parts.push(input_chars[index..search_pos].iter().collect());
+                index = end_pos;
+                prev_match_end = end_pos;
                 if end_pos == search_pos {
                     search_pos += 1;
                 } else {
@@ -235,13 +242,14 @@ impl Regex {
             }
         }
 
-        parts.push(input_chars[last_end..].iter().collect());
+        parts.push(input_chars[index..].iter().collect());
 
+        // Java default (limit=0): remove trailing empty strings
         while parts.last().is_some_and(|s: &String| s.is_empty()) {
             parts.pop();
         }
 
-        if parts.is_empty() && last_end == 0 {
+        if parts.is_empty() && index == 0 {
             parts.push(input.to_string());
         }
 

@@ -220,8 +220,11 @@ impl Engine {
 
             Node::LinebreakMatcher => {
                 if pos < self.input.len() {
+                    // Try \r\n first, then fall back to just \r
                     if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
-                        return self.match_nodes(&nodes[1..], pos + 2, state);
+                        if self.match_nodes(&nodes[1..], pos + 2, state) {
+                            return true;
+                        }
                     }
                     if is_linebreak(self.input[pos]) {
                         return self.match_nodes(&nodes[1..], pos + 1, state);
@@ -682,8 +685,16 @@ impl Engine {
         if self.flags.unix_lines {
             len >= 1 && pos == len - 1 && self.input[pos] == '\n'
         } else {
-            (len >= 2 && pos == len - 2 && self.input[pos] == '\r' && self.input[pos + 1] == '\n')
-                || (len >= 1 && pos == len - 1 && (self.input[pos] == '\n' || self.input[pos] == '\r'))
+            // \r\n at end: match before the \r
+            if len >= 2 && pos == len - 2 && self.input[pos] == '\r' && self.input[pos + 1] == '\n' {
+                return true;
+            }
+            // Single \n at end — but NOT if preceded by \r (that's part of \r\n, handled above)
+            if len >= 1 && pos == len - 1 && self.input[pos] == '\n' {
+                return pos == 0 || self.input[pos - 1] != '\r';
+            }
+            // Single \r at end
+            len >= 1 && pos == len - 1 && self.input[pos] == '\r'
         }
     }
 

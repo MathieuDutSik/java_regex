@@ -283,3 +283,15 @@ fn test_diff_s4003() { run_and_assert("tests/java_regex_tests_diff_s4003.jsonl")
 fn test_diff_s4004() { run_and_assert("tests/java_regex_tests_diff_s4004.jsonl"); }
 #[test]
 fn test_diff_s4005() { run_and_assert("tests/java_regex_tests_diff_s4005.jsonl"); }
+#[test]
+fn test_diff_s5001() { run_and_assert("tests/java_regex_tests_diff_s5001.jsonl"); }
+#[test]
+fn test_diff_s6001() { run_and_assert("tests/java_regex_tests_diff_s6001.jsonl"); }
+#[test]
+fn test_diff_s6002() { run_and_assert("tests/java_regex_tests_diff_s6002.jsonl"); }
+#[test]
+fn test_diff_s6003() { run_and_assert("tests/java_regex_tests_diff_s6003.jsonl"); }
+#[test]
+fn test_diff_s6004() { run_and_assert("tests/java_regex_tests_diff_s6004.jsonl"); }
+#[test]
+fn test_diff_s6005() { run_and_assert("tests/java_regex_tests_diff_s6005.jsonl"); }

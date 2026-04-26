@@ -1,4 +1,5 @@
 use unicode_general_category::GeneralCategory as UGC;
+use unicode_script::{Script, UnicodeScript};
 
 use crate::types::PredefinedClass;
 
@@ -27,7 +28,8 @@ pub fn is_line_terminator(c: char) -> bool {
 
 pub fn is_word_char(c: char, unicode: bool) -> bool {
     if unicode {
-        c.is_alphanumeric() || c == '_'
+        // Java's Unicode \w: [\p{Alpha}\p{gc=Mn}\p{gc=Me}\p{gc=Mc}\p{Digit}\p{gc=Pc}]
+        c.is_alphanumeric() || c == '_' || is_combining_mark(c)
     } else {
         c.is_ascii_alphanumeric() || c == '_'
     }
@@ -35,6 +37,61 @@ pub fn is_word_char(c: char, unicode: bool) -> bool {
 
 pub fn is_linebreak(c: char) -> bool {
     matches!(c, '\n' | '\x0B' | '\x0C' | '\r' | '\u{0085}' | '\u{2028}' | '\u{2029}')
+}
+
+/// Approximation of Unicode Bidi_Mirrored property for Java's Character.isMirrored().
+/// All Ps (open) and Pe (close) punctuation are mirrored, plus Pi/Pf quotes,
+/// and a subset of Sm (math) symbols that have mirrored counterparts.
+fn is_bidi_mirrored(ch: char) -> bool {
+    let cat = get_ugc(ch);
+    matches!(cat, UGC::OpenPunctuation | UGC::ClosePunctuation |
+        UGC::InitialPunctuation | UGC::FinalPunctuation)
+        || (cat == UGC::MathSymbol && is_mirrored_math(ch))
+        || matches!(ch, '<' | '>')
+}
+
+fn is_mirrored_math(ch: char) -> bool {
+    // Math symbols with Bidi_Mirrored=Yes (the most common ones)
+    matches!(ch,
+        '\u{2208}'..='\u{220D}' | '\u{2215}' | '\u{221F}'..='\u{2222}' |
+        '\u{2224}' | '\u{2226}' | '\u{222B}'..='\u{2233}' |
+        '\u{2239}' | '\u{223B}'..='\u{224C}' | '\u{2252}'..='\u{2255}' |
+        '\u{225F}'..='\u{2260}' | '\u{2261}'..='\u{2262}' |
+        '\u{2264}'..='\u{226B}' | '\u{226E}'..='\u{228C}' |
+        '\u{228F}'..='\u{2298}' | '\u{22A2}'..='\u{22B8}' |
+        '\u{22BE}'..='\u{22BF}' | '\u{22C9}'..='\u{22CD}' |
+        '\u{22D0}'..='\u{22D1}' | '\u{22D6}'..='\u{22ED}' |
+        '\u{22F0}'..='\u{22FF}' | '\u{2308}'..='\u{230B}' |
+        '\u{2320}'..='\u{2321}' | '\u{27C3}'..='\u{27C6}' |
+        '\u{27D5}'..='\u{27D6}' | '\u{27DC}'..='\u{27DE}' |
+        '\u{27E2}'..='\u{27E5}')
+}
+
+fn is_unicode_punct(ch: char) -> bool {
+    matches!(get_ugc(ch),
+        UGC::ConnectorPunctuation | UGC::DashPunctuation | UGC::OpenPunctuation |
+        UGC::ClosePunctuation | UGC::InitialPunctuation | UGC::FinalPunctuation |
+        UGC::OtherPunctuation)
+}
+
+fn is_unicode_graph(ch: char) -> bool {
+    let cat = get_ugc(ch);
+    !matches!(cat, UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator |
+        UGC::Control | UGC::Surrogate | UGC::Unassigned)
+        && !ch.is_whitespace()
+}
+
+fn is_unicode_print(ch: char) -> bool {
+    let cat = get_ugc(ch);
+    !matches!(cat, UGC::Control | UGC::Surrogate | UGC::Unassigned)
+        || matches!(cat, UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator)
+}
+
+pub fn is_posix_class(name: &str) -> bool {
+    matches!(name.to_lowercase().as_str(),
+        "alpha" | "alnum" | "ascii" | "blank" | "cntrl" | "digit" |
+        "graph" | "lower" | "print" | "punct" | "space" | "upper" |
+        "xdigit" | "white_space")
 }
 
 pub fn is_combining_mark(c: char) -> bool {
@@ -91,14 +148,17 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
             "javaISOControl" | "javaUnicodeIdentifierStart" | "javaUnicodeIdentifierPart"
         );
     }
-    // Script names require "Is" prefix in Java
-    let name_lower_full = name.to_lowercase();
-    if is_script_name(&name_lower_full) {
-        return true;
+    // Script names require "Is" prefix in Java (e.g. \p{IsLatin})
+    if let Some(script) = name.strip_prefix("Is").or_else(|| name.strip_prefix("is")) {
+        if resolve_script_name(script).is_some() {
+            return true;
+        }
     }
-    // Block names use "In" prefix
-    if is_block_name(&name_lower_full) {
-        return true;
+    // Block names use "In" prefix (e.g. \p{InBasicLatin})
+    if let Some(block) = name.strip_prefix("In").or_else(|| name.strip_prefix("in")) {
+        if resolve_block_name(block).is_some() {
+            return true;
+        }
     }
     let name = name.strip_prefix("Is").unwrap_or(name);
     let name_lower = name.to_lowercase();
@@ -120,7 +180,15 @@ pub fn is_valid_unicode_property(name: &str) -> bool {
     )
 }
 
+/// Convenience wrapper: matches without UNICODE_CHARACTER_CLASS flag.
+#[allow(dead_code)]
 pub fn match_unicode_property(name: &str, ch: char) -> bool {
+    match_unicode_property_ext(name, ch, false)
+}
+
+/// Match a Unicode property, with `unicode_class` controlling whether
+/// POSIX classes use ASCII (false) or Unicode (true) definitions.
+pub fn match_unicode_property_ext(name: &str, ch: char, unicode_class: bool) -> bool {
     // Java-specific properties (exact case)
     match name {
         "javaLowerCase" => return ch.is_lowercase(),
@@ -145,46 +213,51 @@ pub fn match_unicode_property(name: &str, ch: char) -> bool {
         "javaSpaceChar" => return matches!(get_ugc(ch), UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator),
         "javaISOControl" => return ch.is_control(),
         "javaDefined" => return ch != '\u{FFFF}',
-        "javaMirrored" => return false, // simplified
+        "javaMirrored" => return is_bidi_mirrored(ch),
         "javaIdentifierIgnorable" => return ch.is_control() && !ch.is_whitespace(),
         "javaUnicodeIdentifierStart" => return ch.is_alphabetic(),
         "javaUnicodeIdentifierPart" => return ch.is_alphanumeric() || ch == '_',
         _ => {}
     }
 
-    // Script names require "Is" prefix in Java (e.g. \p{IsLatin} not \p{Latin})
+    // Script names require "Is" prefix in Java (e.g. \p{IsLatin})
     if let Some(script) = name.strip_prefix("Is").or_else(|| name.strip_prefix("is")) {
-        let script_lower = script.to_lowercase();
-        if let Some(result) = match_script(&script_lower, ch) {
-            return result;
+        if let Some(expected) = resolve_script_name(script) {
+            return ch.script() == expected;
         }
     }
 
     // Block names use "In" prefix (e.g. \p{InBasicLatin})
     if let Some(block) = name.strip_prefix("In").or_else(|| name.strip_prefix("in")) {
-        let block_norm = normalize_block_name(block);
-        if let Some(result) = match_block(&block_norm, ch) {
-            return result;
+        if let Some(expected_block) = resolve_block_name(block) {
+            return match unicode_blocks::find_unicode_block(ch) {
+                Some(b) => b == expected_block,
+                None => false,
+            };
         }
     }
 
     let name = name.strip_prefix("Is").unwrap_or(name);
     let name_lower = name.to_lowercase();
 
-    // POSIX classes (ASCII-only)
+    // POSIX classes — ASCII-only by default, Unicode when UNICODE_CHARACTER_CLASS flag is set.
+    // The `u` (bool) parameter below is `unicode_class`.
+    let u = unicode_class;
     match name_lower.as_str() {
-        "upper" => return ch.is_ascii_uppercase(),
-        "lower" => return ch.is_ascii_lowercase(),
-        "alpha" => return ch.is_ascii_alphabetic(),
-        "digit" => return ch.is_ascii_digit(),
-        "alnum" => return ch.is_ascii_alphanumeric(),
+        "upper" => return if u { ch.is_uppercase() } else { ch.is_ascii_uppercase() },
+        "lower" => return if u { ch.is_lowercase() } else { ch.is_ascii_lowercase() },
+        "alpha" => return if u { ch.is_alphabetic() } else { ch.is_ascii_alphabetic() },
+        "digit" => return if u { ch.is_numeric() } else { ch.is_ascii_digit() },
+        "alnum" => return if u { ch.is_alphanumeric() } else { ch.is_ascii_alphanumeric() },
         "ascii" => return ch.is_ascii(),
-        "blank" => return ch == ' ' || ch == '\t',
-        "punct" => return matches!(ch, '!'..='/' | ':'..='@' | '['..='`' | '{'..='~'),
-        "graph" => return ch.is_ascii_graphic(),
-        "print" => return ch.is_ascii_graphic() || ch == ' ',
-        "cntrl" => return ch.is_ascii_control(),
-        "space" | "white_space" => return ch.is_ascii_whitespace(),
+        "blank" => return if u { ch == '\t' || matches!(get_ugc(ch), UGC::SpaceSeparator) }
+                          else { ch == ' ' || ch == '\t' },
+        "punct" => return if u { is_unicode_punct(ch) }
+                          else { matches!(ch, '!'..='/' | ':'..='@' | '['..='`' | '{'..='~') },
+        "graph" => return if u { is_unicode_graph(ch) } else { ch.is_ascii_graphic() },
+        "print" => return if u { is_unicode_print(ch) } else { ch.is_ascii_graphic() || ch == ' ' },
+        "cntrl" => return if u { matches!(get_ugc(ch), UGC::Control) } else { ch.is_ascii_control() },
+        "space" | "white_space" => return if u { ch.is_whitespace() } else { ch.is_ascii_whitespace() },
         "xdigit" => return ch.is_ascii_hexdigit(),
         "l1" | "latin1" => return (ch as u32) <= 0xFF,
         _ => {}
@@ -242,134 +315,91 @@ fn match_ugc_category(name: &str, cat: UGC) -> bool {
     }
 }
 
-fn is_script_greek(ch: char) -> bool {
-    ('\u{0370}'..='\u{03FF}').contains(&ch) ||
-    ('\u{1F00}'..='\u{1FFF}').contains(&ch)
-}
-
-fn is_script_latin(ch: char) -> bool {
-    ch.is_ascii_uppercase() ||
-    ch.is_ascii_lowercase() ||
-    ('\u{00C0}'..='\u{00FF}').contains(&ch) ||
-    ('\u{0100}'..='\u{024F}').contains(&ch) ||
-    ('\u{1E00}'..='\u{1EFF}').contains(&ch)
-}
-
-fn is_script_cyrillic(ch: char) -> bool {
-    ('\u{0400}'..='\u{04FF}').contains(&ch) ||
-    ('\u{0500}'..='\u{052F}').contains(&ch)
-}
-
-fn is_script_han(ch: char) -> bool {
-    ('\u{4E00}'..='\u{9FFF}').contains(&ch) ||
-    ('\u{3400}'..='\u{4DBF}').contains(&ch)
-}
-
-fn is_script_arabic(ch: char) -> bool {
-    ('\u{0600}'..='\u{06FF}').contains(&ch) ||
-    ('\u{0750}'..='\u{077F}').contains(&ch)
-}
-
-/// Check if a lowercased name (after stripping "Is" prefix) is a known script.
-fn is_script_name(name_lower_full: &str) -> bool {
-    // Script names must start with "is" in Java
-    if let Some(script) = name_lower_full.strip_prefix("is") {
-        matches!(script,
-            "greek" | "latin" | "cyrillic" | "han" | "arabic" |
-            "armenian" | "hebrew" | "thai" | "hiragana" | "katakana" | "devanagari"
-        )
-    } else {
-        false
+/// Resolve a script name (after stripping "Is" prefix) to a unicode_script::Script.
+fn resolve_script_name(name: &str) -> Option<Script> {
+    // Try full name first (e.g. "Latin", "Greek")
+    if let Some(s) = Script::from_full_name(name) {
+        return Some(s);
     }
-}
-
-/// Match a script name (already stripped of "Is" prefix, lowercased).
-/// Returns Some(bool) if it's a known script, None otherwise.
-fn match_script(script_lower: &str, ch: char) -> Option<bool> {
-    match script_lower {
-        "greek" => Some(is_script_greek(ch)),
-        "latin" => Some(is_script_latin(ch)),
-        "cyrillic" => Some(is_script_cyrillic(ch)),
-        "han" => Some(is_script_han(ch)),
-        "arabic" => Some(is_script_arabic(ch)),
-        "armenian" => Some(('\u{0530}'..='\u{058F}').contains(&ch) || ('\u{FB00}'..='\u{FB17}').contains(&ch)),
-        "hebrew" => Some(('\u{0590}'..='\u{05FF}').contains(&ch) || ('\u{FB1D}'..='\u{FB4F}').contains(&ch)),
-        "thai" => Some(('\u{0E00}'..='\u{0E7F}').contains(&ch)),
-        "hiragana" => Some(('\u{3040}'..='\u{309F}').contains(&ch)),
-        "katakana" => Some(('\u{30A0}'..='\u{30FF}').contains(&ch)),
-        "devanagari" => Some(('\u{0900}'..='\u{097F}').contains(&ch)),
-        _ => None,
+    // Try short name (e.g. "Latn", "Grek")
+    if let Some(s) = Script::from_short_name(name) {
+        return Some(s);
     }
+    // Try case-insensitive: capitalize first letter
+    let mut capitalized = name.to_lowercase();
+    if let Some(first) = capitalized.get_mut(0..1) {
+        first.make_ascii_uppercase();
+    }
+    Script::from_full_name(&capitalized)
 }
 
-/// Normalize a Unicode block name: lowercase, remove spaces and underscores, keep hyphens.
-fn normalize_block_name(name: &str) -> String {
+/// Resolve a block name (after stripping "In" prefix) to a UnicodeBlock.
+/// Java block names have spaces/underscores removed and are case-insensitive,
+/// e.g. "BasicLatin", "BASIC_LATIN", "basiclatin" all map to "Basic Latin".
+fn resolve_block_name(name: &str) -> Option<unicode_blocks::UnicodeBlock> {
+    let normalized = normalize_block_name_for_lookup(name);
+    // Iterate all known blocks and compare normalized names
+    // unicode_blocks doesn't provide a from_name lookup, so we check the char range
+    // by finding a block whose normalized name matches
+    BLOCK_LIST.iter().find(|(norm, _)| *norm == normalized).map(|(_, block)| *block)
+}
+
+/// Normalize block name for comparison: lowercase, remove spaces, underscores, hyphens.
+fn normalize_block_name_for_lookup(name: &str) -> String {
     name.chars()
-        .filter(|c| *c != ' ' && *c != '_')
+        .filter(|c| *c != ' ' && *c != '_' && *c != '-')
         .flat_map(|c| c.to_lowercase())
         .collect()
 }
 
-/// Check if name starts with "in"/"In" and names a known Unicode block.
-fn is_block_name(name: &str) -> bool {
-    let norm = normalize_block_name(name);
-    if let Some(block) = norm.strip_prefix("in") {
-        match_block(block, 'A').is_some()
-    } else {
-        false
-    }
-}
-
-/// Match a Unicode block name (already stripped of "In" prefix, normalized).
-fn match_block(block_norm: &str, ch: char) -> Option<bool> {
-    match block_norm {
-        "basiclatin" => Some(('\u{0000}'..='\u{007F}').contains(&ch)),
-        "latin-1supplement" => Some(('\u{0080}'..='\u{00FF}').contains(&ch)),
-        "latinextended-a" => Some(('\u{0100}'..='\u{017F}').contains(&ch)),
-        "latinextended-b" => Some(('\u{0180}'..='\u{024F}').contains(&ch)),
-        "ipaextensions" => Some(('\u{0250}'..='\u{02AF}').contains(&ch)),
-        "spacingmodifierletters" => Some(('\u{02B0}'..='\u{02FF}').contains(&ch)),
-        "combiningdiacriticalmarks" => Some(('\u{0300}'..='\u{036F}').contains(&ch)),
-        "greekandcoptic" | "greek" => Some(('\u{0370}'..='\u{03FF}').contains(&ch)),
-        "cyrillic" => Some(('\u{0400}'..='\u{04FF}').contains(&ch)),
-        "arabic" => Some(('\u{0600}'..='\u{06FF}').contains(&ch)),
-        "devanagari" => Some(('\u{0900}'..='\u{097F}').contains(&ch)),
-        "thai" => Some(('\u{0E00}'..='\u{0E7F}').contains(&ch)),
-        "generalpunctuation" => Some(('\u{2000}'..='\u{206F}').contains(&ch)),
-        "superscriptsandsubscripts" => Some(('\u{2070}'..='\u{209F}').contains(&ch)),
-        "currencysymbols" => Some(('\u{20A0}'..='\u{20CF}').contains(&ch)),
-        "letterlikesymbols" => Some(('\u{2100}'..='\u{214F}').contains(&ch)),
-        "numberforms" => Some(('\u{2150}'..='\u{218F}').contains(&ch)),
-        "arrows" => Some(('\u{2190}'..='\u{21FF}').contains(&ch)),
-        "mathematicaloperators" => Some(('\u{2200}'..='\u{22FF}').contains(&ch)),
-        "boxdrawing" => Some(('\u{2500}'..='\u{257F}').contains(&ch)),
-        "geometricshapes" => Some(('\u{25A0}'..='\u{25FF}').contains(&ch)),
-        "miscellaneoussymbols" => Some(('\u{2600}'..='\u{26FF}').contains(&ch)),
-        "cjkunifiedideographs" => Some(('\u{4E00}'..='\u{9FFF}').contains(&ch)),
-        "hiragana" => Some(('\u{3040}'..='\u{309F}').contains(&ch)),
-        "katakana" => Some(('\u{30A0}'..='\u{30FF}').contains(&ch)),
-        "hangulsyllables" => Some(('\u{AC00}'..='\u{D7AF}').contains(&ch)),
-        "privateusearea" => Some(('\u{E000}'..='\u{F8FF}').contains(&ch)),
-        "alphabeticpresentationforms" => Some(('\u{FB00}'..='\u{FB4F}').contains(&ch)),
-        "arabicpresentationforms-a" => Some(('\u{FB50}'..='\u{FDFF}').contains(&ch)),
-        "arabicpresentationforms-b" => Some(('\u{FE70}'..='\u{FEFF}').contains(&ch)),
-        "latinextendedadditional" => Some(('\u{1E00}'..='\u{1EFF}').contains(&ch)),
-        "armenian" => Some(('\u{0530}'..='\u{058F}').contains(&ch)),
-        "hebrew" => Some(('\u{0590}'..='\u{05FF}').contains(&ch)),
-        "bengali" => Some(('\u{0980}'..='\u{09FF}').contains(&ch)),
-        "tamil" => Some(('\u{0B80}'..='\u{0BFF}').contains(&ch)),
-        "telugu" => Some(('\u{0C00}'..='\u{0C7F}').contains(&ch)),
-        "georgian" => Some(('\u{10A0}'..='\u{10FF}').contains(&ch)),
-        "hanguljamoextended-a" => Some(('\u{A960}'..='\u{A97F}').contains(&ch)),
-        "hanguljamoextended-b" => Some(('\u{D7B0}'..='\u{D7FF}').contains(&ch)),
-        "highsurrogates" => { let c = ch as u32; Some((0xD800..=0xDB7F).contains(&c)) }
-        "highprivateusesurrogates" => { let c = ch as u32; Some((0xDB80..=0xDBFF).contains(&c)) }
-        "lowsurrogates" => { let c = ch as u32; Some((0xDC00..=0xDFFF).contains(&c)) }
-        "halfwidthandfullwidthforms" => Some(('\u{FF00}'..='\u{FFEF}').contains(&ch)),
-        "specials" => Some(('\u{FFF0}'..='\u{FFFF}').contains(&ch)),
-        "deseret" => Some(('\u{10400}'..='\u{1044F}').contains(&ch)),
-        "olditalic" => Some(('\u{10300}'..='\u{1032F}').contains(&ch)),
-        "gothic" => Some(('\u{10330}'..='\u{1034F}').contains(&ch)),
-        _ => None,
-    }
-}
+/// Mapping from normalized block names to UnicodeBlock constants.
+/// Normalized = lowercase, no spaces/underscores/hyphens.
+const BLOCK_LIST: &[(&str, unicode_blocks::UnicodeBlock)] = &[
+    ("basiclatin", unicode_blocks::BASIC_LATIN),
+    ("latin1supplement", unicode_blocks::LATIN_1_SUPPLEMENT),
+    ("latinextendeda", unicode_blocks::LATIN_EXTENDED_A),
+    ("latinextendedb", unicode_blocks::LATIN_EXTENDED_B),
+    ("ipaextensions", unicode_blocks::IPA_EXTENSIONS),
+    ("spacingmodifierletters", unicode_blocks::SPACING_MODIFIER_LETTERS),
+    ("combiningdiacriticalmarks", unicode_blocks::COMBINING_DIACRITICAL_MARKS),
+    ("greekandcoptic", unicode_blocks::GREEK_AND_COPTIC),
+    ("greek", unicode_blocks::GREEK_AND_COPTIC),
+    ("cyrillic", unicode_blocks::CYRILLIC),
+    ("cyrillicsupplement", unicode_blocks::CYRILLIC_SUPPLEMENT),
+    ("armenian", unicode_blocks::ARMENIAN),
+    ("hebrew", unicode_blocks::HEBREW),
+    ("arabic", unicode_blocks::ARABIC),
+    ("syriac", unicode_blocks::SYRIAC),
+    ("devanagari", unicode_blocks::DEVANAGARI),
+    ("bengali", unicode_blocks::BENGALI),
+    ("tamil", unicode_blocks::TAMIL),
+    ("telugu", unicode_blocks::TELUGU),
+    ("thai", unicode_blocks::THAI),
+    ("georgian", unicode_blocks::GEORGIAN),
+    ("hanguljamoextendeda", unicode_blocks::HANGUL_JAMO_EXTENDED_A),
+    ("hanguljamoextendedb", unicode_blocks::HANGUL_JAMO_EXTENDED_B),
+    ("generalpunctuation", unicode_blocks::GENERAL_PUNCTUATION),
+    ("superscriptsandsubscripts", unicode_blocks::SUPERSCRIPTS_AND_SUBSCRIPTS),
+    ("currencysymbols", unicode_blocks::CURRENCY_SYMBOLS),
+    ("letterlikesymbols", unicode_blocks::LETTERLIKE_SYMBOLS),
+    ("numberforms", unicode_blocks::NUMBER_FORMS),
+    ("arrows", unicode_blocks::ARROWS),
+    ("mathematicaloperators", unicode_blocks::MATHEMATICAL_OPERATORS),
+    ("boxdrawing", unicode_blocks::BOX_DRAWING),
+    ("geometricshapes", unicode_blocks::GEOMETRIC_SHAPES),
+    ("miscellaneoussymbols", unicode_blocks::MISCELLANEOUS_SYMBOLS),
+    ("cjkunifiedideographs", unicode_blocks::CJK_UNIFIED_IDEOGRAPHS),
+    ("hiragana", unicode_blocks::HIRAGANA),
+    ("katakana", unicode_blocks::KATAKANA),
+    ("hangulsyllables", unicode_blocks::HANGUL_SYLLABLES),
+    ("privateusearea", unicode_blocks::PRIVATE_USE_AREA),
+    ("alphabeticpresentationforms", unicode_blocks::ALPHABETIC_PRESENTATION_FORMS),
+    ("arabicpresentationformsa", unicode_blocks::ARABIC_PRESENTATION_FORMS_A),
+    ("arabicpresentationformsb", unicode_blocks::ARABIC_PRESENTATION_FORMS_B),
+    ("latinextendedadditional", unicode_blocks::LATIN_EXTENDED_ADDITIONAL),
+    ("halfwidthandfullwidthforms", unicode_blocks::HALFWIDTH_AND_FULLWIDTH_FORMS),
+    ("specials", unicode_blocks::SPECIALS),
+    ("deseret", unicode_blocks::DESERET),
+    ("olditalic", unicode_blocks::OLD_ITALIC),
+    ("gothic", unicode_blocks::GOTHIC),
+];

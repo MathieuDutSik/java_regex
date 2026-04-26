@@ -666,13 +666,13 @@ impl Engine {
                 self.check_before_final_newline(pos)
             }
             AnchorKind::WordBoundary => {
-                let before = if pos > 0 { is_word_char(self.input[pos - 1], self.flags.unicode_class) } else { false };
-                let after = if pos < self.input.len() { is_word_char(self.input[pos], self.flags.unicode_class) } else { false };
+                let before = self.word_char_before(pos);
+                let after = self.word_char_after(pos);
                 before != after
             }
             AnchorKind::NonWordBoundary => {
-                let before = if pos > 0 { is_word_char(self.input[pos - 1], self.flags.unicode_class) } else { false };
-                let after = if pos < self.input.len() { is_word_char(self.input[pos], self.flags.unicode_class) } else { false };
+                let before = self.word_char_before(pos);
+                let after = self.word_char_after(pos);
                 before == after
             }
             AnchorKind::PreviousMatchEnd => pos == self.search_start,
@@ -683,19 +683,38 @@ impl Engine {
     fn check_before_final_newline(&self, pos: usize) -> bool {
         let len = self.input.len();
         if self.flags.unix_lines {
-            len >= 1 && pos == len - 1 && self.input[pos] == '\n'
-        } else {
-            // \r\n at end: match before the \r
-            if len >= 2 && pos == len - 2 && self.input[pos] == '\r' && self.input[pos + 1] == '\n' {
-                return true;
-            }
-            // Single \n at end — but NOT if preceded by \r (that's part of \r\n, handled above)
-            if len >= 1 && pos == len - 1 && self.input[pos] == '\n' {
-                return pos == 0 || self.input[pos - 1] != '\r';
-            }
-            // Single \r at end
-            len >= 1 && pos == len - 1 && self.input[pos] == '\r'
+            return pos == len - 1 && self.input[pos] == '\n';
         }
+        // \r\n at end: match before the \r (pos == len-2)
+        if pos + 2 == len && self.input[pos] == '\r' && self.input[pos + 1] == '\n' {
+            return true;
+        }
+        // Single line terminator at end (pos == len-1), but not the \n of a \r\n pair
+        pos + 1 == len && matches!(self.input[pos], '\n' | '\r' | '\u{0085}' | '\u{2028}' | '\u{2029}')
+            && !(self.input[pos] == '\n' && pos > 0 && self.input[pos - 1] == '\r')
+    }
+
+    /// Check if the character before pos is a word character,
+    /// treating combining marks as inheriting word-status from preceding char.
+    fn word_char_before(&self, pos: usize) -> bool {
+        if pos == 0 { return false; }
+        let mut i = pos - 1;
+        // Skip back over combining marks to find the base character
+        while i > 0 && is_combining_mark(self.input[i]) {
+            i -= 1;
+        }
+        is_word_char(self.input[i], self.flags.unicode_class)
+    }
+
+    /// Check if the character at pos is a word character,
+    /// treating combining marks as inheriting word-status from preceding char.
+    fn word_char_after(&self, pos: usize) -> bool {
+        if pos >= self.input.len() { return false; }
+        if is_combining_mark(self.input[pos]) {
+            // Combining mark inherits from preceding char
+            return self.word_char_before(pos);
+        }
+        is_word_char(self.input[pos], self.flags.unicode_class)
     }
 
     fn check_end_of_line(&self, pos: usize) -> bool {
@@ -738,24 +757,25 @@ impl Engine {
                     if match_predefined_class(*pc, ch, self.flags.unicode_class) { return true; }
                 }
                 CharClassItem::UnicodeProperty { name, negated } => {
-                    let mut matched = match_unicode_property(name, ch);
-                    if !matched && self.flags.case_insensitive {
+                    let uc = self.flags.unicode_class;
+                    let mut matched = match_unicode_property_ext(name, ch, uc);
+                    if !matched && self.flags.case_insensitive && !is_posix_class(name) {
                         // For Lu/Ll/Lt, case-insensitive matching treats them as LC (cased letter)
                         let name_lower = name.to_lowercase();
                         if matches!(name_lower.as_str(), "lu" | "uppercase_letter" | "ll" | "lowercase_letter" | "lt" | "titlecase_letter") {
-                            matched = match_unicode_property("lc", ch);
+                            matched = match_unicode_property_ext("lc", ch, uc);
                         } else if self.flags.unicode_case || name.starts_with("java") {
                             // Unicode case folding for unicode_case mode and java* properties
                             let upper = ch.to_uppercase().next().unwrap_or(ch);
                             let lower = ch.to_lowercase().next().unwrap_or(ch);
-                            if upper != ch { matched = match_unicode_property(name, upper); }
-                            if !matched && lower != ch { matched = match_unicode_property(name, lower); }
+                            if upper != ch { matched = match_unicode_property_ext(name, upper, uc); }
+                            if !matched && lower != ch { matched = match_unicode_property_ext(name, lower, uc); }
                         } else {
                             // ASCII case folding
                             let upper = ch.to_ascii_uppercase();
                             let lower = ch.to_ascii_lowercase();
-                            if upper != ch { matched = match_unicode_property(name, upper); }
-                            if !matched && lower != ch { matched = match_unicode_property(name, lower); }
+                            if upper != ch { matched = match_unicode_property_ext(name, upper, uc); }
+                            if !matched && lower != ch { matched = match_unicode_property_ext(name, lower, uc); }
                         }
                     }
                     if *negated { if !matched { return true; } }

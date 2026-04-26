@@ -1,6 +1,10 @@
-# Differences from Java's java.util.regex
+# Differences from OpenJDK's java.util.regex
 
-This document describes the known behavioral differences between this Rust implementation and Java's `java.util.regex.Pattern` engine (tested against OpenJDK 25).
+This document describes the known behavioral differences between this Rust implementation and OpenJDK 25's `java.util.regex.Pattern` engine.
+
+The `java.util.regex` package in OpenJDK is implemented in pure Java. Most Java distributions (Oracle JDK, IBM Semeru/OpenJ9, GraalVM) are based on or directly use OpenJDK's class library, so they very likely share the same regex implementation and the same behaviors described below. The main exception is Android, which uses an ICU-based regex engine rather than OpenJDK's and has its own known divergences.
+
+The differences listed below were tested against OpenJDK 25. They involve behaviors that the Java specification and Javadoc leave underspecified.
 
 ## 1. Group captures leaking across find() start positions
 
@@ -17,7 +21,7 @@ Java returns a match at position 1-2 (the space) with group 1 = `"a"`. The group
 
 This Rust implementation resets all group captures when starting a new position, so group 1 is `None`. This affects `find()`, `replaceAll()`, and `split()` results when replacements or downstream logic references group values (`$1`, `$2`, etc.). Match text and match positions are always identical to Java.
 
-This behavior is widely considered an unintended quirk of the JDK implementation. Other regex engines (Perl, .NET, Python) reset group captures between attempts, matching the behavior of this implementation.
+This behavior appears to be an unintended quirk of the implementation rather than a specified behavior. Since most Java distributions share the same `java.util.regex` code from OpenJDK, this quirk is likely present across all of them.
 
 ## 2. Lookbehind with unbounded group quantifiers accepted
 
@@ -48,10 +52,10 @@ This implementation properly resets group captures from failed lookbehind attemp
 
 ## Summary
 
-| Behavior | Java | This implementation |
+| Behavior | OpenJDK 25 | This implementation |
 |---|---|---|
 | Group capture reset between find positions | No (leaks) | Yes (clean reset) |
 | `(?<=(?:ab)+)` lookbehind | Compile error | Accepted and works |
 | Negative lookbehind group capture leak | Leaks in some cases | Clean reset |
 
-All three differences involve edge cases in group capture state management. For all tested patterns, the match text, match positions, split boundaries, and replacement results (with literal replacements) are identical to Java across 200,000+ random differential tests.
+All three differences involve edge cases in group capture state management. None of these behaviors are mandated by the Java specification — they are implementation details of OpenJDK's engine. For all tested patterns, the match text, match positions, split boundaries, and replacement results (with literal replacements) are identical to OpenJDK 25 across 200,000+ random differential tests.

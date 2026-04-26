@@ -295,3 +295,5 @@ fn test_diff_s6003() { run_and_assert("tests/java_regex_tests_diff_s6003.jsonl")
 fn test_diff_s6004() { run_and_assert("tests/java_regex_tests_diff_s6004.jsonl"); }
 #[test]
 fn test_diff_s6005() { run_and_assert("tests/java_regex_tests_diff_s6005.jsonl"); }
+#[test]
+fn test_diff_s7001() { run_and_assert("tests/java_regex_tests_diff_s7001.jsonl"); }

@@ -297,3 +297,7 @@ fn test_diff_s6004() { run_and_assert("tests/java_regex_tests_diff_s6004.jsonl")
 fn test_diff_s6005() { run_and_assert("tests/java_regex_tests_diff_s6005.jsonl"); }
 #[test]
 fn test_diff_s7001() { run_and_assert("tests/java_regex_tests_diff_s7001.jsonl"); }
+#[test]
+fn test_openjdk2() { run_and_assert("tests/java_regex_tests_openjdk2.jsonl"); }
+#[test]
+fn test_openjdk_inline() { run_and_assert("tests/java_regex_tests_openjdk_inline.jsonl"); }

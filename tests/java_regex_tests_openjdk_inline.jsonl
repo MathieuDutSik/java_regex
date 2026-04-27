@@ -1,0 +1,212 @@
+{"id":"openjdk_inline_1","pattern":"^abc$","input":"abc","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_2","pattern":"^abc$","input":"abc\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_3","pattern":"^abc$","input":"abc\r\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_4","pattern":"^abc$","input":"abc\r","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_5","pattern":"^abc$","input":"abc\n","flags":"m","op":"matches","expect":false}
+{"id":"openjdk_inline_6","pattern":"^abc","input":"abc\ndef\nabc","flags":"m","op":"find","expect":[{"m":"abc","g":[]},{"m":"abc","g":[]}]}
+{"id":"openjdk_inline_7","pattern":"abc$","input":"abc\ndef\nabc","flags":"m","op":"find","expect":[{"m":"abc","g":[]},{"m":"abc","g":[]}]}
+{"id":"openjdk_inline_8","pattern":"^","input":"abc\ndef","flags":"m","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_9","pattern":"$","input":"abc\ndef","flags":"m","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_10","pattern":"^","input":"\n\n\n","flags":"m","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_11","pattern":"$","input":"\n\n\n","flags":"m","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_12","pattern":"\\A.*\\Z","input":"abc\ndef","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_13","pattern":"\\A.*\\Z","input":"abc\ndef","flags":"s","op":"matches","expect":true}
+{"id":"openjdk_inline_14","pattern":"\\b","input":"hello world","flags":"","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_15","pattern":"\\b\\w+\\b","input":"hello world","flags":"","op":"find","expect":[{"m":"hello","g":[]},{"m":"world","g":[]}]}
+{"id":"openjdk_inline_16","pattern":"\\B","input":"hello world","flags":"","op":"find","expect":[{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_17","pattern":"\\b","input":"  ","flags":"","op":"find","expect":[]}
+{"id":"openjdk_inline_18","pattern":"\\b","input":"","flags":"","op":"find","expect":[]}
+{"id":"openjdk_inline_19","pattern":".$","input":"abc\ndef\n","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_20","pattern":".$","input":"abc\rdef\r","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_21","pattern":".$","input":"abc\r\ndef\r\n","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_22","pattern":".$","input":"abcdef","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_23","pattern":".$","input":"abc def ","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_24","pattern":".$","input":"abc def ","flags":"m","op":"find","expect":[{"m":"c","g":[]},{"m":"f","g":[]}]}
+{"id":"openjdk_inline_25","pattern":".*","input":"abc\ndef","flags":"s","op":"matches","expect":true}
+{"id":"openjdk_inline_26","pattern":".*","input":"abc\ndef","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_27","pattern":".","input":"a\nb\rc\r\n","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_28","pattern":".","input":"a\nb\rc\r\n","flags":"s","op":"find","expect":[{"m":"a","g":[]},{"m":"\n","g":[]},{"m":"b","g":[]},{"m":"\r","g":[]},{"m":"c","g":[]},{"m":"\r","g":[]},{"m":"\n","g":[]}]}
+{"id":"openjdk_inline_29","pattern":".","input":"a\nb\rc\r\n","flags":"d","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"\r","g":[]},{"m":"c","g":[]},{"m":"\r","g":[]}]}
+{"id":"openjdk_inline_30","pattern":".","input":"a\nb\rc\r\n","flags":"sd","op":"find","expect":[{"m":"a","g":[]},{"m":"\n","g":[]},{"m":"b","g":[]},{"m":"\r","g":[]},{"m":"c","g":[]},{"m":"\r","g":[]},{"m":"\n","g":[]}]}
+{"id":"openjdk_inline_31","pattern":"^abc","input":"abc\rdef\nabc\r\nabc","flags":"md","op":"find","expect":[{"m":"abc","g":[]},{"m":"abc","g":[]},{"m":"abc","g":[]}]}
+{"id":"openjdk_inline_32","pattern":"abc$","input":"abc\rdef\nabc\r\nabc","flags":"md","op":"find","expect":[{"m":"abc","g":[]}]}
+{"id":"openjdk_inline_33","pattern":"(?<=a)b","input":"ab cb","flags":"","op":"find","expect":[{"m":"b","g":[]}]}
+{"id":"openjdk_inline_34","pattern":"(?<!a)b","input":"ab cb","flags":"","op":"find","expect":[{"m":"b","g":[]}]}
+{"id":"openjdk_inline_35","pattern":"(?=a).","input":"bac","flags":"","op":"find","expect":[{"m":"a","g":[]}]}
+{"id":"openjdk_inline_36","pattern":"(?!a).","input":"bac","flags":"","op":"find","expect":[{"m":"b","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_37","pattern":"(?<=\\w)(?=\\W)","input":"hello world","flags":"","op":"find","expect":[{"m":"","g":[]}]}
+{"id":"openjdk_inline_38","pattern":"(?<=^)\\w+","input":"hello\nworld","flags":"m","op":"find","expect":[{"m":"hello","g":[]},{"m":"world","g":[]}]}
+{"id":"openjdk_inline_39","pattern":"(?:(?<=a)|(?<=b))c","input":"ac","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_40","pattern":"(?:(?<=a)|(?<=b))c","input":"bc","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_41","pattern":"(?:(?<=a)|(?<=b))c","input":"dc","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_42","pattern":"(?<=a{1,5})b","input":"aaab","flags":"","op":"find","expect":[{"m":"b","g":[]}]}
+{"id":"openjdk_inline_43","pattern":"(?<=\\bhe)llo","input":"hello","flags":"","op":"find","expect":[{"m":"llo","g":[]}]}
+{"id":"openjdk_inline_44","pattern":"(?<!\\bhe)llo","input":"jello","flags":"","op":"find","expect":[{"m":"llo","g":[]}]}
+{"id":"openjdk_inline_45","pattern":"a++a","input":"aaa","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_46","pattern":"a++","input":"aaa","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_47","pattern":"a?+a","input":"a","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_48","pattern":"a{1,3}+a","input":"aaa","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_49","pattern":"(a++)a","input":"aaa","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_50","pattern":"(a|b)++a","input":"aaa","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_51","pattern":"a+?","input":"aaa","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"a","g":[]},{"m":"a","g":[]}]}
+{"id":"openjdk_inline_52","pattern":"a{2,4}?","input":"aaaaa","flags":"","op":"find","expect":[{"m":"aa","g":[]},{"m":"aa","g":[]}]}
+{"id":"openjdk_inline_53","pattern":"<.+?>","input":"<a><b><c>","flags":"","op":"find","expect":[{"m":"<a>","g":[]},{"m":"<b>","g":[]},{"m":"<c>","g":[]}]}
+{"id":"openjdk_inline_54","pattern":"<.*?>","input":"<a><b><c>","flags":"","op":"find","expect":[{"m":"<a>","g":[]},{"m":"<b>","g":[]},{"m":"<c>","g":[]}]}
+{"id":"openjdk_inline_55","pattern":"(a)(b)\\2\\1","input":"abba","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_56","pattern":"(a)(b)\\2\\1","input":"abab","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_57","pattern":"(?i)(a)\\1","input":"aA","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_58","pattern":"(?i)(a)\\1","input":"ab","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_59","pattern":"(\\w+) \\1","input":"the the cat cat","flags":"","op":"find","expect":[{"m":"the the","g":["the"]},{"m":"cat cat","g":["cat"]}]}
+{"id":"openjdk_inline_60","pattern":"(a+)b\\1","input":"aabaa","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_61","pattern":"(a+)b\\1","input":"aba","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_62","pattern":"(?<name>a+)b\\k<name>","input":"aabaa","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_63","pattern":"(?<word>\\w+) \\k<word>","input":"the the cat cat","flags":"","op":"find","expect":[{"m":"the the","g":["the"]},{"m":"cat cat","g":["cat"]}]}
+{"id":"openjdk_inline_64","pattern":"a b c","input":"abc","flags":"x","op":"matches","expect":true}
+{"id":"openjdk_inline_65","pattern":"a  b  c # comment","input":"abc","flags":"x","op":"matches","expect":true}
+{"id":"openjdk_inline_66","pattern":"a\n b\n c","input":"abc","flags":"x","op":"matches","expect":true}
+{"id":"openjdk_inline_67","pattern":"a #comment\n b","input":"ab","flags":"x","op":"matches","expect":true}
+{"id":"openjdk_inline_68","pattern":"\\p{Lower}","input":"aB1 ","flags":"","op":"find","expect":[{"m":"a","g":[]}]}
+{"id":"openjdk_inline_69","pattern":"\\p{Upper}","input":"aB1 ","flags":"","op":"find","expect":[{"m":"B","g":[]}]}
+{"id":"openjdk_inline_70","pattern":"\\p{Alpha}","input":"aB1 ","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"B","g":[]}]}
+{"id":"openjdk_inline_71","pattern":"\\p{Digit}","input":"aB1 ","flags":"","op":"find","expect":[{"m":"1","g":[]}]}
+{"id":"openjdk_inline_72","pattern":"\\p{Alnum}","input":"aB1 ","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"B","g":[]},{"m":"1","g":[]}]}
+{"id":"openjdk_inline_73","pattern":"\\p{Punct}","input":"a!,.","flags":"","op":"find","expect":[{"m":"!","g":[]},{"m":",","g":[]},{"m":".","g":[]}]}
+{"id":"openjdk_inline_74","pattern":"\\p{Space}","input":"a b\tc","flags":"","op":"find","expect":[{"m":" ","g":[]},{"m":"\t","g":[]}]}
+{"id":"openjdk_inline_75","pattern":"\\p{Blank}","input":"a b\tc","flags":"","op":"find","expect":[{"m":" ","g":[]},{"m":"\t","g":[]}]}
+{"id":"openjdk_inline_76","pattern":"\\p{Graph}","input":"a b\tc!","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"c","g":[]},{"m":"!","g":[]}]}
+{"id":"openjdk_inline_77","pattern":"\\p{Print}","input":"a b\tc!","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":" ","g":[]},{"m":"b","g":[]},{"m":"c","g":[]},{"m":"!","g":[]}]}
+{"id":"openjdk_inline_78","pattern":"\\p{Cntrl}","input":"a\u0001b\u0002c","flags":"","op":"find","expect":[{"m":"\u0001","g":[]},{"m":"\u0002","g":[]}]}
+{"id":"openjdk_inline_79","pattern":"\\p{XDigit}","input":"g1fa","flags":"","op":"find","expect":[{"m":"1","g":[]},{"m":"f","g":[]},{"m":"a","g":[]}]}
+{"id":"openjdk_inline_80","pattern":"\\p{ASCII}","input":"ab","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_81","pattern":"\\p{Lower}","input":"éA","flags":"U","op":"find","expect":[{"m":"é","g":[]}]}
+{"id":"openjdk_inline_82","pattern":"\\p{Upper}","input":"Éa","flags":"U","op":"find","expect":[{"m":"É","g":[]}]}
+{"id":"openjdk_inline_83","pattern":"\\p{Alpha}","input":"éÉ1","flags":"U","op":"find","expect":[{"m":"é","g":[]},{"m":"É","g":[]}]}
+{"id":"openjdk_inline_84","pattern":"\\p{Digit}","input":"١abc","flags":"U","op":"find","expect":[{"m":"١","g":[]}]}
+{"id":"openjdk_inline_85","pattern":"\\p{Space}","input":" abc","flags":"U","op":"find","expect":[{"m":" ","g":[]}]}
+{"id":"openjdk_inline_86","pattern":"\\p{L}","input":"é一!","flags":"","op":"find","expect":[{"m":"é","g":[]},{"m":"一","g":[]}]}
+{"id":"openjdk_inline_87","pattern":"\\p{Lu}","input":"aBC","flags":"","op":"find","expect":[{"m":"B","g":[]},{"m":"C","g":[]}]}
+{"id":"openjdk_inline_88","pattern":"\\p{Ll}","input":"ABc","flags":"","op":"find","expect":[{"m":"c","g":[]}]}
+{"id":"openjdk_inline_89","pattern":"\\p{N}","input":"a1²","flags":"","op":"find","expect":[{"m":"1","g":[]},{"m":"²","g":[]}]}
+{"id":"openjdk_inline_90","pattern":"\\p{P}","input":"a!b,c","flags":"","op":"find","expect":[{"m":"!","g":[]},{"m":",","g":[]}]}
+{"id":"openjdk_inline_91","pattern":"\\p{S}","input":"a+$b","flags":"","op":"find","expect":[{"m":"+","g":[]},{"m":"$","g":[]}]}
+{"id":"openjdk_inline_92","pattern":"\\p{Z}","input":"a b","flags":"","op":"find","expect":[{"m":" ","g":[]}]}
+{"id":"openjdk_inline_93","pattern":"\\p{M}","input":"àb","flags":"","op":"find","expect":[{"m":"̀","g":[]}]}
+{"id":"openjdk_inline_94","pattern":"\\p{IsLatin}","input":"aͰb","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_95","pattern":"\\p{IsGreek}","input":"aͰb","flags":"","op":"find","expect":[{"m":"Ͱ","g":[]}]}
+{"id":"openjdk_inline_96","pattern":"\\p{InBasicLatin}","input":"ab","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_97","pattern":"\\p{InGreekAndCoptic}","input":"aͰb","flags":"","op":"find","expect":[{"m":"Ͱ","g":[]}]}
+{"id":"openjdk_inline_98","pattern":"\\p{javaLowerCase}","input":"aBc","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_99","pattern":"\\p{javaUpperCase}","input":"aBc","flags":"","op":"find","expect":[{"m":"B","g":[]}]}
+{"id":"openjdk_inline_100","pattern":"\\p{javaDigit}","input":"a1b","flags":"","op":"find","expect":[{"m":"1","g":[]}]}
+{"id":"openjdk_inline_101","pattern":"\\p{javaWhitespace}","input":"a b\tc","flags":"","op":"find","expect":[{"m":" ","g":[]},{"m":"\t","g":[]}]}
+{"id":"openjdk_inline_102","pattern":"\\p{javaAlphabetic}","input":"a1!b","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_103","pattern":"\\p{javaMirrored}","input":"a(b)c","flags":"","op":"find","expect":[{"m":"(","g":[]},{"m":")","g":[]}]}
+{"id":"openjdk_inline_104","pattern":"\\P{L}","input":"a1!","flags":"","op":"find","expect":[{"m":"1","g":[]},{"m":"!","g":[]}]}
+{"id":"openjdk_inline_105","pattern":"[^abc]","input":"adbec","flags":"","op":"find","expect":[{"m":"d","g":[]},{"m":"e","g":[]}]}
+{"id":"openjdk_inline_106","pattern":"[^a-z]","input":"aA1b","flags":"","op":"find","expect":[{"m":"A","g":[]},{"m":"1","g":[]}]}
+{"id":"openjdk_inline_107","pattern":"\\W","input":"a 1b!","flags":"","op":"find","expect":[{"m":" ","g":[]},{"m":"!","g":[]}]}
+{"id":"openjdk_inline_108","pattern":"\\D","input":"1a2b","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_109","pattern":"\\S","input":" a b ","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]}]}
+{"id":"openjdk_inline_110","pattern":"[a-z&&[^bc]]","input":"abcde","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"d","g":[]},{"m":"e","g":[]}]}
+{"id":"openjdk_inline_111","pattern":"[a-z&&[def]]","input":"abcde","flags":"","op":"find","expect":[{"m":"d","g":[]},{"m":"e","g":[]}]}
+{"id":"openjdk_inline_112","pattern":"[[a-d]&&[c-f]]","input":"abcdef","flags":"","op":"find","expect":[{"m":"c","g":[]},{"m":"d","g":[]}]}
+{"id":"openjdk_inline_113","pattern":"[a-d[m-p]&&[c-f]]","input":"abcdefmnop","flags":"","op":"find","expect":[{"m":"c","g":[]},{"m":"d","g":[]}]}
+{"id":"openjdk_inline_114","pattern":"[\\p{L}&&[\\p{Lu}]]","input":"aBcD","flags":"","op":"find","expect":[{"m":"B","g":[]},{"m":"D","g":[]}]}
+{"id":"openjdk_inline_115","pattern":"(ab)+","input":"ababab","flags":"","op":"find","expect":[{"m":"ababab","g":["ab"]}]}
+{"id":"openjdk_inline_116","pattern":"(ab)+?","input":"ababab","flags":"","op":"find","expect":[{"m":"ab","g":["ab"]},{"m":"ab","g":["ab"]},{"m":"ab","g":["ab"]}]}
+{"id":"openjdk_inline_117","pattern":"(ab){2}","input":"ababab","flags":"","op":"find","expect":[{"m":"abab","g":["ab"]}]}
+{"id":"openjdk_inline_118","pattern":"(ab){2,3}","input":"ababab","flags":"","op":"find","expect":[{"m":"ababab","g":["ab"]}]}
+{"id":"openjdk_inline_119","pattern":"(ab){2,3}?","input":"ababab","flags":"","op":"find","expect":[{"m":"abab","g":["ab"]}]}
+{"id":"openjdk_inline_120","pattern":"\\s+","input":"  hello  world  ","flags":"","op":"split","expect":["","hello","world"]}
+{"id":"openjdk_inline_121","pattern":",","input":"a,b,,c","flags":"","op":"split","expect":["a","b","","c"]}
+{"id":"openjdk_inline_122","pattern":",","input":",a,b,","flags":"","op":"split","expect":["","a","b"]}
+{"id":"openjdk_inline_123","pattern":"(?<=,)","input":"a,b,c","flags":"","op":"split","expect":["a,","b,","c"]}
+{"id":"openjdk_inline_124","pattern":"(?=,)","input":"a,b,c","flags":"","op":"split","expect":["a",",b",",c"]}
+{"id":"openjdk_inline_125","pattern":"x","input":"x","flags":"","op":"split","expect":[]}
+{"id":"openjdk_inline_126","pattern":"x","input":"","flags":"","op":"split","expect":[""]}
+{"id":"openjdk_inline_127","pattern":"","input":"abc","flags":"","op":"split","expect":["a","b","c"]}
+{"id":"openjdk_inline_128","pattern":"\\b","input":"hello world","flags":"","op":"split","expect":["hello"," ","world"]}
+{"id":"openjdk_inline_129","pattern":"a+","input":"aabaa","replacement":"x","flags":"","op":"replaceAll","expect":"xbx"}
+{"id":"openjdk_inline_130","pattern":"(a+)","input":"aabaa","replacement":"$1x","flags":"","op":"replaceAll","expect":"aaxbaax"}
+{"id":"openjdk_inline_131","pattern":"(?<g>a+)","input":"aabaa","replacement":"${g}x","flags":"","op":"replaceAll","expect":"aaxbaax"}
+{"id":"openjdk_inline_132","pattern":"","input":"abc","replacement":"x","flags":"","op":"replaceAll","expect":"xaxbxcx"}
+{"id":"openjdk_inline_133","pattern":"^","input":"abc\ndef","replacement":"x","flags":"m","op":"replaceAll","expect":"xabc\nxdef"}
+{"id":"openjdk_inline_134","pattern":"$","input":"abc\ndef","replacement":"x","flags":"m","op":"replaceAll","expect":"abcx\ndefx"}
+{"id":"openjdk_inline_135","pattern":"\\b","input":"hello world","replacement":"|","flags":"","op":"replaceAll","expect":"|hello| |world|"}
+{"id":"openjdk_inline_136","pattern":"\\Q.+*?\\E","input":".+*?","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_137","pattern":"\\Q\\E","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_138","pattern":"\\Q\\\\E","input":"\\","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_139","pattern":"\\Q(\\E","input":"a(b","flags":"","op":"find","expect":[{"m":"(","g":[]}]}
+{"id":"openjdk_inline_140","pattern":"\\0141","input":"a","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_141","pattern":"\\0101","input":"A","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_142","pattern":"\\0377","input":"ÿ","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_143","pattern":"[\\0141-\\0172]+","input":"abc","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_144","pattern":"\\R","input":"a\nb\r\nc\rd","flags":"","op":"find","expect":[{"m":"\n","g":[]},{"m":"\r\n","g":[]},{"m":"\r","g":[]}]}
+{"id":"openjdk_inline_145","pattern":"a\\Rb","input":"a\nb","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_146","pattern":"a\\Rb","input":"a\r\nb","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_147","pattern":"a\\Rb","input":"a\rb","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_148","pattern":"a\\Rb","input":"ab","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_149","pattern":"a\\Rb","input":"a b","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_150","pattern":"a\\Rb","input":"a b","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_151","pattern":"\\h","input":"a b\tc","flags":"","op":"find","expect":[{"m":" ","g":[]},{"m":"\t","g":[]}]}
+{"id":"openjdk_inline_152","pattern":"\\v","input":"a\nb\r\nc","flags":"","op":"find","expect":[{"m":"\n","g":[]},{"m":"\r","g":[]},{"m":"\n","g":[]}]}
+{"id":"openjdk_inline_153","pattern":"\\H","input":"a b\tc","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_154","pattern":"\\V","input":"a\nb\r\nc","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_155","pattern":"(?i)abc","input":"ABC","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_156","pattern":"(?iu)abc","input":"ABC","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_157","pattern":"(?i)à","input":"À","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_158","pattern":"(?iu)à","input":"À","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_159","pattern":"(?i)[a-z]+","input":"aBcDeF","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_160","pattern":"(?iu)\\p{Lower}+","input":"éÉ","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_161","pattern":"(?i)\\p{Lower}+","input":"éÉ","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_162","pattern":"𝔸","input":"𝔸","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_163","pattern":"[𝔸]","input":"𝔸","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_164","pattern":"\\p{L}","input":"𝔸xyz","flags":"","op":"find","expect":[{"m":"𝔸","g":[]},{"m":"x","g":[]},{"m":"y","g":[]},{"m":"z","g":[]}]}
+{"id":"openjdk_inline_165","pattern":".","input":"𝔸","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_166","pattern":"(a|)+","input":"aaa","flags":"","op":"find","expect":[{"m":"aaa","g":[""]},{"m":"","g":[""]}]}
+{"id":"openjdk_inline_167","pattern":"(a?)+","input":"aaa","flags":"","op":"find","expect":[{"m":"aaa","g":[""]},{"m":"","g":[""]}]}
+{"id":"openjdk_inline_168","pattern":"(a*)+","input":"aaa","flags":"","op":"find","expect":[{"m":"aaa","g":[""]},{"m":"","g":[""]}]}
+{"id":"openjdk_inline_169","pattern":"(?:a|b|)+","input":"abba","flags":"","op":"find","expect":[{"m":"abba","g":[]},{"m":"","g":[]}]}
+{"id":"openjdk_inline_170","pattern":"()+","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_171","pattern":"(a|b)?","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_172","pattern":"\\a","input":"\u0007","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_173","pattern":"\\e","input":"\u001b","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_174","pattern":"\\f","input":"\f","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_175","pattern":"\\n","input":"\n","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_176","pattern":"\\r","input":"\r","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_177","pattern":"\\t","input":"\t","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_178","pattern":"^$","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_179","pattern":"^$","input":"\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_180","pattern":"\\A\\z","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_181","pattern":"\\G\\w","input":"abc def","flags":"","op":"find","expect":[{"m":"a","g":[]},{"m":"b","g":[]},{"m":"c","g":[]}]}
+{"id":"openjdk_inline_182","pattern":"\\Z","input":"","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_183","pattern":"\\Z","input":"\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_184","pattern":"a\\Z","input":"a","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_185","pattern":"a\\Z","input":"a\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_186","pattern":"a\\Z","input":"a\r\n","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_187","pattern":"[","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_188","pattern":"(?P<name>a)","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_189","pattern":"*","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_190","pattern":"+","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_191","pattern":"?","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_192","pattern":"{1}","input":"a","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_193","pattern":"(?z)","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_194","pattern":"[z-a]","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_195","pattern":"\\p{Invalid}","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_196","pattern":"(","flags":"","op":"compile_error","expect":true}
+{"id":"openjdk_inline_197","pattern":"(?:abc)+","input":"abcabc","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_198","pattern":"(?i:abc)def","input":"ABCdef","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_199","pattern":"(?i:abc)def","input":"ABCDEF","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_200","pattern":"(?i:abc)def","input":"ABCdefABCDEF","flags":"","op":"find","expect":[{"m":"ABCdef","g":[]}]}
+{"id":"openjdk_inline_201","pattern":"(?-i:abc)","input":"abc","flags":"i","op":"matches","expect":true}
+{"id":"openjdk_inline_202","pattern":"(?-i:abc)","input":"ABC","flags":"i","op":"matches","expect":false}
+{"id":"openjdk_inline_203","pattern":"(?>a+)a","input":"aaa","flags":"","op":"matches","expect":false}
+{"id":"openjdk_inline_204","pattern":"(?>a+)","input":"aaa","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_205","pattern":"(?>a|ab)b","input":"ab","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_206","pattern":"\\x{10000}","input":"𐀀","flags":"","op":"find","expect":[{"m":"𐀀","g":[]}]}
+{"id":"openjdk_inline_207","pattern":"\\x{10001}","input":"𐀁","flags":"","op":"find","expect":[{"m":"𐀁","g":[]}]}
+{"id":"openjdk_inline_208","pattern":"^a$","input":"a\nb\n","flags":"m","op":"matches","expect":false}
+{"id":"openjdk_inline_209","pattern":"^b$","input":"a\nb\n","flags":"m","op":"matches","expect":false}
+{"id":"openjdk_inline_210","pattern":"^c$","input":"a\nb\n","flags":"m","op":"matches","expect":false}
+{"id":"openjdk_inline_211","pattern":"(a)(b)(c).*\\3\\2\\1","input":"abccba","flags":"","op":"matches","expect":true}
+{"id":"openjdk_inline_212","pattern":"(?i)ß","input":"ss","flags":"","op":"matches","expect":false}

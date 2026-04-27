@@ -318,6 +318,29 @@ impl Parser {
     }
 
     fn parse_unicode_char(&mut self) -> Result<char, PatternSyntaxError> {
+        let code = self.parse_4hex()?;
+        // Handle UTF-16 surrogate pairs: \uD800\uDC00 etc.
+        if (0xD800..=0xDBFF).contains(&code) {
+            // High surrogate — look for \uXXXX low surrogate
+            let saved_pos = self.pos;
+            if self.peek() == Some('\\') {
+                self.advance();
+                if self.peek() == Some('u') {
+                    self.advance();
+                    if let Ok(low) = self.parse_4hex() {
+                        if (0xDC00..=0xDFFF).contains(&low) {
+                            let cp = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+                            return Ok(char::from_u32(cp).unwrap_or('\0'));
+                        }
+                    }
+                }
+            }
+            self.pos = saved_pos;
+        }
+        Ok(char::from_u32(code).unwrap_or('\0'))
+    }
+
+    fn parse_4hex(&mut self) -> Result<u32, PatternSyntaxError> {
         let mut hex = String::new();
         for _ in 0..4 {
             if let Some(c) = self.peek() {
@@ -325,10 +348,9 @@ impl Parser {
                 else { break; }
             }
         }
-        let code = u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
+        u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
             message: format!("Invalid unicode escape: {}", hex),
-        })?;
-        Ok(char::from_u32(code).unwrap_or('\0'))
+        })
     }
 
     fn parse_octal_char(&mut self) -> Result<char, PatternSyntaxError> {

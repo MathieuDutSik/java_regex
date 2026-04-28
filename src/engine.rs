@@ -15,11 +15,11 @@ fn single_char_uppercase(c: char) -> Option<char> {
     if iter.next().is_some() { None } else { Some(first) }
 }
 
-pub struct Engine {
-    pub input: Vec<char>,
+pub struct Engine<'a> {
+    pub input: &'a [char],
     pub flags: Flags,
     pub group_count: usize,
-    pub named_groups: HashMap<String, usize>,
+    pub named_groups: &'a HashMap<String, usize>,
     steps: u64,
     max_steps: u64,
     depth: u32,
@@ -42,10 +42,10 @@ impl State {
     }
 }
 
-impl Engine {
-    pub fn new(input: &str, flags: Flags, group_count: usize, named_groups: HashMap<String, usize>) -> Self {
+impl<'a> Engine<'a> {
+    pub fn new(input: &'a [char], flags: Flags, group_count: usize, named_groups: &'a HashMap<String, usize>) -> Self {
         Engine {
-            input: input.chars().collect(),
+            input,
             flags,
             group_count,
             named_groups,

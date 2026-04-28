@@ -57,50 +57,43 @@ impl Regex {
 
     /// Returns true if the pattern matches the entire input.
     pub fn matches(&self, input: &str) -> bool {
-        let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+        let input_chars: Vec<char> = input.chars().collect();
+        let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
         let mut state = State::new(self.group_count);
         let end_anchor = vec![Node::Anchor(AnchorKind::EndOfInput)];
         engine.match_pattern(&self.pattern, &end_anchor, 0, &mut state)
     }
 
+    /// Returns true if the pattern matches the beginning of the input.
+    /// Unlike `matches()`, the pattern does not need to match the entire input.
+    pub fn looking_at(&self, input: &str) -> Option<MatchInfo> {
+        let input_chars: Vec<char> = input.chars().collect();
+        let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
+        if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, 0) {
+            Some(self.build_match_info(&input_chars, 0, end_pos, &captures))
+        } else {
+            None
+        }
+    }
+
     /// Find all non-overlapping matches.
     pub fn find(&self, input: &str) -> Vec<MatchInfo> {
-        let mut results = Vec::new();
         let input_chars: Vec<char> = input.chars().collect();
+        self.find_iter(&input_chars)
+    }
+
+    fn find_iter(&self, input_chars: &[char]) -> Vec<MatchInfo> {
+        let mut results = Vec::new();
         let input_len = input_chars.len();
         let mut search_pos = 0;
         let mut prev_match_end = 0usize;
 
         while search_pos <= input_len {
-            let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
             if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                let matched_text: String = input_chars[search_pos..end_pos].iter().collect();
-
-                let mut groups = Vec::new();
-                for i in 1..=self.group_count {
-                    if let Some(Some((s, e))) = captures.get(i) {
-                        groups.push(Some(input_chars[*s..*e].iter().collect()));
-                    } else {
-                        groups.push(None);
-                    }
-                }
-
-                let mut named = HashMap::new();
-                for (name, &idx) in &self.named_groups {
-                    if let Some(Some((s, e))) = captures.get(idx) {
-                        named.insert(name.clone(), input_chars[*s..*e].iter().collect());
-                    }
-                }
-
-                results.push(MatchInfo {
-                    matched_text,
-                    start: search_pos,
-                    end: end_pos,
-                    groups,
-                    named_groups: named,
-                });
+                results.push(self.build_match_info(input_chars, search_pos, end_pos, &captures));
 
                 prev_match_end = end_pos;
                 if end_pos == search_pos {
@@ -116,9 +109,52 @@ impl Regex {
         results
     }
 
+    fn build_match_info(&self, input_chars: &[char], start: usize, end: usize,
+                        captures: &[Option<(usize, usize)>]) -> MatchInfo {
+        let matched_text: String = input_chars[start..end].iter().collect();
+
+        let mut groups = Vec::new();
+        let mut group_positions = Vec::new();
+        for i in 1..=self.group_count {
+            if let Some(Some((s, e))) = captures.get(i) {
+                groups.push(Some(input_chars[*s..*e].iter().collect::<String>()));
+                group_positions.push(Some((*s, *e)));
+            } else {
+                groups.push(None);
+                group_positions.push(None);
+            }
+        }
+
+        let mut named = HashMap::new();
+        for (name, &idx) in &self.named_groups {
+            if let Some(Some((s, e))) = captures.get(idx) {
+                named.insert(name.clone(), input_chars[*s..*e].iter().collect::<String>());
+            }
+        }
+
+        MatchInfo {
+            matched_text,
+            start,
+            end,
+            groups,
+            group_positions,
+            named_groups: named,
+        }
+    }
+
     /// Replace all matches with the replacement string.
     pub fn replace_all(&self, input: &str, replacement: &str) -> String {
         let input_chars: Vec<char> = input.chars().collect();
+        self.replace_internal(&input_chars, replacement, false)
+    }
+
+    /// Replace the first match with the replacement string.
+    pub fn replace_first(&self, input: &str, replacement: &str) -> String {
+        let input_chars: Vec<char> = input.chars().collect();
+        self.replace_internal(&input_chars, replacement, true)
+    }
+
+    fn replace_internal(&self, input_chars: &[char], replacement: &str, first_only: bool) -> String {
         let input_len = input_chars.len();
         let mut result = String::new();
         let mut last_end = 0;
@@ -126,7 +162,7 @@ impl Regex {
 
         let mut prev_match_end = 0;
         while search_pos <= input_len {
-            let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
             if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
@@ -136,7 +172,7 @@ impl Regex {
                     captures[0] = Some((search_pos, end_pos));
                 }
 
-                let replaced = self.build_replacement(replacement, &captures, &input_chars);
+                let replaced = self.build_replacement(replacement, &captures, input_chars);
                 result.push_str(&replaced);
 
                 last_end = end_pos;
@@ -149,6 +185,10 @@ impl Regex {
                     search_pos += 1;
                 } else {
                     search_pos = end_pos;
+                }
+
+                if first_only {
+                    break;
                 }
             } else {
                 search_pos += 1;
@@ -210,21 +250,32 @@ impl Regex {
         result
     }
 
-    /// Split the input by pattern matches (Java String.split semantics).
+    /// Split the input by pattern matches (Java String.split semantics, limit=0).
     pub fn split(&self, input: &str) -> Vec<String> {
+        self.split_with_limit(input, 0)
+    }
+
+    /// Split the input by pattern matches with a limit parameter.
+    /// - limit > 0: at most `limit` parts, last part contains the remainder
+    /// - limit == 0: no limit, trailing empty strings removed (Java default)
+    /// - limit < 0: no limit, trailing empty strings preserved
+    pub fn split_with_limit(&self, input: &str, limit: i32) -> Vec<String> {
         let input_chars: Vec<char> = input.chars().collect();
         let input_len = input_chars.len();
         let mut parts = Vec::new();
-        let mut index = 0; // last match end, equivalent to Java's index
+        let mut index = 0;
         let mut search_pos = 0;
 
         let mut prev_match_end = 0;
         while search_pos <= input_len {
-            let mut engine = Engine::new(input, self.flags, self.group_count, self.named_groups.clone());
+            if limit > 0 && parts.len() as i32 >= limit - 1 {
+                break;
+            }
+
+            let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
             if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                // Java: skip zero-width match at the beginning of input
                 if index == 0 && search_pos == 0 && end_pos == 0 {
                     search_pos += 1;
                     continue;
@@ -244,9 +295,11 @@ impl Regex {
 
         parts.push(input_chars[index..].iter().collect());
 
-        // Java default (limit=0): remove trailing empty strings
-        while parts.last().is_some_and(|s: &String| s.is_empty()) {
-            parts.pop();
+        // Java limit=0: remove trailing empty strings
+        if limit == 0 {
+            while parts.last().is_some_and(|s: &String| s.is_empty()) {
+                parts.pop();
+            }
         }
 
         if parts.is_empty() && index == 0 {
@@ -581,5 +634,60 @@ mod tests {
         let matches = regex.find("a1");
         assert_eq!(matches.len(), 1);
         assert_eq!(matches[0].matched_text, "1");
+    }
+
+    #[test]
+    fn test_looking_at() {
+        let regex = Regex::new("\\d+").unwrap();
+        let m = regex.looking_at("123abc");
+        assert!(m.is_some());
+        assert_eq!(m.unwrap().matched_text, "123");
+
+        assert!(regex.looking_at("abc123").is_none());
+    }
+
+    #[test]
+    fn test_replace_first() {
+        let regex = Regex::new("\\d+").unwrap();
+        assert_eq!(regex.replace_first("a1b2c3", "#"), "a#b2c3");
+    }
+
+    #[test]
+    fn test_replace_first_with_groups() {
+        let regex = Regex::new("(\\w+),(\\w+)").unwrap();
+        assert_eq!(regex.replace_first("a,b and c,d", "$2,$1"), "b,a and c,d");
+    }
+
+    #[test]
+    fn test_split_with_limit() {
+        let regex = Regex::new(",").unwrap();
+        assert_eq!(regex.split_with_limit("a,b,c,d", 2), vec!["a", "b,c,d"]);
+        assert_eq!(regex.split_with_limit("a,b,c,d", 3), vec!["a", "b", "c,d"]);
+        assert_eq!(regex.split_with_limit("a,b,c,d", -1), vec!["a", "b", "c", "d"]);
+    }
+
+    #[test]
+    fn test_split_with_limit_trailing_empty() {
+        let regex = Regex::new(",").unwrap();
+        // limit=0 (default): trailing empties removed
+        assert_eq!(regex.split("a,,b,"), vec!["a", "", "b"]);
+        // limit=-1: trailing empties preserved
+        assert_eq!(regex.split_with_limit("a,,b,", -1), vec!["a", "", "b", ""]);
+    }
+
+    #[test]
+    fn test_group_positions() {
+        let regex = Regex::new("(\\w+)@(\\w+)").unwrap();
+        let matches = regex.find("user@host");
+        assert_eq!(matches.len(), 1);
+        assert_eq!(matches[0].group_positions, vec![Some((0, 4)), Some((5, 9))]);
+    }
+
+    #[test]
+    fn test_backtracking_limit() {
+        // Catastrophic backtracking pattern — should not hang
+        let regex = Regex::new("(a+)+b").unwrap();
+        // This would take exponential time without step limits
+        assert!(!regex.matches("aaaaaaaaaaaaaaaaaa"));
     }
 }

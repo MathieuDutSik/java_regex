@@ -152,5 +152,6 @@ pub struct MatchInfo {
     pub start: usize,
     pub end: usize,
     pub groups: Vec<Option<String>>,
+    pub group_positions: Vec<Option<(usize, usize)>>,
     pub named_groups: HashMap<String, String>,
 }

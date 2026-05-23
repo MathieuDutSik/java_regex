@@ -219,12 +219,10 @@ impl<'a> Engine<'a> {
             }
 
             Node::LinebreakMatcher => {
+                // \R is atomic: (?>\r\n|\v) — if \r\n matches, commit to it
                 if pos < self.input.len() {
-                    // Try \r\n first, then fall back to just \r
                     if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
-                        if self.match_nodes(&nodes[1..], pos + 2, state) {
-                            return true;
-                        }
+                        return self.match_nodes(&nodes[1..], pos + 2, state);
                     }
                     if is_linebreak(self.input[pos]) {
                         return self.match_nodes(&nodes[1..], pos + 1, state);
@@ -264,19 +262,40 @@ impl<'a> Engine<'a> {
             }
 
             Node::GraphemeCluster => {
+                // \X matches a Unicode extended grapheme cluster.
+                // This is a simplified implementation covering the most common cases:
+                // - \r\n as a single cluster
+                // - base char + combining marks (Mn, Mc, Me)
+                // - regional indicator pairs (flag emoji)
+                // - emoji ZWJ sequences (emoji + ZWJ + emoji + ...)
+                // - emoji with variation selectors and skin tone modifiers
                 if pos >= self.input.len() { return false; }
                 let mut p = pos;
                 if self.input[p] == '\r' && p + 1 < self.input.len() && self.input[p + 1] == '\n' {
                     p += 2;
                     return self.match_nodes(&nodes[1..], p, state);
                 }
-                p += 1;
-                while p < self.input.len() && is_combining_mark(self.input[p]) {
+                // Regional indicator sequence: pairs of RI chars form flag emoji
+                if is_regional_indicator(self.input[p]) {
                     p += 1;
-                }
-                if is_regional_indicator(self.input[pos]) {
-                    while p < self.input.len() && is_regional_indicator(self.input[p]) {
+                    if p < self.input.len() && is_regional_indicator(self.input[p]) {
                         p += 1;
+                    }
+                    return self.match_nodes(&nodes[1..], p, state);
+                }
+                // Consume base character
+                p += 1;
+                // Extend: combining marks, ZWJ sequences, variation selectors, modifiers
+                while p < self.input.len() {
+                    let ch = self.input[p];
+                    if is_combining_mark(ch) || is_variation_selector(ch) || is_emoji_modifier(ch) {
+                        p += 1;
+                    } else if ch == '\u{200D}' && p + 1 < self.input.len() {
+                        // ZWJ: consume ZWJ + next char
+                        p += 1;
+                        p += 1;
+                    } else {
+                        break;
                     }
                 }
                 self.match_nodes(&nodes[1..], p, state)
@@ -396,7 +415,7 @@ impl<'a> Engine<'a> {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
                     let mut branch_state = state.clone();
-                    if self.match_nodes_to_end(&combined, pos, &mut branch_state) {
+                    if self.match_nodes(&combined, pos, &mut branch_state) {
                         let new_pos = branch_state.match_end;
                         if new_pos > pos {
                             state.captures = branch_state.captures.clone();
@@ -614,10 +633,6 @@ impl<'a> Engine<'a> {
         }
     }
 
-    fn match_nodes_to_end(&mut self, nodes: &[Node], pos: usize, state: &mut State) -> bool {
-        self.match_nodes(nodes, pos, state)
-    }
-
     fn is_lt(&self, c: char) -> bool {
         if self.flags.unix_lines { c == '\n' } else { is_line_terminator(c) }
     }
@@ -639,8 +654,7 @@ impl<'a> Engine<'a> {
         match kind {
             AnchorKind::StartOfLine => {
                 if self.flags.multiline {
-                    if pos == 0 { !self.input.is_empty() }
-                    else { pos < self.input.len() && self.is_after_line_terminator(pos) }
+                    pos == 0 || self.is_after_line_terminator(pos)
                 } else {
                     pos == 0
                 }
@@ -682,6 +696,7 @@ impl<'a> Engine<'a> {
     /// Check non-multiline $ and \Z: before final newline or at end.
     fn check_before_final_newline(&self, pos: usize) -> bool {
         let len = self.input.len();
+        if len == 0 { return false; }
         if self.flags.unix_lines {
             return pos == len - 1 && self.input[pos] == '\n';
         }

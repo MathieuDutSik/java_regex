@@ -2,6 +2,7 @@
 name = "java_regex"
 version = "0.1.0"
 edition = "2021"
+description = "Rust implementation of Java's java.util.regex.Pattern (Java 8+, targeting Java 13+ semantics)"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -10,6 +11,20 @@ unicode-blocks = "0.1.9"
 unicode-general-category = "1"
 unicode-properties = "0.1.4"
 unicode-script = "0.5.8"
+arbitrary = { version = "1", features = ["derive"], optional = true }
+
+[dev-dependencies]
+proptest = "1"
+
+[features]
+default = []
+# Enables the `gen` module's Arbitrary derives so cargo-fuzz / structure-aware
+# fuzzers can synthesize RegexNode values directly from raw fuzzer bytes.
+fuzz-gen = ["dep:arbitrary"]
 
 [lib]
 path = "src/lib.rs"
+
+[[example]]
+name = "diff_fuzz"
+required-features = ["fuzz-gen"]

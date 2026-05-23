@@ -1,34 +1,73 @@
+//! Rust implementation of Java's `java.util.regex.Pattern` API (Java 8+, targeting Java 13+ semantics).
+//!
+//! Supports the full Java regex syntax including Unicode properties, lookahead/lookbehind,
+//! atomic groups, possessive quantifiers, backreferences, and all standard flags.
+//! The `CANON_EQ` (canonical equivalence) flag is not supported.
+//!
+//! # Examples
+//!
+//! ```
+//! use java_regex::Regex;
+//!
+//! let re = Regex::new(r"\d+").unwrap();
+//! assert!(re.matches("123"));
+//! assert_eq!(re.find("a1b22c").len(), 2);
+//! assert_eq!(re.replace_all("a1b2", "#"), "a#b#");
+//! ```
+
 mod types;
 mod unicode;
 mod parser;
 mod engine;
 
+#[doc(hidden)]
+pub mod gen;
+
 use std::collections::HashMap;
+use std::fmt;
 
 pub use types::{PatternSyntaxError, MatchInfo};
 use types::*;
 use engine::{Engine, State};
 use parser::Parser;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct MatchResult {
-    pub matched: bool,
-    pub matches: Vec<MatchInfo>,
-}
-
+/// A compiled Java-compatible regular expression.
+///
+/// Create with [`Regex::new`] or [`Regex::with_flags`], then use
+/// [`matches`](Regex::matches), [`find`](Regex::find), [`replace_all`](Regex::replace_all),
+/// or [`split`](Regex::split) to apply it.
 #[derive(Debug, Clone)]
 pub struct Regex {
+    source: String,
     pattern: Pattern,
     flags: Flags,
     group_count: usize,
     named_groups: HashMap<String, usize>,
 }
 
+impl fmt::Display for Regex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.source)
+    }
+}
+
 impl Regex {
+    /// Compile a regex pattern with default flags.
     pub fn new(pattern: &str) -> Result<Self, PatternSyntaxError> {
         Self::with_flags(pattern, "")
     }
 
+    /// Compile a regex pattern with the given flags string.
+    ///
+    /// Supported flag characters:
+    /// - `i` — case-insensitive matching
+    /// - `m` — multiline mode (`^` and `$` match line boundaries)
+    /// - `s` — dotall mode (`.` matches line terminators)
+    /// - `x` — comments mode (whitespace and `#` comments ignored)
+    /// - `u` — Unicode-aware case folding
+    /// - `U` — Unicode character classes for POSIX properties
+    /// - `d` — Unix lines mode (only `\n` is a line terminator)
+    /// - `l` — literal mode (pattern is treated as a literal string)
     pub fn with_flags(pattern: &str, flags_str: &str) -> Result<Self, PatternSyntaxError> {
         let mut flags = Flags::default();
         for c in flags_str.chars() {
@@ -40,19 +79,48 @@ impl Regex {
                 'U' => flags.unicode_class = true,
                 'd' => flags.unix_lines = true,
                 'u' => flags.unicode_case = true,
+                'l' => flags.literal = true,
                 _ => {}
             }
         }
 
-        let parser = Parser::new(pattern, flags);
-        let (parsed_pattern, group_count, named_groups) = parser.parse()?;
+        let parsed_pattern;
+        let group_count;
+        let named_groups;
+
+        if flags.literal {
+            // LITERAL mode: treat the entire pattern as literal text
+            let nodes: Vec<Node> = pattern.chars().map(Node::Literal).collect();
+            parsed_pattern = Pattern { branches: vec![nodes] };
+            group_count = 0;
+            named_groups = HashMap::new();
+        } else {
+            let parser = Parser::new(pattern, flags);
+            let result = parser.parse()?;
+            parsed_pattern = result.0;
+            group_count = result.1;
+            named_groups = result.2;
+        }
 
         Ok(Regex {
+            source: pattern.to_string(),
             pattern: parsed_pattern,
             flags,
             group_count,
             named_groups,
         })
+    }
+
+    /// Returns the source pattern string.
+    pub fn pattern(&self) -> &str {
+        &self.source
+    }
+
+    /// Returns a literal pattern string that would match the given string.
+    ///
+    /// Equivalent to Java's `Pattern.quote()`. Wraps the string in `\Q...\E`.
+    pub fn quote(s: &str) -> String {
+        format!("\\Q{}\\E", s.replace("\\E", "\\E\\\\E\\Q"))
     }
 
     /// Returns true if the pattern matches the entire input.
@@ -76,17 +144,58 @@ impl Regex {
         }
     }
 
-    /// Find all non-overlapping matches.
+    /// Find all non-overlapping matches in the input.
     pub fn find(&self, input: &str) -> Vec<MatchInfo> {
-        let input_chars: Vec<char> = input.chars().collect();
-        self.find_iter(&input_chars)
+        self.find_in_region(input, 0, None)
     }
 
-    fn find_iter(&self, input_chars: &[char]) -> Vec<MatchInfo> {
+    /// Find all non-overlapping matches within a region of the input.
+    ///
+    /// `start` and `end` are char indices. Only text in `[start, end)` is considered.
+    /// Anchors like `^` and `$` respect the region boundaries.
+    pub fn find_in_region(&self, input: &str, start: usize, end: Option<usize>) -> Vec<MatchInfo> {
+        let all_chars: Vec<char> = input.chars().collect();
+        let end = end.unwrap_or(all_chars.len());
+        let region_chars: Vec<char> = all_chars[start..end].to_vec();
+        let results = self.find_iter_impl(&region_chars, 0);
+        // Adjust positions by start offset
+        if start == 0 {
+            results
+        } else {
+            results.into_iter().map(|mut m: MatchInfo| {
+                m.start += start;
+                m.end += start;
+                m.group_positions = m.group_positions.into_iter().map(|gp: Option<(usize, usize)>| {
+                    gp.map(|(s, e)| (s + start, e + start))
+                }).collect();
+                m
+            }).collect()
+        }
+    }
+
+    /// Find the first match starting at or after `start` (char index).
+    ///
+    /// Returns `None` if no match is found from that position onward.
+    pub fn find_at(&self, input: &str, start: usize) -> Option<MatchInfo> {
+        let input_chars: Vec<char> = input.chars().collect();
+        let input_len = input_chars.len();
+        let mut search_pos = start;
+        while search_pos <= input_len {
+            let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
+            engine.search_start = start;
+            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
+                return Some(self.build_match_info(&input_chars, search_pos, end_pos, &captures));
+            }
+            search_pos += 1;
+        }
+        None
+    }
+
+    fn find_iter_impl(&self, input_chars: &[char], start: usize) -> Vec<MatchInfo> {
         let mut results = Vec::new();
         let input_len = input_chars.len();
-        let mut search_pos = 0;
-        let mut prev_match_end = 0usize;
+        let mut search_pos = start;
+        let mut prev_match_end = start;
 
         while search_pos <= input_len {
             let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
@@ -152,6 +261,63 @@ impl Regex {
     pub fn replace_first(&self, input: &str, replacement: &str) -> String {
         let input_chars: Vec<char> = input.chars().collect();
         self.replace_internal(&input_chars, replacement, true)
+    }
+
+    /// Replace all matches using a callback function.
+    ///
+    /// The callback receives a [`MatchInfo`] for each match and returns the replacement string.
+    pub fn replace_all_with<F>(&self, input: &str, f: F) -> String
+    where F: Fn(&MatchInfo) -> String {
+        let input_chars: Vec<char> = input.chars().collect();
+        self.replace_with_internal(&input_chars, &f, false)
+    }
+
+    /// Replace the first match using a callback function.
+    ///
+    /// The callback receives a [`MatchInfo`] and returns the replacement string.
+    pub fn replace_first_with<F>(&self, input: &str, f: F) -> String
+    where F: Fn(&MatchInfo) -> String {
+        let input_chars: Vec<char> = input.chars().collect();
+        self.replace_with_internal(&input_chars, &f, true)
+    }
+
+    fn replace_with_internal<F>(&self, input_chars: &[char], f: &F, first_only: bool) -> String
+    where F: Fn(&MatchInfo) -> String {
+        let input_len = input_chars.len();
+        let mut result = String::new();
+        let mut last_end = 0;
+        let mut search_pos = 0;
+        let mut prev_match_end = 0;
+
+        while search_pos <= input_len {
+            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
+            engine.search_start = prev_match_end;
+
+            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
+                result.extend(&input_chars[last_end..search_pos]);
+                let info = self.build_match_info(input_chars, search_pos, end_pos, &captures);
+                result.push_str(&f(&info));
+
+                last_end = end_pos;
+                prev_match_end = end_pos;
+                if end_pos == search_pos {
+                    if search_pos < input_len {
+                        result.push(input_chars[search_pos]);
+                        last_end = search_pos + 1;
+                    }
+                    search_pos += 1;
+                } else {
+                    search_pos = end_pos;
+                }
+
+                if first_only { break; }
+            } else {
+                search_pos += 1;
+            }
+        }
+
+        result.extend(&input_chars[last_end..]);
+        result
     }
 
     fn replace_internal(&self, input_chars: &[char], replacement: &str, first_only: bool) -> String {
@@ -276,10 +442,6 @@ impl Regex {
             engine.search_start = prev_match_end;
 
             if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                if index == 0 && search_pos == 0 && end_pos == 0 {
-                    search_pos += 1;
-                    continue;
-                }
                 parts.push(input_chars[index..search_pos].iter().collect());
                 index = end_pos;
                 prev_match_end = end_pos;
@@ -689,5 +851,69 @@ mod tests {
         let regex = Regex::new("(a+)+b").unwrap();
         // This would take exponential time without step limits
         assert!(!regex.matches("aaaaaaaaaaaaaaaaaa"));
+    }
+
+    #[test]
+    fn test_literal_flag() {
+        let regex = Regex::with_flags("a.b+c", "l").unwrap();
+        assert!(regex.matches("a.b+c"));
+        assert!(!regex.matches("axbc"));
+    }
+
+    #[test]
+    fn test_quote() {
+        let quoted = Regex::quote("hello.world*");
+        let regex = Regex::new(&quoted).unwrap();
+        assert!(regex.matches("hello.world*"));
+        assert!(!regex.matches("helloXworld"));
+    }
+
+    #[test]
+    fn test_find_at() {
+        let regex = Regex::new("\\d+").unwrap();
+        let m = regex.find_at("a1b22c333", 3);
+        assert!(m.is_some());
+        assert_eq!(m.unwrap().matched_text, "22");
+    }
+
+    #[test]
+    fn test_find_in_region() {
+        let regex = Regex::new("\\d+").unwrap();
+        let matches = regex.find_in_region("a1b22c333d", 2, Some(9));
+        assert_eq!(matches.len(), 2);
+        assert_eq!(matches[0].matched_text, "22");
+        assert_eq!(matches[0].start, 3);
+        assert_eq!(matches[1].matched_text, "333");
+        assert_eq!(matches[1].start, 6);
+    }
+
+    #[test]
+    fn test_replace_all_with() {
+        let regex = Regex::new("\\d+").unwrap();
+        let result = regex.replace_all_with("a1b22c333", |m| {
+            format!("[{}]", m.matched_text.len())
+        });
+        assert_eq!(result, "a[1]b[2]c[3]");
+    }
+
+    #[test]
+    fn test_replace_first_with() {
+        let regex = Regex::new("\\w+").unwrap();
+        let result = regex.replace_first_with("hello world", |m| {
+            m.matched_text.to_uppercase()
+        });
+        assert_eq!(result, "HELLO world");
+    }
+
+    #[test]
+    fn test_display() {
+        let regex = Regex::new("\\d+").unwrap();
+        assert_eq!(format!("{}", regex), "\\d+");
+    }
+
+    #[test]
+    fn test_pattern() {
+        let regex = Regex::new("(?i)abc").unwrap();
+        assert_eq!(regex.pattern(), "(?i)abc");
     }
 }

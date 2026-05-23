@@ -205,7 +205,14 @@ impl Parser {
             'A' => Ok(Node::Anchor(AnchorKind::StartOfInput)),
             'z' => Ok(Node::Anchor(AnchorKind::EndOfInput)),
             'Z' => Ok(Node::Anchor(AnchorKind::EndOfInputBeforeFinalNewline)),
-            'b' => Ok(Node::Anchor(AnchorKind::WordBoundary)),
+            'b' => {
+                if self.peek() == Some('{') {
+                    return Err(PatternSyntaxError {
+                        message: "\\b{g} grapheme cluster boundary is not supported".to_string(),
+                    });
+                }
+                Ok(Node::Anchor(AnchorKind::WordBoundary))
+            }
             'B' => Ok(Node::Anchor(AnchorKind::NonWordBoundary)),
             'G' => Ok(Node::Anchor(AnchorKind::PreviousMatchEnd)),
 

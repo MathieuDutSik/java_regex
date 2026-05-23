@@ -29,7 +29,10 @@ pub fn is_line_terminator(c: char) -> bool {
 pub fn is_word_char(c: char, unicode: bool) -> bool {
     if unicode {
         // Java's Unicode \w: [\p{Alpha}\p{gc=Mn}\p{gc=Me}\p{gc=Mc}\p{Digit}\p{gc=Pc}]
-        c.is_alphanumeric() || c == '_' || is_combining_mark(c)
+        c.is_alphabetic()
+            || matches!(get_ugc(c),
+                UGC::DecimalNumber | UGC::NonspacingMark | UGC::SpacingMark |
+                UGC::EnclosingMark | UGC::ConnectorPunctuation)
     } else {
         c.is_ascii_alphanumeric() || c == '_'
     }
@@ -103,13 +106,21 @@ pub fn is_regional_indicator(c: char) -> bool {
     ('\u{1F1E6}'..='\u{1F1FF}').contains(&c)
 }
 
+pub fn is_variation_selector(c: char) -> bool {
+    ('\u{FE00}'..='\u{FE0F}').contains(&c) || ('\u{E0100}'..='\u{E01EF}').contains(&c)
+}
+
+pub fn is_emoji_modifier(c: char) -> bool {
+    ('\u{1F3FB}'..='\u{1F3FF}').contains(&c)
+}
+
 pub fn match_predefined_class(pc: PredefinedClass, ch: char, unicode: bool) -> bool {
     match pc {
         PredefinedClass::Digit => {
-            if unicode { ch.is_numeric() } else { ch.is_ascii_digit() }
+            if unicode { matches!(get_ugc(ch), UGC::DecimalNumber) } else { ch.is_ascii_digit() }
         }
         PredefinedClass::NonDigit => {
-            if unicode { !ch.is_numeric() } else { !ch.is_ascii_digit() }
+            if unicode { !matches!(get_ugc(ch), UGC::DecimalNumber) } else { !ch.is_ascii_digit() }
         }
         PredefinedClass::Word => is_word_char(ch, unicode),
         PredefinedClass::NonWord => !is_word_char(ch, unicode),
@@ -194,7 +205,7 @@ pub fn match_unicode_property_ext(name: &str, ch: char, unicode_class: bool) -> 
         "javaLowerCase" => return ch.is_lowercase(),
         "javaUpperCase" => return ch.is_uppercase(),
         "javaTitleCase" => return matches!(get_ugc(ch), UGC::TitlecaseLetter),
-        "javaDigit" => return ch.is_ascii_digit() || ch.is_numeric(),
+        "javaDigit" => return matches!(get_ugc(ch), UGC::DecimalNumber),
         "javaLetter" => return ch.is_alphabetic(),
         "javaLetterOrDigit" => return ch.is_alphanumeric(),
         "javaAlphabetic" => return ch.is_alphabetic(),
@@ -212,9 +223,12 @@ pub fn match_unicode_property_ext(name: &str, ch: char, unicode_class: bool) -> 
         }
         "javaSpaceChar" => return matches!(get_ugc(ch), UGC::SpaceSeparator | UGC::LineSeparator | UGC::ParagraphSeparator),
         "javaISOControl" => return ch.is_control(),
-        "javaDefined" => return ch != '\u{FFFF}',
+        "javaDefined" => return !matches!(get_ugc(ch), UGC::Unassigned),
         "javaMirrored" => return is_bidi_mirrored(ch),
-        "javaIdentifierIgnorable" => return ch.is_control() && !ch.is_whitespace(),
+        "javaIdentifierIgnorable" => {
+            return (ch.is_control() && !ch.is_whitespace())
+                || matches!(get_ugc(ch), UGC::Format)
+        }
         "javaUnicodeIdentifierStart" => return ch.is_alphabetic(),
         "javaUnicodeIdentifierPart" => return ch.is_alphanumeric() || ch == '_',
         _ => {}
@@ -247,8 +261,8 @@ pub fn match_unicode_property_ext(name: &str, ch: char, unicode_class: bool) -> 
         "upper" => return if u { ch.is_uppercase() } else { ch.is_ascii_uppercase() },
         "lower" => return if u { ch.is_lowercase() } else { ch.is_ascii_lowercase() },
         "alpha" => return if u { ch.is_alphabetic() } else { ch.is_ascii_alphabetic() },
-        "digit" => return if u { ch.is_numeric() } else { ch.is_ascii_digit() },
-        "alnum" => return if u { ch.is_alphanumeric() } else { ch.is_ascii_alphanumeric() },
+        "digit" => return if u { matches!(get_ugc(ch), UGC::DecimalNumber) } else { ch.is_ascii_digit() },
+        "alnum" => return if u { ch.is_alphabetic() || matches!(get_ugc(ch), UGC::DecimalNumber) } else { ch.is_ascii_alphanumeric() },
         "ascii" => return ch.is_ascii(),
         "blank" => return if u { ch == '\t' || matches!(get_ugc(ch), UGC::SpaceSeparator) }
                           else { ch == ' ' || ch == '\t' },

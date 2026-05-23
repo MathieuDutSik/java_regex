@@ -1,0 +1,43 @@
+[package]
+name = "java-regex-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+
+[dependencies.java_regex]
+path = ".."
+features = ["fuzz-gen"]
+
+# Prevent this Cargo.toml from being picked up by the parent workspace.
+[workspace]
+
+[[bin]]
+name = "fuzz_parser"
+path = "fuzz_targets/fuzz_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_engine"
+path = "fuzz_targets/fuzz_engine.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_replace"
+path = "fuzz_targets/fuzz_replace.rs"
+test = false
+doc = false
+bench = false
+
+[profile.release]
+debug = true

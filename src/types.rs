@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
+/// Error returned when a regex pattern fails to compile.
 #[derive(Debug, Clone)]
 pub struct PatternSyntaxError {
     pub message: String,
@@ -21,6 +22,7 @@ pub struct Flags {
     pub unicode_class: bool,    // U / UNICODE_CHARACTER_CLASS
     pub unix_lines: bool,       // d / UNIX_LINES
     pub unicode_case: bool,     // u / UNICODE_CASE
+    pub literal: bool,          // LITERAL (no inline flag)
 }
 
 /// A pattern is an alternation of branches.
@@ -146,12 +148,21 @@ pub enum PredefinedClass {
     NonVertWhitespace, // \V
 }
 
+/// Information about a single regex match, including captured groups.
+///
+/// Positions (`start`, `end`, `group_positions`) are char indices, not byte indices.
 #[derive(Debug, Clone, PartialEq)]
 pub struct MatchInfo {
+    /// The full matched text.
     pub matched_text: String,
+    /// Start position (char index) of the match.
     pub start: usize,
+    /// End position (char index, exclusive) of the match.
     pub end: usize,
+    /// Captured group texts, indexed from 0 (group 1 is `groups[0]`).
     pub groups: Vec<Option<String>>,
+    /// Captured group positions as `(start, end)` char indices.
     pub group_positions: Vec<Option<(usize, usize)>>,
+    /// Named group captures, keyed by group name.
     pub named_groups: HashMap<String, String>,
 }

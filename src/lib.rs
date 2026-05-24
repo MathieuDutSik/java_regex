@@ -948,14 +948,36 @@ mod tests {
     }
 
     #[test]
-    fn test_quantified_linebreak_is_atomic() {
-        // OpenJDK's Curly does not backtrack into a quantified `\R`: each
-        // iteration takes the longest available linebreak sequence and the
-        // engine does NOT retry with a shorter one if a later iteration fails.
-        // So `\R{2}` on "\r\n" does NOT match (iter 1 takes \r\n, iter 2 has
-        // nothing left, no backtrack).
-        assert!(!Regex::new(r"\R{2}").unwrap().matches("\r\n"));
-        assert!(!Regex::new(r"\R{3}").unwrap().matches("\n\r\n"));
+    fn test_quantified_deterministic_atom_is_atomic() {
+        // OpenJDK's Curly/GroupCurly does not backtrack into a quantified atom
+        // when the atom's body is "deterministic" (no top-level alternation,
+        // no variable-count nested quantifier). So `\R{2}` on "\r\n" does NOT
+        // match — iter 1 takes the longer \r\n branch, iter 2 has nothing left,
+        // and the engine doesn't retry iter 1 with the shorter \r-only branch.
+        // The same applies when \R is wrapped in any kind of non-alternation
+        // group, including non-capturing, capturing, atomic, and flag groups.
+        for pat in &[
+            r"\R{2}",
+            r"(?:\R){2}",
+            r"(\R){2}",
+            r"(?>\R){2}",
+            r"(?i:\R){2}",
+            r"(?im:\R){2}",
+        ] {
+            assert!(!Regex::new(pat).unwrap().matches("\r\n"),
+                "expected no match for {pat:?}");
+        }
+    }
+
+    #[test]
+    fn test_quantified_non_deterministic_atom_backtracks() {
+        // Multi-branch (alternation) bodies stay non-atomic — Loop in OpenJDK,
+        // continuation-based backtracking here.
+        assert!(Regex::new(r"(?:a|aa){2}").unwrap().matches("aaa"));
+        assert!(Regex::new(r"(a|aa){2}").unwrap().matches("aaaa"));
+        assert!(Regex::new(r"(?:ab|a){2}").unwrap().matches("aab"));
+        // Mix: alternation between deterministic atoms (one of which is \R).
+        assert!(Regex::new(r"(?:a|\R){2}").unwrap().matches("a\r\n"));
     }
 
     #[test]

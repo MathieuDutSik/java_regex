@@ -3,6 +3,37 @@ use std::collections::HashMap;
 use crate::types::*;
 use crate::unicode::*;
 
+/// Whether a `Pattern` is "deterministic" in OpenJDK's sense — i.e., would be
+/// compiled with `GroupCurly` (atomic) rather than `Loop` (with backtracking)
+/// when used as a quantifier atom. Mirrors `TreeInfo.deterministic` propagation
+/// in `java.util.regex.Pattern`.
+///
+/// The practical effect: when a single-branch deterministic body is quantified
+/// like `(?:\R){2}` or `(?i:\R){2}`, the engine must not backtrack into the
+/// atom's internal choices (e.g., `\R`'s `\r\n` vs single-char). Multi-branch
+/// bodies (alternation) keep backtracking, matching OpenJDK's `Loop`.
+fn is_deterministic_body(p: &Pattern) -> bool {
+    p.branches.len() == 1 && p.branches[0].iter().all(node_is_deterministic)
+}
+
+fn node_is_deterministic(n: &Node) -> bool {
+    match n {
+        // Alternation (multi-branch Pattern) is the canonical non-deterministic
+        // construct — Group/FlagGroup with a multi-branch body falls through to
+        // is_deterministic_body returning false.
+        Node::Group { inner, .. }
+        | Node::FlagGroup { inner, .. }
+        | Node::AtomicGroup { inner } => is_deterministic_body(inner),
+        Node::Lookahead { inner, .. }
+        | Node::Lookbehind { inner, .. } => is_deterministic_body(inner),
+        // Java's `Curly.study` keeps `deterministic` only when min == max AND
+        // the atom is deterministic.
+        Node::Quantified { inner, min, max, .. } =>
+            min == max && node_is_deterministic(inner),
+        _ => true,
+    }
+}
+
 fn single_char_lowercase(c: char) -> Option<char> {
     let mut iter = c.to_lowercase();
     let first = iter.next()?;
@@ -422,12 +453,20 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
+                // OpenJDK uses `GroupCurly` (atomic) for deterministic bodies
+                // and `Loop` (with continuation backtracking) for non-deterministic
+                // ones. We model that split here.
+                let deterministic = is_deterministic_body(inner);
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
+                    // Path 1: atomic — match the branch in isolation, then
+                    // advance the quantifier with the resulting end position.
+                    // For deterministic bodies, this is the ONLY path (matches
+                    // OpenJDK's GroupCurly).
                     let mut branch_state = state.clone();
                     if self.match_nodes(&combined, pos, &mut branch_state) {
                         let new_pos = branch_state.match_end;
@@ -437,54 +476,91 @@ impl<'a> Engine<'a> {
                                 return true;
                             }
                             state.captures = saved.clone();
-                        } else if new_pos == pos && count + 1 >= min {
+                        } else {
+                            // Zero-width match — mirror OpenJDK's Curly which
+                            // breaks out of the greedy loop on k == 0 and tries
+                            // `next`. Treat the iteration as satisfying min so
+                            // we don't loop forever on a zero-width atom.
                             state.captures = branch_state.captures.clone();
-                            if self.match_nodes(rest, pos, state) {
+                            let effective = (count + 1).max(min);
+                            if effective >= min && self.match_nodes(rest, pos, state) {
                                 return true;
                             }
                             state.captures = saved.clone();
                         }
                     }
-                    let mut combined2 = branch.clone();
-                    if let Some(idx) = index {
-                        combined2.push(Node::GroupEnd { index: *idx, start });
-                    }
-                    combined2.push(Node::GreedyCont {
-                        atom: Box::new(atom.clone()),
-                        min, max,
-                        count: count + 1,
-                        rest: rest.to_vec(),
-                        prev_pos: pos,
-                    });
-                    if self.match_nodes(&combined2, pos, state) {
-                        return true;
+                    // Path 2: with continuation — Loop-style backtracking
+                    // through the branch body. Only used for non-deterministic
+                    // bodies, where OpenJDK uses `Loop` instead of `GroupCurly`.
+                    if !deterministic {
+                        let mut combined2 = branch.clone();
+                        if let Some(idx) = index {
+                            combined2.push(Node::GroupEnd { index: *idx, start });
+                        }
+                        combined2.push(Node::GreedyCont {
+                            atom: Box::new(atom.clone()),
+                            min, max,
+                            count: count + 1,
+                            rest: rest.to_vec(),
+                            prev_pos: pos,
+                        });
+                        if self.match_nodes(&combined2, pos, state) {
+                            return true;
+                        }
                     }
                     state.captures = saved;
                 }
                 false
             }
             Node::FlagGroup { flags, inner } => {
-                // Mirror of the FlagGroup arm in try_match_atom_reluctant —
-                // iterate branches so the greedy quantifier can backtrack across
-                // alternatives when an earlier branch produced a zero-width match.
+                // Same atomic-vs-backtracking split as Group above. For
+                // deterministic single-branch bodies (e.g. `(?i:\R){n}`),
+                // matching the branch in isolation makes the inner atoms
+                // atomic — which mirrors Java's behavior because Java has no
+                // runtime FlagGroup node, only parse-time flag scoping.
+                let deterministic = is_deterministic_body(inner);
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
-                    let mut combined = branch.clone();
-                    combined.push(Node::RestoreFlags(old_flags));
-                    combined.push(Node::GreedyCont {
-                        atom: Box::new(atom.clone()),
-                        min, max,
-                        count: count + 1,
-                        rest: rest.to_vec(),
-                        prev_pos: pos,
-                    });
-                    if self.match_nodes(&combined, pos, state) {
-                        return true;
+                    // Path 1: atomic.
+                    let mut branch_state = state.clone();
+                    if self.match_nodes(branch, pos, &mut branch_state) {
+                        let new_pos = branch_state.match_end;
+                        self.flags = old_flags;
+                        if new_pos > pos {
+                            state.captures = branch_state.captures.clone();
+                            if self.match_greedy(atom, min, max, count + 1, rest, new_pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        } else {
+                            state.captures = branch_state.captures.clone();
+                            let effective = (count + 1).max(min);
+                            if effective >= min && self.match_nodes(rest, pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        }
+                        self.flags = *flags;
                     }
-                    state.captures = saved;
-                    self.flags = *flags;
+                    // Path 2: with continuation — only for non-deterministic bodies.
+                    if !deterministic {
+                        let mut combined = branch.clone();
+                        combined.push(Node::RestoreFlags(old_flags));
+                        combined.push(Node::GreedyCont {
+                            atom: Box::new(atom.clone()),
+                            min, max,
+                            count: count + 1,
+                            rest: rest.to_vec(),
+                            prev_pos: pos,
+                        });
+                        if self.match_nodes(&combined, pos, state) {
+                            return true;
+                        }
+                        state.captures = saved;
+                        self.flags = *flags;
+                    }
                 }
                 self.flags = old_flags;
                 false
@@ -604,23 +680,48 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
+                let deterministic = is_deterministic_body(inner);
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
-
-                    // Use ReluctantCont to enable backtracking within the group
-                    combined.push(Node::ReluctantCont {
-                        atom: Box::new(atom.clone()),
-                        min, max,
-                        count: count + 1,
-                        rest: rest.to_vec(),
-                        prev_pos: pos,
-                    });
-                    if self.match_nodes(&combined, pos, state) {
-                        return true;
+                    // Path 1: atomic.
+                    let mut branch_state = state.clone();
+                    if self.match_nodes(&combined, pos, &mut branch_state) {
+                        let new_pos = branch_state.match_end;
+                        if new_pos > pos {
+                            state.captures = branch_state.captures.clone();
+                            if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        } else {
+                            state.captures = branch_state.captures.clone();
+                            let effective = (count + 1).max(min);
+                            if effective >= min && self.match_nodes(rest, pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        }
+                    }
+                    // Path 2: with continuation. Only for non-deterministic bodies.
+                    if !deterministic {
+                        let mut combined2 = branch.clone();
+                        if let Some(idx) = index {
+                            combined2.push(Node::GroupEnd { index: *idx, start });
+                        }
+                        combined2.push(Node::ReluctantCont {
+                            atom: Box::new(atom.clone()),
+                            min, max,
+                            count: count + 1,
+                            rest: rest.to_vec(),
+                            prev_pos: pos,
+                        });
+                        if self.match_nodes(&combined2, pos, state) {
+                            return true;
+                        }
                     }
                     state.captures = saved;
                 }
@@ -641,29 +742,52 @@ impl<'a> Engine<'a> {
                 false
             }
             Node::FlagGroup { flags, inner } => {
-                // Iterate FlagGroup branches just like Group, so the quantifier
-                // can backtrack across alternative branches when an earlier
-                // branch produced a zero-width match that doesn't satisfy `rest`.
-                // Critical for patterns like `(?iu:\Z|\n){2,}?` on "\n" where
-                // iter 1 must take `\Z` but iter 2 must take `\n` to advance.
+                // Mirror of the Group arm above: atomic path always, plus a
+                // continuation-backtracking path only for non-deterministic
+                // (multi-branch / variable-length-quantified) bodies.
+                let deterministic = is_deterministic_body(inner);
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
-                    let mut combined = branch.clone();
-                    combined.push(Node::RestoreFlags(old_flags));
-                    combined.push(Node::ReluctantCont {
-                        atom: Box::new(atom.clone()),
-                        min, max,
-                        count: count + 1,
-                        rest: rest.to_vec(),
-                        prev_pos: pos,
-                    });
-                    if self.match_nodes(&combined, pos, state) {
-                        return true;
+                    // Path 1: atomic.
+                    let mut branch_state = state.clone();
+                    if self.match_nodes(branch, pos, &mut branch_state) {
+                        let new_pos = branch_state.match_end;
+                        self.flags = old_flags;
+                        if new_pos > pos {
+                            state.captures = branch_state.captures.clone();
+                            if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        } else {
+                            state.captures = branch_state.captures.clone();
+                            let effective = (count + 1).max(min);
+                            if effective >= min && self.match_nodes(rest, pos, state) {
+                                return true;
+                            }
+                            state.captures = saved.clone();
+                        }
+                        self.flags = *flags;
                     }
-                    state.captures = saved;
-                    self.flags = *flags;
+                    // Path 2: with continuation — only non-deterministic.
+                    if !deterministic {
+                        let mut combined = branch.clone();
+                        combined.push(Node::RestoreFlags(old_flags));
+                        combined.push(Node::ReluctantCont {
+                            atom: Box::new(atom.clone()),
+                            min, max,
+                            count: count + 1,
+                            rest: rest.to_vec(),
+                            prev_pos: pos,
+                        });
+                        if self.match_nodes(&combined, pos, state) {
+                            return true;
+                        }
+                        state.captures = saved;
+                        self.flags = *flags;
+                    }
                 }
                 self.flags = old_flags;
                 false

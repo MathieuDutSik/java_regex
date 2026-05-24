@@ -50,6 +50,50 @@ The negative lookbehind `(?<!(a|bb))` checks if `a` or `bb` precedes position 1.
 
 This implementation properly resets group captures from failed lookbehind attempts. This is a very niche scenario that only manifests when groups inside negative lookbehinds are referenced elsewhere in the pattern or in replacements.
 
+## 4. Position offsets for supplementary code points
+
+`java.util.regex.Matcher.start()` / `Matcher.end()` return UTF-16 code-unit
+offsets, because Java's `String` is internally UTF-16. This implementation
+returns char (Unicode scalar value) offsets, because Rust's `String` is UTF-8
+and `char` is a code point. The two agree exactly on inputs that contain no
+supplementary characters (i.e. every code point ≤ U+FFFF).
+
+For inputs containing supplementary characters (most emoji, many CJK extension
+blocks), a single character is one position in Rust but two positions in Java.
+Matched *text* is always identical; only the integer positions differ.
+
+```
+Pattern: \Q\E         (zero-width match at every position)
+Input:   "😀a"
+Rust:    matches at positions 0, 1, 2     (3 chars)
+Java:    matches at positions 0, 1, 2, 3  (4 UTF-16 units)
+```
+
+This is a deliberate, fundamental difference rooted in Rust vs Java string
+representation. Code that needs Java-compatible offsets on supplementary input
+should convert (e.g. count `s.encode_utf16().count()` up to a char position).
+
+## 5. Quantified `\R` inside a flag group
+
+OpenJDK's `Curly` quantifier does not backtrack into the atom: each iteration
+takes the longest `\R` (greedy `\r\n` over single-char) and the engine doesn't
+retry a shorter one if a later iteration fails. This implementation matches
+that for the bare quantified form `\R{n}` / `\R+` / `\R*`. However, when the
+`\R` is wrapped in a flag group (`(?i:\R){3}` for example), the inner branch
+still runs through the generic `match_nodes` path, which retains the
+sequential-`\R\R`-style backtracking. So:
+
+```
+Pattern: (?i:\R){3}
+Input:   "Α\t\n\r\n\t@"      // single \n, then \r\n, then \t
+Java:    no match (each iteration is atomic, can't split the \r\n)
+Rust:    matches "\n\r\n" at [2,5)
+```
+
+Bare `\R{n}` matches Java exactly. The wrapped variant differs only when the
+flag group's branch contains a quantified `\R` and the input has a `\r\n`
+sequence that the engine would need to split to satisfy the count.
+
 ## Summary
 
 | Behavior | OpenJDK 25 | This implementation |
@@ -57,5 +101,7 @@ This implementation properly resets group captures from failed lookbehind attemp
 | Group capture reset between find positions | No (leaks) | Yes (clean reset) |
 | `(?<=(?:ab)+)` lookbehind | Compile error | Accepted and works |
 | Negative lookbehind group capture leak | Leaks in some cases | Clean reset |
+| `start()`/`end()` indexing | UTF-16 code units | Unicode code points |
+| `(?i:\R){n}` over `\r\n`-containing input | atomic per iter | inner \R may split \r\n |
 
 All three differences involve edge cases in group capture state management. None of these behaviors are mandated by the Java specification — they are implementation details of OpenJDK's engine. For all tested patterns, the match text, match positions, split boundaries, and replacement results (with literal replacements) are identical to OpenJDK 25 across 200,000+ random differential tests.

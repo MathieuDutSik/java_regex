@@ -67,10 +67,24 @@ impl Parser {
     }
 
     fn parse_pattern(&mut self) -> Result<Pattern, PatternSyntaxError> {
-        let mut branches = vec![self.parse_branch()?];
-        while self.peek() == Some('|') {
+        // Java's inline `(?s)` is compile-time: any branch parsed AFTER an
+        // inline flag setter sees the new flags at parse time (because the
+        // parser's `self.flags` mutates and Dot/etc. in subsequent branches are
+        // compiled against that). At runtime, however, the engine evaluates
+        // flags dynamically, so we need each branch to RESET runtime flags to
+        // the parser-time state at the start of that branch. We do this by
+        // prepending a `SetFlags(branch_start_flags)` node to each branch.
+        // (`SetFlags` no longer rolls back on failure, so this also makes
+        // earlier-branch inline-flag changes visible to later branches —
+        // matching Java's behavior where `(?s)|.` matches "\n".)
+        let mut branches = Vec::new();
+        loop {
+            let branch_start_flags = self.flags;
+            let mut branch = self.parse_branch()?;
+            branch.insert(0, Node::SetFlags(branch_start_flags));
+            branches.push(branch);
+            if self.peek() != Some('|') { break; }
             self.advance();
-            branches.push(self.parse_branch()?);
         }
         Ok(Pattern { branches })
     }
@@ -700,13 +714,23 @@ impl Parser {
     fn parse_char_class(&mut self) -> Result<CharClass, PatternSyntaxError> {
         self.expect('[')?;
         let negated = if self.peek() == Some('^') { self.advance(); true } else { false };
-        let items = self.parse_char_class_items()?;
-        self.expect(']')?;
+        let items = self.parse_char_class_body(true)?;
         Ok(CharClass { negated, items })
     }
 
-    fn parse_char_class_items(&mut self) -> Result<Vec<CharClassItem>, PatternSyntaxError> {
-        let mut left_items = Vec::new();
+    /// Parse the body of a `[...]` class, mirroring OpenJDK's `clazz(consume)`.
+    ///
+    /// The RHS of `&&` is parsed recursively via `parse_char_class_body(false)`,
+    /// which is responsible for handling its own `&&` and stopping at the
+    /// enclosing `]` without consuming it. This faithfully reproduces an
+    /// OpenJDK quirk: in `[A && [P]x && C]`, the trailing `&& C` is not chained
+    /// at the outer level — the literal `x` triggers a recursive sub-class scope
+    /// that absorbs `x && C`, and the resulting (B-with-nested-intersection)
+    /// becomes a single right operand of the outer `&&`.
+    fn parse_char_class_body(&mut self, consume_closing: bool)
+        -> Result<Vec<CharClassItem>, PatternSyntaxError>
+    {
+        let mut items = Vec::new();
         let mut at_start = true;
 
         loop {
@@ -714,40 +738,45 @@ impl Parser {
                 self.skip_comments_whitespace();
             }
             match self.peek() {
-                None => return Err(PatternSyntaxError { message: "Unclosed character class".to_string() }),
-                Some(']') if !at_start => break,
+                None => return Err(PatternSyntaxError {
+                    message: "Unclosed character class".to_string()
+                }),
                 Some(']') if at_start => {
                     self.advance();
-                    left_items.push(CharClassItem::Single(']'));
+                    items.push(CharClassItem::Single(']'));
                     at_start = false;
                     continue;
+                }
+                Some(']') => {
+                    if consume_closing { self.advance(); }
+                    return Ok(items);
                 }
                 Some('[') => {
                     let nested = self.parse_char_class()?;
-                    left_items.push(CharClassItem::Nested(nested));
+                    items.push(CharClassItem::Nested(nested));
                     at_start = false;
                     continue;
                 }
-                Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => {
+                Some('&') if self.pos + 1 < self.chars.len()
+                    && self.chars[self.pos + 1] == '&' =>
+                {
                     self.advance();
                     self.advance();
                     let right_items = self.parse_intersection_rhs()?;
-                    let mut result = vec![CharClassItem::Intersection(left_items, right_items)];
-                    while self.pos + 1 < self.chars.len()
-                        && self.peek() == Some('&')
-                        && self.chars[self.pos + 1] == '&'
-                    {
-                        self.advance();
-                        self.advance();
-                        let next_items = self.parse_intersection_rhs()?;
-                        result = vec![CharClassItem::Intersection(result, next_items)];
-                    }
-                    return Ok(result);
+                    items = vec![CharClassItem::Intersection(items, right_items)];
+                    at_start = false;
+                    // Don't return — continue the outer loop. A subsequent `&&`
+                    // at this level (when no literal in the RHS triggered the
+                    // recursive sub-scope) will produce a left-associative chain.
+                    continue;
                 }
                 _ => {
                     at_start = false;
                     let item = self.parse_char_class_item()?;
-                    if self.peek() == Some('-') && self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] != ']' {
+                    if self.peek() == Some('-')
+                        && self.pos + 1 < self.chars.len()
+                        && self.chars[self.pos + 1] != ']'
+                    {
                         if let CharClassItem::Single(start) = item {
                             self.advance();
                             let end_item = self.parse_char_class_item()?;
@@ -757,7 +786,7 @@ impl Parser {
                                         message: format!("Invalid range: {}-{}", start, end),
                                     });
                                 }
-                                left_items.push(CharClassItem::Range(start, end));
+                                items.push(CharClassItem::Range(start, end));
                                 continue;
                             } else {
                                 return Err(PatternSyntaxError {
@@ -766,48 +795,47 @@ impl Parser {
                             }
                         }
                     }
-                    left_items.push(item);
+                    items.push(item);
                 }
             }
         }
-
-        Ok(left_items)
     }
 
-    /// Parse the right-hand side of &&. This collects nested [...] groups and bare
-    /// items until the next && or enclosing ].
+    /// Parse the right-hand side of `&&`. Nested `[...]` groups are taken as
+    /// single items; encountering a literal triggers a recursive sub-class
+    /// scope (`parse_char_class_body(false)`), which absorbs the rest of the
+    /// current `]` group — including any further `&&` clauses.
     fn parse_intersection_rhs(&mut self) -> Result<Vec<CharClassItem>, PatternSyntaxError> {
         let mut items = Vec::new();
         loop {
+            if self.flags.comments {
+                self.skip_comments_whitespace();
+            }
             match self.peek() {
-                None => return Err(PatternSyntaxError { message: "Unclosed character class".to_string() }),
+                None => return Err(PatternSyntaxError {
+                    message: "Unclosed character class".to_string()
+                }),
                 Some(']') => break,
-                Some('&') if self.pos + 1 < self.chars.len() && self.chars[self.pos + 1] == '&' => break,
+                Some('&') if self.pos + 1 < self.chars.len()
+                    && self.chars[self.pos + 1] == '&' => break,
                 Some('[') => {
                     let nested = self.parse_char_class()?;
                     items.push(CharClassItem::Nested(nested));
                 }
                 _ => {
-                    let item = self.parse_char_class_item()?;
-                    if self.peek() == Some('-') && self.pos + 1 < self.chars.len()
-                        && self.chars[self.pos + 1] != ']'
-                        && self.chars[self.pos + 1] != '['
-                    {
-                        if let CharClassItem::Single(start) = item {
-                            self.advance();
-                            let end_item = self.parse_char_class_item()?;
-                            if let CharClassItem::Single(end) = end_item {
-                                items.push(CharClassItem::Range(start, end));
-                                continue;
-                            }
-                        }
-                    }
-                    items.push(item);
+                    // Delegate the rest of the RHS to a recursive sub-class scope.
+                    // The recursive call returns at `]` without consuming it, and
+                    // handles its own `&&` (which therefore does NOT chain at this
+                    // outer scope — this is the OpenJDK parser quirk).
+                    let inner = self.parse_char_class_body(false)?;
+                    items.extend(inner);
                 }
             }
         }
         if items.is_empty() {
-            return Err(PatternSyntaxError { message: "Empty intersection operand".to_string() });
+            return Err(PatternSyntaxError {
+                message: "Empty intersection operand".to_string()
+            });
         }
         Ok(items)
     }

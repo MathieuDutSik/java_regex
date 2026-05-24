@@ -442,6 +442,14 @@ impl Regex {
             engine.search_start = prev_match_end;
 
             if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
+                // Java quirk: a zero-width match at position 0 produces NO leading
+                // empty substring. OpenJDK's Pattern.split has the explicit check:
+                //     if (index == 0 && index == m.start() && m.start() == m.end()) continue;
+                if index == 0 && search_pos == 0 && end_pos == 0 {
+                    prev_match_end = end_pos;
+                    search_pos = 1;
+                    continue;
+                }
                 parts.push(input_chars[index..search_pos].iter().collect());
                 index = end_pos;
                 prev_match_end = end_pos;
@@ -915,5 +923,100 @@ mod tests {
     fn test_pattern() {
         let regex = Regex::new("(?i)abc").unwrap();
         assert_eq!(regex.pattern(), "(?i)abc");
+    }
+
+    // -- regressions found by examples/diff_fuzz.rs against OpenJDK 25 -------
+
+    #[test]
+    fn test_split_zero_width_at_start_no_leading_empty() {
+        // OpenJDK Pattern.split skips a zero-width match at position 0.
+        let r = Regex::with_flags(r"\Q\E", "i").unwrap();
+        assert_eq!(r.split("\t"), vec!["\t"]);
+        let r = Regex::new("(?:)").unwrap();
+        assert_eq!(r.split("\r"), vec!["\r"]);
+    }
+
+    #[test]
+    fn test_multiline_caret_not_at_end_of_input() {
+        // Java's multiline ^ never matches at end of input (Perl/Java quirk).
+        let r = Regex::with_flags("^", "m").unwrap();
+        assert!(!r.matches(""));
+        let r = Regex::with_flags("^", "m").unwrap();
+        let ms = r.find("\r\ré\n");
+        assert_eq!(ms.len(), 3, "expected matches at positions 0, 1, 2 only");
+        assert_eq!(ms.iter().map(|m| m.start).collect::<Vec<_>>(), vec![0, 1, 2]);
+    }
+
+    #[test]
+    fn test_quantified_linebreak_is_atomic() {
+        // OpenJDK's Curly does not backtrack into a quantified `\R`: each
+        // iteration takes the longest available linebreak sequence and the
+        // engine does NOT retry with a shorter one if a later iteration fails.
+        // So `\R{2}` on "\r\n" does NOT match (iter 1 takes \r\n, iter 2 has
+        // nothing left, no backtrack).
+        assert!(!Regex::new(r"\R{2}").unwrap().matches("\r\n"));
+        assert!(!Regex::new(r"\R{3}").unwrap().matches("\n\r\n"));
+    }
+
+    #[test]
+    fn test_linebreak_is_not_atomic() {
+        // \R is documented as `\r\n|[line-break-chars]` (a regular alternation,
+        // not an atomic group). Java accepts `\R\n` matching "\r\n" because the
+        // first \R backtracks from `\r\n` to just `\r`, letting the trailing
+        // `\n` succeed. The previous implementation was atomic and rejected.
+        let r = Regex::new(r"\R\n").unwrap();
+        assert!(r.matches("\r\n"));
+        // (?<!\R) at position 1 of "\r\n" should fail: \r alone is a \R.
+        let r = Regex::new(r"(?<!\R)").unwrap();
+        let ms = r.find("\r\n");
+        assert_eq!(ms.len(), 1);
+        assert_eq!(ms[0].start, 0);
+    }
+
+    #[test]
+    fn test_inline_flags_propagate_across_alternation_branches() {
+        // Java treats inline `(?s)` as a compile-time directive: any branch
+        // parsed after it sees the flag, regardless of whether the branch
+        // containing it actually matches at run time. So `(?s)|.` matches "\n"
+        // (branch 1 sets dotall, branch 2's `.` then matches `\n`).
+        let r = Regex::new(r"(?s)|.").unwrap();
+        assert!(r.matches("\n"));
+        let r = Regex::new(r"(?s)xx|.").unwrap();
+        assert!(r.matches("\n"));
+        // Inside a scoped FlagGroup, the propagation still applies within scope:
+        let r = Regex::new(r"(?iu:(?s)|(?:.).\R)").unwrap();
+        assert!(r.matches("\nΑ\r"));
+    }
+
+    #[test]
+    fn test_chained_intersection_mirrors_openjdk_quirk() {
+        // In `[A && [P]x && C]` where the middle operand contains a nested
+        // class followed by a literal, OpenJDK does NOT chain the trailing
+        // `&& C` at the outer level — the literal triggers a recursive
+        // sub-class scope that absorbs `x && C`, leaving the outer intersection
+        // as `A && ([P] ∪ (x && C))`. For `[abc && [\w]a && z]` this means
+        // the result is `{a,b,c}` (not empty, as a straightforward 3-way
+        // intersection would give). Mirroring OpenJDK is intentional.
+        let r = Regex::new(r"[abc&&[\w]a&&z]").unwrap();
+        let texts: Vec<_> = r.find("abcxz").into_iter().map(|m| m.matched_text).collect();
+        assert_eq!(texts, vec!["a", "b", "c"]);
+        // Sanity: when no literal sits between the nested class and the next &&,
+        // the chain IS preserved (proper 3-way intersection, result is empty).
+        let r = Regex::new(r"[abc&&[\w]&&z]").unwrap();
+        assert!(r.find("abcz").is_empty());
+    }
+
+    #[test]
+    fn test_case_insensitive_range_outside_ascii_bounds() {
+        // `[1-c]` with /i should match 'g' because uppercase 'G' (0x47)
+        // is inside the range 0x31..0x63.
+        let r = Regex::with_flags("[1-c]", "i").unwrap();
+        assert!(r.matches("g"));
+        assert!(r.matches("G"));
+        let r = Regex::with_flags("[=-e]", "i").unwrap();
+        assert!(r.matches("f"));
+        // Sanity: a range that doesn't span any uppercase ASCII should still reject.
+        let r = Regex::with_flags("[d-e]", "i").unwrap();
+        assert!(!r.matches("g"));
     }
 }

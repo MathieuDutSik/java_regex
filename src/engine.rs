@@ -219,10 +219,19 @@ impl<'a> Engine<'a> {
             }
 
             Node::LinebreakMatcher => {
-                // \R is atomic: (?>\r\n|\v) — if \r\n matches, commit to it
+                // \R is atomic: (?>\r\n|[\n\v\f\r\x85  ]) — if \r\n
+                // matches, normally commit to it. Inside a lookbehind, though,
+                // the engine must enumerate every possible match length so the
+                // outer PositionCheck constraint can be satisfied. There, fall
+                // back to the single-char alternative when the \r\n branch
+                // fails downstream.
                 if pos < self.input.len() {
                     if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
-                        return self.match_nodes(&nodes[1..], pos + 2, state);
+                        if self.match_nodes(&nodes[1..], pos + 2, state) {
+                            return true;
+                        }
+                        // Backtrack to single-char branch; \R is not atomic.
+                        return self.match_nodes(&nodes[1..], pos + 1, state);
                     }
                     if is_linebreak(self.input[pos]) {
                         return self.match_nodes(&nodes[1..], pos + 1, state);
@@ -232,11 +241,16 @@ impl<'a> Engine<'a> {
             }
 
             Node::SetFlags(new_flags) => {
-                let old_flags = self.flags;
+                // Java treats inline `(?s)` (and friends) as a compile-time
+                // directive: the flag takes effect for the rest of the pattern,
+                // permanently. In particular, when alternation backtracks past
+                // a `(?s)` in one branch, the flag remains set for subsequent
+                // branches. So we don't roll back on failure here. (Engine state
+                // is reset per find() attempt, so this doesn't leak across
+                // distinct search positions.) Scoped `(?s:…)` groups use the
+                // separate FlagGroup/RestoreFlags pair and DO scope properly.
                 self.flags = *new_flags;
-                let result = self.match_nodes(&nodes[1..], pos, state);
-                if !result { self.flags = old_flags; }
-                result
+                self.match_nodes(&nodes[1..], pos, state)
             }
 
             Node::FlagGroup { flags, inner } => {
@@ -449,7 +463,38 @@ impl<'a> Engine<'a> {
                 }
                 false
             }
+            Node::FlagGroup { flags, inner } => {
+                // Mirror of the FlagGroup arm in try_match_atom_reluctant —
+                // iterate branches so the greedy quantifier can backtrack across
+                // alternatives when an earlier branch produced a zero-width match.
+                let old_flags = self.flags;
+                self.flags = *flags;
+                for branch in &inner.branches {
+                    let saved = state.captures.clone();
+                    let mut combined = branch.clone();
+                    combined.push(Node::RestoreFlags(old_flags));
+                    combined.push(Node::GreedyCont {
+                        atom: Box::new(atom.clone()),
+                        min, max,
+                        count: count + 1,
+                        rest: rest.to_vec(),
+                        prev_pos: pos,
+                    });
+                    if self.match_nodes(&combined, pos, state) {
+                        return true;
+                    }
+                    state.captures = saved;
+                    self.flags = *flags;
+                }
+                self.flags = old_flags;
+                false
+            }
             Node::LinebreakMatcher => {
+                // Inside a quantifier (`\R{n}`, `\R+`, `\R*`), OpenJDK's Curly
+                // does NOT backtrack into the atom — each iteration takes the
+                // longest \R available, and the engine doesn't retry a shorter
+                // \R if a later iteration fails. So we match atomically here.
+                // (Sequential `\R\R` still backtracks via the match_nodes arm.)
                 if pos < self.input.len() {
                     if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
                         return self.match_greedy(atom, min, max, count + 1, rest, pos + 2, state);
@@ -581,6 +626,48 @@ impl<'a> Engine<'a> {
                 }
                 false
             }
+            Node::LinebreakMatcher => {
+                // Atomic match inside a reluctant quantifier — see the
+                // matching arm in `try_match_atom_greedy`. OpenJDK's Curly
+                // doesn't backtrack into a quantified `\R`.
+                if pos < self.input.len() {
+                    if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
+                        return self.match_reluctant(atom, min, max, count + 1, rest, pos + 2, state);
+                    }
+                    if is_linebreak(self.input[pos]) {
+                        return self.match_reluctant(atom, min, max, count + 1, rest, pos + 1, state);
+                    }
+                }
+                false
+            }
+            Node::FlagGroup { flags, inner } => {
+                // Iterate FlagGroup branches just like Group, so the quantifier
+                // can backtrack across alternative branches when an earlier
+                // branch produced a zero-width match that doesn't satisfy `rest`.
+                // Critical for patterns like `(?iu:\Z|\n){2,}?` on "\n" where
+                // iter 1 must take `\Z` but iter 2 must take `\n` to advance.
+                let old_flags = self.flags;
+                self.flags = *flags;
+                for branch in &inner.branches {
+                    let saved = state.captures.clone();
+                    let mut combined = branch.clone();
+                    combined.push(Node::RestoreFlags(old_flags));
+                    combined.push(Node::ReluctantCont {
+                        atom: Box::new(atom.clone()),
+                        min, max,
+                        count: count + 1,
+                        rest: rest.to_vec(),
+                        prev_pos: pos,
+                    });
+                    if self.match_nodes(&combined, pos, state) {
+                        return true;
+                    }
+                    state.captures = saved;
+                    self.flags = *flags;
+                }
+                self.flags = old_flags;
+                false
+            }
             _ => {
                 let mut temp_state = state.clone();
                 if self.match_nodes(std::slice::from_ref(atom), pos, &mut temp_state) {
@@ -654,6 +741,10 @@ impl<'a> Engine<'a> {
         match kind {
             AnchorKind::StartOfLine => {
                 if self.flags.multiline {
+                    // Java/Perl quirk: in multiline mode, ^ never matches at end of input
+                    // (even after a trailing line terminator). OpenJDK's Caret has an
+                    // explicit `if (i == endIndex) return false;` for the same reason.
+                    if pos == self.input.len() { return false; }
                     pos == 0 || self.is_after_line_terminator(pos)
                 } else {
                     pos == 0
@@ -810,33 +901,28 @@ impl<'a> Engine<'a> {
     }
 
     fn match_char_range(&self, ch: char, start: char, end: char) -> bool {
+        if ch >= start && ch <= end { return true; }
         if self.flags.case_insensitive {
+            // Java treats `[start-end]` under CASE_INSENSITIVE as the set of input
+            // characters whose own case variant lands inside the (unmodified) range.
+            // The previous implementation folded the range endpoints as well, which
+            // shrinks ASCII letter ranges (e.g. `[1-c]` becomes `[1-C]` after
+            // uppercasing) and wrongly excludes characters like 'g' whose uppercase
+            // 'G' (0x47) is actually inside the original range 0x31..0x63.
             if self.flags.unicode_case {
-                if ch >= start && ch <= end { return true; }
-                let ch_lower = single_char_lowercase(ch);
-                let s_lower = single_char_lowercase(start);
-                let e_lower = single_char_lowercase(end);
-                if let (Some(cl), Some(sl), Some(el)) = (ch_lower, s_lower, e_lower) {
-                    if cl >= sl && cl <= el { return true; }
+                if let Some(u) = single_char_uppercase(ch) {
+                    if u >= start && u <= end { return true; }
                 }
-                let ch_upper = single_char_uppercase(ch);
-                let s_upper = single_char_uppercase(start);
-                let e_upper = single_char_uppercase(end);
-                if let (Some(cu), Some(su), Some(eu)) = (ch_upper, s_upper, e_upper) {
-                    if cu >= su && cu <= eu { return true; }
+                if let Some(l) = single_char_lowercase(ch) {
+                    if l >= start && l <= end { return true; }
                 }
-                false
             } else {
-                let ch_lower = ch.to_ascii_lowercase();
-                let ch_upper = ch.to_ascii_uppercase();
-                let s_lower = start.to_ascii_lowercase();
-                let e_lower = end.to_ascii_lowercase();
-                let s_upper = start.to_ascii_uppercase();
-                let e_upper = end.to_ascii_uppercase();
-                (ch_lower >= s_lower && ch_lower <= e_lower) ||
-                (ch_upper >= s_upper && ch_upper <= e_upper) ||
-                (ch >= start && ch <= end)
+                let u = ch.to_ascii_uppercase();
+                let l = ch.to_ascii_lowercase();
+                if u >= start && u <= end { return true; }
+                if l >= start && l <= end { return true; }
             }
+            false
         } else {
             ch >= start && ch <= end
         }

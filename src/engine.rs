@@ -103,6 +103,28 @@ impl<'a> Engine<'a> {
         }
     }
 
+    /// Try to match the pattern at `pos`, using the caller-provided State so
+    /// captures can persist across iterations. This mirrors OpenJDK's
+    /// `Start.match` loop: between successive position attempts, `groups[]` is
+    /// never cleared, so a failed attempt's captures (from internal paths that
+    /// succeeded before the overall match failed — e.g. negative lookarounds
+    /// whose inner matched) leak into subsequent attempts.
+    ///
+    /// Returns `Some(end_pos)` on success and `None` on failure. State is
+    /// mutated either way.
+    pub fn try_match_at_persistent(&mut self, pattern: &Pattern, pos: usize, state: &mut State) -> Option<usize> {
+        for branch in &pattern.branches {
+            let combined = branch.clone();
+            if self.match_nodes(&combined, pos, state) {
+                return Some(state.match_end);
+            }
+            // Intentionally NO save/restore: failed branch's mutations persist,
+            // matching OpenJDK's `Branch.match` which similarly never resets
+            // `matcher.groups[]` between alternatives.
+        }
+        None
+    }
+
     pub fn match_pattern(&mut self, pattern: &Pattern, rest: &[Node], pos: usize, state: &mut State) -> bool {
         for branch in &pattern.branches {
             let saved = state.captures.clone();
@@ -206,11 +228,14 @@ impl<'a> Engine<'a> {
             }
 
             Node::Lookahead { positive, inner } => {
-                let mut temp_state = State::new(self.group_count);
-                temp_state.captures = state.captures.clone();
-                let matched = self.match_pattern(inner, &[], pos, &mut temp_state);
+                // Shares State directly (no temp_state clone) so that captures
+                // set by the inner pattern persist even when the surrounding
+                // negative assertion inverts the result to failure. This is
+                // what OpenJDK does: lookarounds don't save/restore groups[]
+                // around the inner match, so captures from `(?=(\w))` leak
+                // even when a later `\s` causes the overall attempt to fail.
+                let matched = self.match_pattern(inner, &[], pos, state);
                 if matched == *positive {
-                    if *positive { state.captures = temp_state.captures; }
                     self.match_nodes(&nodes[1..], pos, state)
                 } else {
                     false
@@ -404,11 +429,11 @@ impl<'a> Engine<'a> {
         if !self.step() { return false; }
 
         if count < max {
-            let saved = state.captures.clone();
+            // No save/restore — captures from failed quantifier-atom attempts
+            // leak (matching OpenJDK Curly/Loop, which never reset matcher.groups[]).
             if self.try_match_atom_greedy(atom, min, max, count, rest, pos, state) {
                 return true;
             }
-            state.captures = saved;
         }
 
         if count >= min {
@@ -633,9 +658,8 @@ impl<'a> Engine<'a> {
         if !self.step() { return false; }
 
         if count >= min {
-            let saved = state.captures.clone();
+            // No save/restore — see comment on match_greedy.
             if self.match_nodes(rest, pos, state) { return true; }
-            state.captures = saved;
         }
 
         if count < max {
@@ -953,12 +977,17 @@ impl<'a> Engine<'a> {
     }
 
     fn check_lookbehind(&mut self, inner: &Pattern, pos: usize, state: &mut State) -> bool {
+        // Shares the caller's State directly instead of using a temp clone.
+        // This faithfully replicates OpenJDK: when the inner pattern matches
+        // (setting captures), those captures persist even if the surrounding
+        // assertion is negative — `(?<!(a|bb))c` on "ac" leaves group 1 = "a"
+        // from the inner success that flipped the outer to fail. The inner
+        // pattern's own alternation save/restore still cleans up captures
+        // from genuinely-failed branches, so we only leak captures from
+        // attempts that succeeded internally.
         let rest = [Node::PositionCheck(pos)];
         for start in (0..=pos).rev() {
-            let mut temp_state = State::new(self.group_count);
-            temp_state.captures = state.captures.clone();
-            if self.match_pattern(inner, &rest, start, &mut temp_state) {
-                state.captures = temp_state.captures;
+            if self.match_pattern(inner, &rest, start, state) {
                 return true;
             }
         }

@@ -197,12 +197,19 @@ impl Regex {
         let mut search_pos = start;
         let mut prev_match_end = start;
 
+        // One Engine for the whole find, but State is reset after each
+        // successful match — matching OpenJDK's Matcher.search() which clears
+        // groups[] at the top of each call. Within one search-call (i.e.
+        // between failed position attempts BEFORE the next successful match),
+        // State persists so captures leak as OpenJDK does in Start.match.
+        let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
+        let mut state = State::new(self.group_count);
+
         while search_pos <= input_len {
-            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
-            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                results.push(self.build_match_info(input_chars, search_pos, end_pos, &captures));
+            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
+                results.push(self.build_match_info(input_chars, search_pos, end_pos, &state.captures));
 
                 prev_match_end = end_pos;
                 if end_pos == search_pos {
@@ -210,6 +217,8 @@ impl Regex {
                 } else {
                     search_pos = end_pos;
                 }
+                // Reset captures for the next search-call equivalent.
+                state = State::new(self.group_count);
             } else {
                 search_pos += 1;
             }
@@ -993,6 +1002,58 @@ mod tests {
         let ms = r.find("\r\n");
         assert_eq!(ms.len(), 1);
         assert_eq!(ms[0].start, 0);
+    }
+
+    #[test]
+    fn test_capture_leak_across_find_positions() {
+        // Java's Matcher keeps groups[] across the position-iteration loop in
+        // Start.match — captures set during a failed find attempt at position N
+        // leak into the successful match found at a later position. Mirrored
+        // here via try_match_at_persistent + no save/restore in the quantifier
+        // helpers.
+        let re = Regex::new(r"(?=(\w))*\s").unwrap();
+        let matches = re.find("a ");
+        assert_eq!(matches.len(), 1);
+        assert_eq!(matches[0].start, 1);
+        assert_eq!(matches[0].end, 2);
+        assert_eq!(matches[0].groups.first().cloned().flatten(),
+            Some("a".to_string()), "group 1 should leak from failed pos 0 attempt");
+    }
+
+    #[test]
+    fn test_capture_leak_from_negative_lookbehind() {
+        // Java's NotBehind doesn't save/restore groups[] around the inner
+        // match — when the inner matches (and the negative inversion makes
+        // the overall lookbehind fail), the inner's captures persist.
+        let re = Regex::new(r"(?<!(a|bb))c?").unwrap();
+        let matches = re.find("ac");
+        assert_eq!(matches.len(), 2);
+        // First match at pos 0: lookbehind succeeded (no chars before pos 0
+        // to match (a|bb)), no inner capture happened.
+        assert_eq!(matches[0].start, 0);
+        assert_eq!(matches[0].groups.first().cloned().flatten(), None);
+        // Second match at pos 2: lookbehind succeeded *here*, but the failed
+        // pos 1 attempt's inner (a|bb) had matched `a` at pos 0, leaking g1.
+        assert_eq!(matches[1].start, 2);
+        assert_eq!(matches[1].groups.first().cloned().flatten(),
+            Some("a".to_string()), "group 1 should leak from failed pos 1 lookbehind attempt");
+    }
+
+    #[test]
+    fn test_lookbehind_unbounded_multichar_body_rejected() {
+        // Java: `(?<=(?:ab)+)` and similar reject at compile time.
+        assert!(Regex::new(r"(?<=(?:ab)+)").is_err());
+        assert!(Regex::new(r"(?<=(?:ab)*)").is_err());
+        assert!(Regex::new(r"(?<=(?:ab){3,})").is_err());
+        assert!(Regex::new(r"(?<=(ab)+)").is_err());
+        assert!(Regex::new(r"(?<=\R+)").is_err());
+        assert!(Regex::new(r"(?<=\1)").is_err());
+        // But single-char unbounded quantifiers ARE accepted (matches Java).
+        assert!(Regex::new(r"(?<=a+)").is_ok());
+        assert!(Regex::new(r"(?<=[ab]+)").is_ok());
+        assert!(Regex::new(r"(?<=\d*)").is_ok());
+        assert!(Regex::new(r"(?<=(a)+)").is_ok());
+        assert!(Regex::new(r"(?<=(?:ab){3,5})").is_ok());
     }
 
     #[test]

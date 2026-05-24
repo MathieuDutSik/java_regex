@@ -3,6 +3,65 @@ use std::collections::HashMap;
 use crate::types::*;
 use crate::unicode::is_valid_unicode_property;
 
+/// Compute the maximum match length of a Pattern, or None if the engine cannot
+/// prove a finite upper bound. Mirrors `TreeInfo.maxValid` / `maxLength`
+/// propagation in OpenJDK `Pattern.java`. Used by lookbehind compile-time
+/// validation: Java rejects lookbehind bodies for which this is None (the
+/// "Look-behind group does not have an obvious maximum length" error).
+fn pattern_max_length(p: &Pattern) -> Option<usize> {
+    let mut max = 0;
+    for branch in &p.branches {
+        let mut total: usize = 0;
+        for node in branch {
+            total = total.checked_add(node_max_length(node)?)?;
+        }
+        if total > max { max = total; }
+    }
+    Some(max)
+}
+
+fn node_max_length(n: &Node) -> Option<usize> {
+    match n {
+        Node::Literal(_) | Node::Dot | Node::CharClass(_) => Some(1),
+        // \R matches \r\n (2 chars) or a single line-break char (1 char).
+        Node::LinebreakMatcher => Some(2),
+        Node::Anchor(_) | Node::SetFlags(_) | Node::RestoreFlags(_)
+        | Node::Lookahead { .. } | Node::Lookbehind { .. } => Some(0),
+        Node::Group { inner, .. }
+        | Node::FlagGroup { inner, .. }
+        | Node::AtomicGroup { inner } => pattern_max_length(inner),
+        Node::Quantified { inner, max, .. } => {
+            // Mirrors OpenJDK's Curly.study/GroupCurly.study overflow check.
+            // For an unbounded count, the body's max length must be at most 1
+            // (otherwise atom_max * MAX_REPS overflows i32 in OpenJDK, which
+            // is the failure they detect — see `temp < maxL` test). The Rust
+            // equivalent is "cannot fit in usize when multiplied by MAX_REPS";
+            // we use 1 directly as the rule for clarity and compatibility.
+            let inner_max = node_max_length(inner)?;
+            if *max == u32::MAX {
+                if inner_max <= 1 { Some(inner_max) } else { None }
+            } else {
+                inner_max.checked_mul(*max as usize)
+            }
+        }
+        // Backrefs cannot be sized at compile time (length depends on what
+        // the referenced group matches at runtime). OpenJDK rejects too.
+        Node::Backreference(_) | Node::NamedBackreference(_) => None,
+        Node::GraphemeCluster => None,
+        // Engine-internal node kinds shouldn't appear in user-parsed patterns.
+        _ => None,
+    }
+}
+
+fn ensure_lookbehind_bounded(p: &Pattern) -> Result<(), PatternSyntaxError> {
+    if pattern_max_length(p).is_none() {
+        return Err(PatternSyntaxError {
+            message: "Look-behind group does not have an obvious maximum length".to_string(),
+        });
+    }
+    Ok(())
+}
+
 pub struct Parser {
     chars: Vec<char>,
     pos: usize,
@@ -516,12 +575,14 @@ impl Parser {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
+                            ensure_lookbehind_bounded(&inner)?;
                             Ok(Node::Lookbehind { positive: true, inner })
                         }
                         Some('!') => {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
+                            ensure_lookbehind_bounded(&inner)?;
                             Ok(Node::Lookbehind { positive: false, inner })
                         }
                         _ => {

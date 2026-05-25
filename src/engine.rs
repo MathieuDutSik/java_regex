@@ -23,6 +23,26 @@ fn is_deterministic_body(p: &Pattern) -> bool {
 /// Maximum match length of a Pattern, or None if the engine cannot prove a
 /// finite upper bound. Same logic as `parser::pattern_max_length` — duplicated
 /// here so the engine can detect "zero-width body" groups at match time.
+/// Minimum match length of a Pattern. Walks the AST recursively; conservative
+/// (returns 0 for things it can't statically size, like backrefs).
+fn pattern_min_length(p: &Pattern) -> usize {
+    p.branches.iter().map(|b| b.iter().map(node_min_length).sum::<usize>()).min().unwrap_or(0)
+}
+
+fn node_min_length(n: &Node) -> usize {
+    match n {
+        Node::Literal(_) | Node::Dot | Node::CharClass(_) => 1,
+        Node::LinebreakMatcher => 1,  // \R minimum is 1 (single char)
+        Node::Anchor(_) | Node::SetFlags(_) | Node::RestoreFlags(_)
+        | Node::Lookahead { .. } | Node::Lookbehind { .. } => 0,
+        Node::Group { inner, .. }
+        | Node::FlagGroup { inner, .. }
+        | Node::AtomicGroup { inner } => pattern_min_length(inner),
+        Node::Quantified { inner, min, .. } => node_min_length(inner) * (*min as usize),
+        _ => 0,
+    }
+}
+
 fn pattern_max_length(p: &Pattern) -> Option<usize> {
     let mut max = 0;
     for branch in &p.branches {
@@ -184,13 +204,17 @@ impl<'a> Engine<'a> {
 
     pub fn match_pattern(&mut self, pattern: &Pattern, rest: &[Node], pos: usize, state: &mut State) -> bool {
         for branch in &pattern.branches {
-            let saved = state.captures.clone();
             let mut combined = branch.clone();
             combined.extend_from_slice(rest);
             if self.match_nodes(&combined, pos, state) {
                 return true;
             }
-            state.captures = saved;
+            // No save/restore between branches — captures from failed branches
+            // leak into subsequent branches, matching OpenJDK's `Branch.match`
+            // which doesn't reset `matcher.groups[]` between alternatives. This
+            // is what makes capture leaks visible across nested lookarounds:
+            // `(?<!(?!(?<bar>.)))` on "\t\n" leaks `bar=\t` from the inner
+            // capture that the inversion-then-inversion buried.
         }
         false
     }
@@ -254,9 +278,12 @@ impl<'a> Engine<'a> {
             }
 
             Node::Group { index, inner, .. } => {
+                // No per-branch save/restore on captures — mirrors OpenJDK's
+                // Branch.match which doesn't reset groups[] between alternatives.
+                // Per-group save/restore happens inside GroupEnd (the GroupTail
+                // analog) for ONLY the slot owned by this Group.
                 let start = pos;
                 for branch in &inner.branches {
-                    let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
@@ -265,14 +292,22 @@ impl<'a> Engine<'a> {
                     if self.match_nodes(&combined, pos, state) {
                         return true;
                     }
-                    state.captures = saved;
                 }
                 false
             }
 
             Node::GroupEnd { index, start } => {
+                // Per-group save/restore — mirrors OpenJDK GroupTail.match:
+                // save the slot, set it, call next, restore only on failure.
+                // Captures of OTHER groups set during the body's matching are
+                // left intact (so they can leak through).
+                let saved = state.captures[*index];
                 state.captures[*index] = Some((*start, pos));
-                self.match_nodes(&nodes[1..], pos, state)
+                if self.match_nodes(&nodes[1..], pos, state) {
+                    return true;
+                }
+                state.captures[*index] = saved;
+                false
             }
 
             Node::Quantified { inner, min, max, kind } => {
@@ -309,11 +344,13 @@ impl<'a> Engine<'a> {
             }
 
             Node::AtomicGroup { inner } => {
-                let mut temp_state = State::new(self.group_count);
-                temp_state.captures = state.captures.clone();
-                if self.match_pattern(inner, &[], pos, &mut temp_state) {
-                    state.captures = temp_state.captures;
-                    self.match_nodes(&nodes[1..], temp_state.match_end, state)
+                // Shares State directly — captures from the inner's attempts
+                // (including failed paths) persist into the caller. Mirrors
+                // OpenJDK `Ques(X, INDEPENDENT)` which just does
+                // `atom.match && next.match` without any save/restore.
+                if self.match_pattern(inner, &[], pos, state) {
+                    let end = state.match_end;
+                    self.match_nodes(&nodes[1..], end, state)
                 } else {
                     false
                 }
@@ -367,17 +404,18 @@ impl<'a> Engine<'a> {
             }
 
             Node::FlagGroup { flags, inner } => {
+                // No per-branch save/restore on captures — matches OpenJDK's
+                // Branch.match (FlagGroup is just a non-capturing group with
+                // flag context; the branches don't reset groups[]).
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
-                    let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     combined.push(Node::RestoreFlags(old_flags));
                     combined.extend_from_slice(&nodes[1..]);
                     if self.match_nodes(&combined, pos, state) {
                         return true;
                     }
-                    state.captures = saved;
                 }
                 self.flags = old_flags;
                 false
@@ -541,7 +579,11 @@ impl<'a> Engine<'a> {
                 // having executed — `g_i` stays unset (null). Mirrors
                 // GroupCurly's `locals[localIndex] = -1` trick: GroupTail
                 // sees the sentinel and skips the capture write.
-                if count == 0 && min == 0 && pattern_max_length(inner) == Some(0) {
+                // Only triggers for `*`, `+ with cmin=0` (none), `{0,n>=2}` style
+                // — NOT for `?` or `{0,1}`. OpenJDK uses `Ques` for the latter
+                // which DOES capture, and `Curly` (with the `locals[]=-1` trick)
+                // for the former which doesn't. `max > 1` distinguishes the two.
+                if count == 0 && min == 0 && max > 1 && pattern_max_length(inner) == Some(0) {
                     return self.match_nodes(rest, pos, state);
                 }
                 // OpenJDK uses `GroupCurly` (atomic) for deterministic bodies
@@ -773,7 +815,11 @@ impl<'a> Engine<'a> {
                 let start = pos;
                 // Same zero-max-body short-circuit as in try_match_atom_greedy
                 // — see the comment there. Mirrors OpenJDK GroupCurly.
-                if count == 0 && min == 0 && pattern_max_length(inner) == Some(0) {
+                // Only triggers for `*`, `+ with cmin=0` (none), `{0,n>=2}` style
+                // — NOT for `?` or `{0,1}`. OpenJDK uses `Ques` for the latter
+                // which DOES capture, and `Curly` (with the `locals[]=-1` trick)
+                // for the former which doesn't. `max > 1` distinguishes the two.
+                if count == 0 && min == 0 && max > 1 && pattern_max_length(inner) == Some(0) {
                     return self.match_nodes(rest, pos, state);
                 }
                 let deterministic = is_deterministic_body(inner);
@@ -1056,14 +1102,19 @@ impl<'a> Engine<'a> {
         // This faithfully replicates OpenJDK: when the inner pattern matches
         // (setting captures), those captures persist even if the surrounding
         // assertion is negative — `(?<!(a|bb))c` on "ac" leaves group 1 = "a"
-        // from the inner success that flipped the outer to fail. The inner
-        // pattern's own alternation save/restore still cleans up captures
-        // from genuinely-failed branches, so we only leak captures from
-        // attempts that succeeded internally.
+        // from the inner success that flipped the outer to fail.
         let rest = [Node::PositionCheck(pos)];
-        // With anchoring bounds (default), lookbehind doesn't look BEFORE
-        // text_start. Mirrors OpenJDK's `from = max(i - rmax, matcher.from)`.
-        for start in (self.text_start..=pos).rev() {
+        // Compute the body's min/max length so we only try start positions
+        // that could produce a match ending at `pos`. Mirrors OpenJDK's
+        // `NotBehind.match` / `Behind.match` which iterate `j` from `i - rmin`
+        // down to `max(i - rmax, matcher.from)`. For zero-width body (rmin=rmax=0)
+        // this means we try ONLY `pos`, not every prior position.
+        let body_min = pattern_min_length(inner);
+        let body_max = pattern_max_length(inner).unwrap_or(pos);
+        let start_low = pos.saturating_sub(body_max).max(self.text_start);
+        let start_high = pos.saturating_sub(body_min);
+        if start_low > start_high { return false; }
+        for start in (start_low..=start_high).rev() {
             if self.match_pattern(inner, &rest, start, state) {
                 return true;
             }

@@ -161,9 +161,40 @@ impl Regex {
         }
     }
 
-    /// Find all non-overlapping matches in the input.
+    /// Find all non-overlapping matches in the input (eagerly materialized).
+    ///
+    /// For large inputs prefer [`find_iter`](Regex::find_iter), which yields
+    /// matches lazily without allocating a result `Vec` up front.
     pub fn find(&self, input: &str) -> Vec<MatchInfo> {
         self.find_in_region(input, 0, None)
+    }
+
+    /// Lazily iterate over all non-overlapping matches in the input.
+    ///
+    /// Returns a [`Matches`] iterator that yields one [`MatchInfo`] per
+    /// `next()` call. The capture-leak state OpenJDK exposes between
+    /// successive find attempts (see [`QUIRKS.md`](https://github.com/.../QUIRKS.md))
+    /// is preserved across iterator items, so the values match what Java's
+    /// `Matcher.find()` loop would produce.
+    ///
+    /// ```
+    /// # use java_regex::Regex;
+    /// let re = Regex::new(r"\d+").unwrap();
+    /// let positions: Vec<usize> = re.find_iter("a1b22c333").map(|m| m.start).collect();
+    /// assert_eq!(positions, vec![1, 3, 6]);
+    /// ```
+    pub fn find_iter<'r, 'h>(&'r self, input: &'h str) -> Matches<'r, 'h> {
+        let input_chars: Vec<char> = input.chars().collect();
+        let end = input_chars.len();
+        Matches {
+            re: self,
+            input_chars,
+            _haystack: input,
+            search_pos: 0,
+            prev_match_end: 0,
+            end,
+            state: State::new(self.group_count),
+        }
     }
 
     /// Find all non-overlapping matches within a region of the input.
@@ -369,6 +400,60 @@ impl Regex {
         result
     }
 
+}
+
+// ---------------------------------------------------------------------------
+// Matches iterator
+// ---------------------------------------------------------------------------
+
+/// Lazy iterator over non-overlapping matches, returned by
+/// [`Regex::find_iter`]. Yields one [`MatchInfo`] per `next()` call.
+///
+/// Holds its own char-indexed copy of the input plus a persistent matcher
+/// `State` so capture-leak semantics across successive `next()` calls match
+/// what an equivalent `Matcher.find()` loop in Java would produce.
+pub struct Matches<'r, 'h> {
+    re: &'r Regex,
+    input_chars: Vec<char>,
+    _haystack: &'h str,
+    search_pos: usize,
+    prev_match_end: usize,
+    end: usize,
+    state: State,
+}
+
+impl<'r, 'h> Iterator for Matches<'r, 'h> {
+    type Item = MatchInfo;
+
+    fn next(&mut self) -> Option<MatchInfo> {
+        while self.search_pos <= self.end {
+            let mut engine = Engine::new(
+                &self.input_chars, self.re.flags,
+                self.re.group_count, &self.re.named_groups,
+            );
+            engine.text_start = 0;
+            engine.text_end = self.end;
+            engine.search_start = self.prev_match_end;
+
+            if let Some(end_pos) = engine.try_match_at_persistent(
+                &self.re.pattern, self.search_pos, &mut self.state,
+            ) {
+                let m = self.re.build_match_info(
+                    &self.input_chars, self.search_pos, end_pos, &self.state.captures);
+                self.prev_match_end = end_pos;
+                if end_pos == self.search_pos {
+                    self.search_pos += 1;
+                } else {
+                    self.search_pos = end_pos;
+                }
+                self.state = State::new(self.re.group_count);
+                return Some(m);
+            } else {
+                self.search_pos += 1;
+            }
+        }
+        None
+    }
 }
 
 // ---------------------------------------------------------------------------

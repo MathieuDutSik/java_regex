@@ -202,3 +202,50 @@ pub struct MatchInfo {
     /// Named group captures, keyed by group name.
     pub named_groups: BTreeMap<String, String>,
 }
+
+impl MatchInfo {
+    /// Look up a numbered capture group, mirroring `java.util.regex.Matcher.group(int)`.
+    ///
+    /// `n == 0` returns the full match. `n >= 1` returns the n-th capture
+    /// group, or `None` if that group did not participate in the match.
+    ///
+    /// ```
+    /// # use java_regex::Regex;
+    /// let re = Regex::new(r"(\w+)@(\w+)").unwrap();
+    /// let m = re.find_iter("alice@example.com").next().unwrap();
+    /// assert_eq!(m.group(0), Some("alice@example"));
+    /// assert_eq!(m.group(1), Some("alice"));
+    /// assert_eq!(m.group(2), Some("example"));
+    /// assert_eq!(m.group(99), None);
+    /// ```
+    pub fn group(&self, n: usize) -> Option<&str> {
+        if n == 0 {
+            Some(self.matched_text.as_str())
+        } else {
+            self.groups.get(n - 1).and_then(|g| g.as_deref())
+        }
+    }
+
+    /// Look up a named capture group, mirroring `java.util.regex.Matcher.group(String)`.
+    ///
+    /// Returns `None` if the group does not exist or did not participate in
+    /// the match.
+    ///
+    /// ```
+    /// # use java_regex::Regex;
+    /// let re = Regex::new(r"(?<user>\w+)@(?<host>\w+\.\w+)").unwrap();
+    /// let m = re.find_iter("alice@example.com").next().unwrap();
+    /// assert_eq!(m.name("user"), Some("alice"));
+    /// assert_eq!(m.name("host"), Some("example.com"));
+    /// assert_eq!(m.name("nope"), None);
+    /// ```
+    pub fn name(&self, name: &str) -> Option<&str> {
+        self.named_groups.get(name).map(|s| s.as_str())
+    }
+
+    /// Number of capture groups in the pattern (not counting group 0).
+    /// Mirrors `java.util.regex.Matcher.groupCount`.
+    pub fn group_count(&self) -> usize {
+        self.groups.len()
+    }
+}

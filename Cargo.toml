@@ -2,7 +2,22 @@
 name = "java_regex"
 version = "0.1.0"
 edition = "2021"
-description = "Rust implementation of Java's java.util.regex.Pattern (Java 8+, targeting Java 13+ semantics)"
+rust-version = "1.65"  # for `let ... else` syntax used in examples
+description = "Rust implementation of Java's java.util.regex.Pattern, byte-for-byte compatible with OpenJDK"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/mathieudutour/java_regex"
+documentation = "https://docs.rs/java_regex"
+keywords = ["regex", "java", "regexp", "pattern", "openjdk"]
+categories = ["text-processing", "parser-implementations", "no-std"]
+exclude = [
+    "/.github",
+    "/fuzz",
+    "/tests/openjdk_*.txt",
+    "/tests/java_regex_tests_*.jsonl",
+    "/DiffTest*.java", "/DiffOracle.java", "/DiffOracle*.class", "/DiffTest*.class",
+    "/ConvertOpenJDK*", "/GenOpenJDKInline*", "/GenTests*.class", "/VerifyTests*",
+]
 
 [dependencies]
 unicode-blocks = { version = "0.1.9", default-features = false }

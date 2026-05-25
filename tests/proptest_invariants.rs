@@ -197,7 +197,7 @@ proptest! {
     #[test]
     fn replace_with_identity_is_noop(ast in arb_regex_node(), input in arb_input()) {
         let Some(re) = compile(&ast) else { return Ok(()); };
-        let out = re.replace_all_with(&input, |m| m.matched_text.clone());
+        let out = re.replace_all(&input, |m: &java_regex::MatchInfo| m.matched_text.clone());
         prop_assert_eq!(out, input);
     }
 

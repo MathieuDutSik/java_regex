@@ -1,4 +1,9 @@
-use std::collections::HashMap;
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec;
+use alloc::vec::Vec;
 
 use crate::types::*;
 use crate::unicode::is_valid_unicode_property;
@@ -53,13 +58,8 @@ fn node_max_length(n: &Node) -> Option<usize> {
     }
 }
 
-fn ensure_lookbehind_bounded(p: &Pattern) -> Result<(), PatternSyntaxError> {
-    if pattern_max_length(p).is_none() {
-        return Err(PatternSyntaxError {
-            message: "Look-behind group does not have an obvious maximum length".to_string(),
-        });
-    }
-    Ok(())
+fn is_lookbehind_bounded(p: &Pattern) -> bool {
+    pattern_max_length(p).is_some()
 }
 
 pub struct Parser {
@@ -67,7 +67,7 @@ pub struct Parser {
     pos: usize,
     pub flags: Flags,
     pub group_count: usize,
-    pub named_groups: HashMap<String, usize>,
+    pub named_groups: BTreeMap<String, usize>,
     all_named_backrefs: Vec<String>,
 }
 
@@ -78,28 +78,35 @@ impl Parser {
             pos: 0,
             flags,
             group_count: 0,
-            named_groups: HashMap::new(),
+            named_groups: BTreeMap::new(),
             all_named_backrefs: Vec::new(),
         }
     }
 
-    pub fn parse(mut self) -> Result<(Pattern, usize, HashMap<String, usize>), PatternSyntaxError> {
+    pub fn parse(mut self) -> Result<(Pattern, usize, BTreeMap<String, usize>), PatternSyntaxError> {
         let pattern = self.parse_pattern()?;
         if self.pos < self.chars.len() {
-            return Err(PatternSyntaxError {
-                message: format!("Unexpected character '{}' at position {}", self.chars[self.pos], self.pos),
-            });
+            return Err(self.error(format!("Unexpected character '{}' at position {}", self.chars[self.pos], self.pos)));
         }
         for name in &self.all_named_backrefs {
             if !self.named_groups.contains_key(name) {
-                return Err(PatternSyntaxError {
-                    message: format!("Unknown named group: {}", name),
-                });
+                return Err(self.error(format!("Unknown named group: {}", name)));
             }
         }
         let gc = self.group_count;
         let ng = self.named_groups;
         Ok((pattern, gc, ng))
+    }
+
+    /// Construct a PatternSyntaxError carrying the current pattern + cursor
+    /// position. The Display impl formats this Java-style:
+    ///     `<message> near index <N>\n<pattern>\n      ^`
+    fn error(&self, message: String) -> PatternSyntaxError {
+        PatternSyntaxError::with_context(
+            message,
+            self.chars.iter().collect(),
+            self.pos,
+        )
     }
 
     fn peek(&self) -> Option<char> {
@@ -115,9 +122,7 @@ impl Parser {
     fn expect(&mut self, expected: char) -> Result<(), PatternSyntaxError> {
         match self.advance() {
             Some(c) if c == expected => Ok(()),
-            _ => Err(PatternSyntaxError {
-                message: format!("Expected '{}'", expected),
-            }),
+            _ => Err(self.error(format!("Expected '{}'", expected))),
         }
     }
 
@@ -210,9 +215,7 @@ impl Parser {
     }
 
     fn parse_atom(&mut self) -> Result<Node, PatternSyntaxError> {
-        let c = self.peek().ok_or_else(|| PatternSyntaxError {
-            message: "Unexpected end of pattern".to_string(),
-        })?;
+        let c = self.peek().ok_or_else(|| self.error("Unexpected end of pattern".to_string()))?;
 
         match c {
             '\\' => self.parse_escape(),
@@ -222,9 +225,7 @@ impl Parser {
             '[' => self.parse_char_class_node(),
             '(' => self.parse_group(),
             '*' | '+' | '?' => {
-                Err(PatternSyntaxError {
-                    message: format!("Dangling meta character '{}'", c),
-                })
+                Err(self.error(format!("Dangling meta character '{}'", c)))
             }
             '{' => {
                 let saved = self.pos;
@@ -245,9 +246,7 @@ impl Parser {
                     }
                     Err(_) => {
                         self.pos = saved;
-                        Err(PatternSyntaxError {
-                            message: format!("Illegal repetition near index {}", self.pos),
-                        })
+                        Err(self.error(format!("Illegal repetition near index {}", self.pos)))
                     }
                 }
             }
@@ -257,9 +256,7 @@ impl Parser {
 
     fn parse_escape(&mut self) -> Result<Node, PatternSyntaxError> {
         self.advance(); // consume '\'
-        let c = self.advance().ok_or_else(|| PatternSyntaxError {
-            message: "Unexpected end of pattern after \\".to_string(),
-        })?;
+        let c = self.advance().ok_or_else(|| self.error("Unexpected end of pattern after \\".to_string()))?;
 
         match c {
             // Predefined character classes
@@ -280,9 +277,7 @@ impl Parser {
             'Z' => Ok(Node::Anchor(AnchorKind::EndOfInputBeforeFinalNewline)),
             'b' => {
                 if self.peek() == Some('{') {
-                    return Err(PatternSyntaxError {
-                        message: "\\b{g} grapheme cluster boundary is not supported".to_string(),
-                    });
+                    return Err(self.error("\\b{g} grapheme cluster boundary is not supported".to_string()));
                 }
                 Ok(Node::Anchor(AnchorKind::WordBoundary))
             }
@@ -355,9 +350,7 @@ impl Parser {
             }
 
             'E' => {
-                Err(PatternSyntaxError {
-                    message: format!("Illegal/unsupported escape sequence near index {}", self.pos - 1),
-                })
+                Err(self.error(format!("Illegal/unsupported escape sequence near index {}", self.pos - 1)))
             }
 
             _ => Ok(Node::Literal(c)),
@@ -375,9 +368,7 @@ impl Parser {
                 hex.push(c);
                 self.advance();
             }
-            let code = u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
-                message: format!("Invalid hex escape: {}", hex),
-            })?;
+            let code = u32::from_str_radix(&hex, 16).map_err(|_| self.error(format!("Invalid hex escape: {}", hex)))?;
             Ok(char::from_u32(code).unwrap_or('\0'))
         } else {
             let mut hex = String::new();
@@ -388,11 +379,9 @@ impl Parser {
                 }
             }
             if hex.len() != 2 {
-                return Err(PatternSyntaxError { message: "Invalid hex escape".to_string() });
+                return Err(self.error("Invalid hex escape".to_string()));
             }
-            let code = u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
-                message: format!("Invalid hex escape: {}", hex),
-            })?;
+            let code = u32::from_str_radix(&hex, 16).map_err(|_| self.error(format!("Invalid hex escape: {}", hex)))?;
             Ok(char::from_u32(code).unwrap_or('\0'))
         }
     }
@@ -428,9 +417,7 @@ impl Parser {
                 else { break; }
             }
         }
-        u32::from_str_radix(&hex, 16).map_err(|_| PatternSyntaxError {
-            message: format!("Invalid unicode escape: {}", hex),
-        })
+        u32::from_str_radix(&hex, 16).map_err(|_| self.error(format!("Invalid unicode escape: {}", hex)))
     }
 
     fn parse_octal_char(&mut self) -> Result<char, PatternSyntaxError> {
@@ -440,9 +427,7 @@ impl Parser {
         let first = match self.peek() {
             Some(c) if ('0'..='7').contains(&c) => { self.advance(); c }
             _ => {
-                return Err(PatternSyntaxError {
-                    message: format!("Illegal octal escape sequence near index {}", self.pos),
-                });
+                return Err(self.error(format!("Illegal octal escape sequence near index {}", self.pos)));
             }
         };
         let max_more = if ('0'..='3').contains(&first) { 2 } else { 1 };
@@ -459,9 +444,7 @@ impl Parser {
     }
 
     fn parse_control_char(&mut self) -> Result<char, PatternSyntaxError> {
-        let ctrl = self.advance().ok_or_else(|| PatternSyntaxError {
-            message: "Expected control character after \\c".to_string(),
-        })?;
+        let ctrl = self.advance().ok_or_else(|| self.error("Expected control character after \\c".to_string()))?;
         let code = (ctrl as u32) ^ 0x40;
         Ok(char::from_u32(code).unwrap_or('\0'))
     }
@@ -522,15 +505,11 @@ impl Parser {
                 self.advance();
             }
             if !is_valid_unicode_property(&name) {
-                return Err(PatternSyntaxError {
-                    message: format!("Unknown Unicode property: {}", name),
-                });
+                return Err(self.error(format!("Unknown Unicode property: {}", name)));
             }
             Ok((name, negated))
         } else {
-            let c = self.advance().ok_or_else(|| PatternSyntaxError {
-                message: "Expected property name after \\p".to_string(),
-            })?;
+            let c = self.advance().ok_or_else(|| self.error("Expected property name after \\p".to_string()))?;
             Ok((c.to_string(), negated))
         }
     }
@@ -546,12 +525,10 @@ impl Parser {
             }
         }
         if name.is_empty() {
-            return Err(PatternSyntaxError { message: "Empty group name".to_string() });
+            return Err(self.error("Empty group name".to_string()));
         }
         if name.starts_with(|c: char| c.is_ascii_digit()) {
-            return Err(PatternSyntaxError {
-                message: format!("Group name must start with a letter, not '{}'", name.chars().next().unwrap()),
-            });
+            return Err(self.error(format!("Group name must start with a letter, not '{}'", name.chars().next().unwrap())));
         }
         Ok(name)
     }
@@ -575,23 +552,27 @@ impl Parser {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
-                            ensure_lookbehind_bounded(&inner)?;
+                            if !is_lookbehind_bounded(&inner) {
+                                return Err(self.error(
+                                    "Look-behind group does not have an obvious maximum length".to_string()));
+                            }
                             Ok(Node::Lookbehind { positive: true, inner })
                         }
                         Some('!') => {
                             self.advance();
                             let inner = self.parse_pattern()?;
                             self.expect(')')?;
-                            ensure_lookbehind_bounded(&inner)?;
+                            if !is_lookbehind_bounded(&inner) {
+                                return Err(self.error(
+                                    "Look-behind group does not have an obvious maximum length".to_string()));
+                            }
                             Ok(Node::Lookbehind { positive: false, inner })
                         }
                         _ => {
                             let name = self.parse_group_name()?;
                             self.expect('>')?;
                             if self.named_groups.contains_key(&name) {
-                                return Err(PatternSyntaxError {
-                                    message: format!("Duplicate group name: {}", name),
-                                });
+                                return Err(self.error(format!("Duplicate group name: {}", name)));
                             }
                             self.group_count += 1;
                             let index = self.group_count;
@@ -669,7 +650,7 @@ impl Parser {
                     return Ok(Node::SetFlags(self.flags));
                 }
                 _ => {
-                    return Err(PatternSyntaxError { message: "Invalid inline flag".to_string() });
+                    return Err(self.error("Invalid inline flag".to_string()));
                 }
             }
         }
@@ -705,9 +686,7 @@ impl Parser {
                 match self.parse_quantifier_braces() {
                     Ok((min, max)) => (min, max),
                     Err(_) => {
-                        return Err(PatternSyntaxError {
-                            message: format!("Illegal repetition near index {}", self.pos),
-                        });
+                        return Err(self.error(format!("Illegal repetition near index {}", self.pos)));
                     }
                 }
             }
@@ -730,11 +709,9 @@ impl Parser {
             else { break; }
         }
         if min_str.is_empty() {
-            return Err(PatternSyntaxError { message: "Invalid quantifier".to_string() });
+            return Err(self.error("Invalid quantifier".to_string()));
         }
-        let min: u32 = min_str.parse().map_err(|_| PatternSyntaxError {
-            message: "Invalid quantifier number".to_string(),
-        })?;
+        let min: u32 = min_str.parse().map_err(|_| self.error("Invalid quantifier number".to_string()))?;
 
         match self.peek() {
             Some('}') => { self.advance(); Ok((min, min)) }
@@ -750,18 +727,14 @@ impl Parser {
                         else { break; }
                     }
                     self.expect('}')?;
-                    let max: u32 = max_str.parse().map_err(|_| PatternSyntaxError {
-                        message: "Invalid quantifier number".to_string(),
-                    })?;
+                    let max: u32 = max_str.parse().map_err(|_| self.error("Invalid quantifier number".to_string()))?;
                     if min > max {
-                        return Err(PatternSyntaxError {
-                            message: format!("Illegal repetition range near index {}", self.pos),
-                        });
+                        return Err(self.error(format!("Illegal repetition range near index {}", self.pos)));
                     }
                     Ok((min, max))
                 }
             }
-            _ => Err(PatternSyntaxError { message: "Invalid quantifier".to_string() }),
+            _ => Err(self.error("Invalid quantifier".to_string())),
         }
     }
 
@@ -799,9 +772,7 @@ impl Parser {
                 self.skip_comments_whitespace();
             }
             match self.peek() {
-                None => return Err(PatternSyntaxError {
-                    message: "Unclosed character class".to_string()
-                }),
+                None => return Err(self.error("Unclosed character class".to_string())),
                 Some(']') if at_start => {
                     self.advance();
                     items.push(CharClassItem::Single(']'));
@@ -843,16 +814,12 @@ impl Parser {
                             let end_item = self.parse_char_class_item()?;
                             if let CharClassItem::Single(end) = end_item {
                                 if start > end {
-                                    return Err(PatternSyntaxError {
-                                        message: format!("Invalid range: {}-{}", start, end),
-                                    });
+                                    return Err(self.error(format!("Invalid range: {}-{}", start, end)));
                                 }
                                 items.push(CharClassItem::Range(start, end));
                                 continue;
                             } else {
-                                return Err(PatternSyntaxError {
-                                    message: "Illegal character range".to_string(),
-                                });
+                                return Err(self.error("Illegal character range".to_string()));
                             }
                         }
                     }
@@ -873,9 +840,7 @@ impl Parser {
                 self.skip_comments_whitespace();
             }
             match self.peek() {
-                None => return Err(PatternSyntaxError {
-                    message: "Unclosed character class".to_string()
-                }),
+                None => return Err(self.error("Unclosed character class".to_string())),
                 Some(']') => break,
                 Some('&') if self.pos + 1 < self.chars.len()
                     && self.chars[self.pos + 1] == '&' => break,
@@ -894,9 +859,7 @@ impl Parser {
             }
         }
         if items.is_empty() {
-            return Err(PatternSyntaxError {
-                message: "Empty intersection operand".to_string()
-            });
+            return Err(self.error("Empty intersection operand".to_string()));
         }
         Ok(items)
     }
@@ -905,9 +868,7 @@ impl Parser {
         match self.peek() {
             Some('\\') => {
                 self.advance();
-                let c = self.advance().ok_or_else(|| PatternSyntaxError {
-                    message: "Unexpected end in character class".to_string(),
-                })?;
+                let c = self.advance().ok_or_else(|| self.error("Unexpected end in character class".to_string()))?;
                 match c {
                     'd' => Ok(CharClassItem::Predefined(PredefinedClass::Digit)),
                     'D' => Ok(CharClassItem::Predefined(PredefinedClass::NonDigit)),
@@ -951,9 +912,7 @@ impl Parser {
                         if items.len() == 1 { return Ok(items.into_iter().next().unwrap()); }
                         Ok(CharClassItem::Nested(CharClass { negated: false, items }))
                     }
-                    '1'..='9' => Err(PatternSyntaxError {
-                        message: format!("Illegal backreference in character class near index {}", self.pos - 1),
-                    }),
+                    '1'..='9' => Err(self.error(format!("Illegal backreference in character class near index {}", self.pos - 1))),
                     _ => Ok(CharClassItem::Single(c)),
                 }
             }
@@ -962,7 +921,7 @@ impl Parser {
                 Ok(CharClassItem::Nested(nested))
             }
             Some(c) => { self.advance(); Ok(CharClassItem::Single(c)) }
-            None => Err(PatternSyntaxError { message: "Unexpected end in character class".to_string() }),
+            None => Err(self.error("Unexpected end in character class".to_string())),
         }
     }
 }

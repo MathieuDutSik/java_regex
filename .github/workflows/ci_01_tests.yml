@@ -1,0 +1,26 @@
+name: CI(01) Tests
+
+# Pattern follows polyhedral_common workflows: one monthly cron, no
+# two of this repo's CI jobs share a day-of-month. Day 24 is free of
+# polyhedral_common collisions (same GitHub account = shared minutes).
+
+on:
+  # One time per month, on the 24th at 00:00 UTC
+  schedule:
+    - cron: "0 0 24 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo test (release, includes JSONL OpenJDK test vectors)
+        run: |
+          cargo test --release --all-targets

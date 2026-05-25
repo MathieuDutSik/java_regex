@@ -7,7 +7,10 @@
 //! Gated behind the `fuzz-gen` feature so production users don't pay for the
 //! optional `arbitrary` dependency.
 
-use std::fmt::Write;
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt::Write;
 
 /// Top-level regex AST node.
 #[derive(Debug, Clone)]
@@ -93,6 +96,12 @@ pub enum EscClass {
     UnicodeNotLetter,  // \P{L}
     UnicodeDigit,      // \p{Nd}
     UnicodePunct,      // \p{P}
+    // Java-specific property aliases — sample a few to exercise the parser's
+    // alias-resolution path. All of these should be accepted by both engines.
+    JavaUpperCase,     // \p{javaUpperCase}
+    JavaWhitespace,    // \p{javaWhitespace}
+    InGreek,           // \p{InGreek}     — block alias form
+    IsLatin,           // \p{IsLatin}     — script alias form
 }
 
 #[derive(Debug, Clone)]
@@ -390,6 +399,10 @@ fn esc_str(e: EscClass) -> &'static str {
         EscClass::UnicodeNotLetter => "\\P{L}",
         EscClass::UnicodeDigit => "\\p{Nd}",
         EscClass::UnicodePunct => "\\p{P}",
+        EscClass::JavaUpperCase => "\\p{javaUpperCase}",
+        EscClass::JavaWhitespace => "\\p{javaWhitespace}",
+        EscClass::InGreek => "\\p{InGreek}",
+        EscClass::IsLatin => "\\p{IsLatin}",
     }
 }
 

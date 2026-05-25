@@ -5,16 +5,20 @@ edition = "2021"
 description = "Rust implementation of Java's java.util.regex.Pattern (Java 8+, targeting Java 13+ semantics)"
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-unicode-blocks = "0.1.9"
-unicode-general-category = "1"
-unicode-properties = "0.1.4"
-unicode-script = "0.5.8"
+unicode-blocks = { version = "0.1.9", default-features = false }
+unicode-general-category = { version = "1", default-features = false }
+unicode-properties = { version = "0.1.4", default-features = false, features = ["general-category"] }
+unicode-script = { version = "0.5.8", default-features = false }
 arbitrary = { version = "1", features = ["derive"], optional = true }
 
 [dev-dependencies]
 proptest = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Comparison engines for examples/bench_engines.rs (used by the benchmark CI).
+regex = "1"
+fancy-regex = "0.14"
+onig = { version = "6", default-features = false }
 
 [features]
 default = []

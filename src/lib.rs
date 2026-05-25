@@ -1,4 +1,7 @@
+#![no_std]
 //! Rust implementation of Java's `java.util.regex.Pattern` API (Java 8+, targeting Java 13+ semantics).
+//!
+//! `no_std` with `alloc` — no filesystem, no threads, no stdin/stdout.
 //!
 //! Supports the full Java regex syntax including Unicode properties, lookahead/lookbehind,
 //! atomic groups, possessive quantifiers, backreferences, and all standard flags.
@@ -15,6 +18,16 @@
 //! assert_eq!(re.replace_all("a1b2", "#"), "a#b#");
 //! ```
 
+extern crate alloc;
+
+// The `arbitrary::Arbitrary` derive macro (used inside `gen.rs` when the
+// `fuzz-gen` feature is on) emits paths like `std::vec::Vec`. Pull in std
+// at the crate root so those paths resolve. The rest of the crate stays
+// `no_std`; fuzzing consumers (cargo-fuzz, our diff_fuzz binary) all need
+// std anyway.
+#[cfg(feature = "fuzz-gen")]
+extern crate std;
+
 mod types;
 mod unicode;
 mod parser;
@@ -23,8 +36,12 @@ mod engine;
 #[doc(hidden)]
 pub mod gen;
 
-use std::collections::HashMap;
-use std::fmt;
+use alloc::collections::BTreeMap;
+use alloc::format;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
+use alloc::vec;
+use core::fmt;
 
 pub use types::{PatternSyntaxError, MatchInfo};
 use types::*;
@@ -42,7 +59,7 @@ pub struct Regex {
     pattern: Pattern,
     flags: Flags,
     group_count: usize,
-    named_groups: HashMap<String, usize>,
+    named_groups: BTreeMap<String, usize>,
 }
 
 impl fmt::Display for Regex {
@@ -93,7 +110,7 @@ impl Regex {
             let nodes: Vec<Node> = pattern.chars().map(Node::Literal).collect();
             parsed_pattern = Pattern { branches: vec![nodes] };
             group_count = 0;
-            named_groups = HashMap::new();
+            named_groups = BTreeMap::new();
         } else {
             let parser = Parser::new(pattern, flags);
             let result = parser.parse()?;
@@ -243,7 +260,7 @@ impl Regex {
             }
         }
 
-        let mut named = HashMap::new();
+        let mut named = BTreeMap::new();
         for (name, &idx) in &self.named_groups {
             if let Some(Some((s, e))) = captures.get(idx) {
                 named.insert(name.clone(), input_chars[*s..*e].iter().collect::<String>());
@@ -260,52 +277,50 @@ impl Regex {
         }
     }
 
-    /// Replace all matches with the replacement string.
-    pub fn replace_all(&self, input: &str, replacement: &str) -> String {
-        let input_chars: Vec<char> = input.chars().collect();
-        self.replace_internal(&input_chars, replacement, false)
-    }
-
-    /// Replace the first match with the replacement string.
-    pub fn replace_first(&self, input: &str, replacement: &str) -> String {
-        let input_chars: Vec<char> = input.chars().collect();
-        self.replace_internal(&input_chars, replacement, true)
-    }
-
-    /// Replace all matches using a callback function.
+    /// Replace all matches. Accepts either a replacement-DSL string (with
+    /// Java's `$1`/`${name}`/`\$` syntax) or a closure that receives each
+    /// `MatchInfo` and returns the replacement.
     ///
-    /// The callback receives a [`MatchInfo`] for each match and returns the replacement string.
-    pub fn replace_all_with<F>(&self, input: &str, f: F) -> String
-    where F: Fn(&MatchInfo) -> String {
+    /// ```
+    /// # use java_regex::Regex;
+    /// let re = Regex::new(r"(\d+)").unwrap();
+    /// assert_eq!(re.replace_all("a1b22", "($1)"), "a(1)b(22)");
+    /// assert_eq!(re.replace_all("a1b22", |m: &java_regex::MatchInfo| {
+    ///     format!("<{}>", m.matched_text.len())
+    /// }), "a<1>b<2>");
+    /// ```
+    pub fn replace_all<R: Replacer>(&self, input: &str, replacer: R) -> String {
         let input_chars: Vec<char> = input.chars().collect();
-        self.replace_with_internal(&input_chars, &f, false)
+        self.replace_internal(&input_chars, replacer, false)
     }
 
-    /// Replace the first match using a callback function.
-    ///
-    /// The callback receives a [`MatchInfo`] and returns the replacement string.
-    pub fn replace_first_with<F>(&self, input: &str, f: F) -> String
-    where F: Fn(&MatchInfo) -> String {
+    /// Replace the first match only. Same accept-any-Replacer semantics as
+    /// [`replace_all`](Regex::replace_all).
+    pub fn replace_first<R: Replacer>(&self, input: &str, replacer: R) -> String {
         let input_chars: Vec<char> = input.chars().collect();
-        self.replace_with_internal(&input_chars, &f, true)
+        self.replace_internal(&input_chars, replacer, true)
     }
 
-    fn replace_with_internal<F>(&self, input_chars: &[char], f: &F, first_only: bool) -> String
-    where F: Fn(&MatchInfo) -> String {
+    fn replace_internal<R: Replacer>(&self, input_chars: &[char], mut replacer: R, first_only: bool) -> String {
         let input_len = input_chars.len();
         let mut result = String::new();
         let mut last_end = 0;
         let mut search_pos = 0;
-        let mut prev_match_end = 0;
 
+        let mut prev_match_end = 0;
         while search_pos <= input_len {
             let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
-            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
+            if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
                 result.extend(&input_chars[last_end..search_pos]);
+
+                if !captures.is_empty() {
+                    captures[0] = Some((search_pos, end_pos));
+                }
+
                 let info = self.build_match_info(input_chars, search_pos, end_pos, &captures);
-                result.push_str(&f(&info));
+                replacer.replace_append(&info, &mut result);
 
                 last_end = end_pos;
                 prev_match_end = end_pos;
@@ -329,101 +344,101 @@ impl Regex {
         result
     }
 
-    fn replace_internal(&self, input_chars: &[char], replacement: &str, first_only: bool) -> String {
-        let input_len = input_chars.len();
-        let mut result = String::new();
-        let mut last_end = 0;
-        let mut search_pos = 0;
+}
 
-        let mut prev_match_end = 0;
-        while search_pos <= input_len {
-            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
-            engine.search_start = prev_match_end;
+// ---------------------------------------------------------------------------
+// Replacer trait
+// ---------------------------------------------------------------------------
 
-            if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                result.extend(&input_chars[last_end..search_pos]);
+/// A source of replacement text for [`Regex::replace_all`] / [`Regex::replace_first`].
+///
+/// Implementations exist for:
+/// - `&str` / `String` / `&String` — treated as Java's replacement DSL
+///   (`$1`, `${name}`, `\$`, `\\`, etc.).
+/// - any `FnMut(&MatchInfo) -> String` — called once per match.
+///
+/// User code can implement `Replacer` for custom types if neither variant fits.
+pub trait Replacer {
+    /// Append the replacement for `m` to `dst`.
+    fn replace_append(&mut self, m: &MatchInfo, dst: &mut String);
+}
 
-                if !captures.is_empty() {
-                    captures[0] = Some((search_pos, end_pos));
-                }
-
-                let replaced = self.build_replacement(replacement, &captures, input_chars);
-                result.push_str(&replaced);
-
-                last_end = end_pos;
-                prev_match_end = end_pos;
-                if end_pos == search_pos {
-                    if search_pos < input_len {
-                        result.push(input_chars[search_pos]);
-                        last_end = search_pos + 1;
-                    }
-                    search_pos += 1;
-                } else {
-                    search_pos = end_pos;
-                }
-
-                if first_only {
-                    break;
-                }
-            } else {
-                search_pos += 1;
-            }
-        }
-
-        result.extend(&input_chars[last_end..]);
-        result
-    }
-
-    fn build_replacement(&self, replacement: &str, captures: &[Option<(usize, usize)>], input_chars: &[char]) -> String {
-        let mut result = String::new();
-        let rep_chars: Vec<char> = replacement.chars().collect();
-        let mut i = 0;
-
-        while i < rep_chars.len() {
-            if rep_chars[i] == '\\' && i + 1 < rep_chars.len() {
-                result.push(rep_chars[i + 1]);
-                i += 2;
-            } else if rep_chars[i] == '$' {
+/// Apply Java's `Matcher.appendReplacement` DSL: `$N`, `${name}`, `\$`, `\\`.
+fn expand_java_replacement(replacement: &str, m: &MatchInfo, dst: &mut String) {
+    let rep_chars: Vec<char> = replacement.chars().collect();
+    let mut i = 0;
+    while i < rep_chars.len() {
+        if rep_chars[i] == '\\' && i + 1 < rep_chars.len() {
+            dst.push(rep_chars[i + 1]);
+            i += 2;
+        } else if rep_chars[i] == '$' {
+            i += 1;
+            if i < rep_chars.len() && rep_chars[i] == '{' {
                 i += 1;
-                if i < rep_chars.len() && rep_chars[i] == '{' {
+                let mut name = String::new();
+                while i < rep_chars.len() && rep_chars[i] != '}' {
+                    name.push(rep_chars[i]);
                     i += 1;
-                    let mut name = String::new();
-                    while i < rep_chars.len() && rep_chars[i] != '}' {
-                        name.push(rep_chars[i]);
+                }
+                if i < rep_chars.len() { i += 1; }
+                if let Some(val) = m.named_groups.get(&name) {
+                    dst.push_str(val);
+                }
+            } else if i < rep_chars.len() && rep_chars[i].is_ascii_digit() {
+                let mut num = (rep_chars[i] as u32 - '0' as u32) as usize;
+                i += 1;
+                while i < rep_chars.len() && rep_chars[i].is_ascii_digit() {
+                    let new_num = num * 10 + (rep_chars[i] as u32 - '0' as u32) as usize;
+                    if new_num <= m.groups.len() {
+                        num = new_num;
                         i += 1;
+                    } else {
+                        break;
                     }
-                    if i < rep_chars.len() { i += 1; }
-                    if let Some(&idx) = self.named_groups.get(&name) {
-                        if let Some(Some((s, e))) = captures.get(idx) {
-                            result.extend(&input_chars[*s..*e]);
-                        }
-                    }
-                } else if i < rep_chars.len() && rep_chars[i].is_ascii_digit() {
-                    let mut num = (rep_chars[i] as u32 - '0' as u32) as usize;
-                    i += 1;
-                    while i < rep_chars.len() && rep_chars[i].is_ascii_digit() {
-                        let new_num = num * 10 + (rep_chars[i] as u32 - '0' as u32) as usize;
-                        if new_num <= self.group_count {
-                            num = new_num;
-                            i += 1;
-                        } else {
-                            break;
-                        }
-                    }
-                    if let Some(Some((s, e))) = captures.get(num) {
-                        result.extend(&input_chars[*s..*e]);
-                    }
-                } else {
-                    result.push('$');
+                }
+                // group 0 = whole match; groups[i-1] = capture group i.
+                if num == 0 {
+                    dst.push_str(&m.matched_text);
+                } else if let Some(Some(g)) = m.groups.get(num - 1) {
+                    dst.push_str(g);
                 }
             } else {
-                result.push(rep_chars[i]);
-                i += 1;
+                dst.push('$');
             }
+        } else {
+            dst.push(rep_chars[i]);
+            i += 1;
         }
-
-        result
     }
+}
+
+impl Replacer for &str {
+    fn replace_append(&mut self, m: &MatchInfo, dst: &mut String) {
+        expand_java_replacement(self, m, dst);
+    }
+}
+
+impl Replacer for String {
+    fn replace_append(&mut self, m: &MatchInfo, dst: &mut String) {
+        expand_java_replacement(self.as_str(), m, dst);
+    }
+}
+
+impl Replacer for &String {
+    fn replace_append(&mut self, m: &MatchInfo, dst: &mut String) {
+        expand_java_replacement(self.as_str(), m, dst);
+    }
+}
+
+impl<F> Replacer for F
+where F: FnMut(&MatchInfo) -> String
+{
+    fn replace_append(&mut self, m: &MatchInfo, dst: &mut String) {
+        dst.push_str(&self(m));
+    }
+}
+
+impl Regex {
 
     /// Split the input by pattern matches (Java String.split semantics, limit=0).
     pub fn split(&self, input: &str) -> Vec<String> {
@@ -905,18 +920,20 @@ mod tests {
     }
 
     #[test]
-    fn test_replace_all_with() {
+    fn test_replace_all_closure() {
+        // After the Replacer trait refactor, closures impl Replacer directly,
+        // so the old `replace_all_with` collapses into `replace_all`.
         let regex = Regex::new("\\d+").unwrap();
-        let result = regex.replace_all_with("a1b22c333", |m| {
+        let result = regex.replace_all("a1b22c333", |m: &MatchInfo| {
             format!("[{}]", m.matched_text.len())
         });
         assert_eq!(result, "a[1]b[2]c[3]");
     }
 
     #[test]
-    fn test_replace_first_with() {
+    fn test_replace_first_closure() {
         let regex = Regex::new("\\w+").unwrap();
-        let result = regex.replace_first_with("hello world", |m| {
+        let result = regex.replace_first("hello world", |m: &MatchInfo| {
             m.matched_text.to_uppercase()
         });
         assert_eq!(result, "HELLO world");

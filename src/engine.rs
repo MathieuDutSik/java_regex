@@ -1,4 +1,8 @@
-use std::collections::HashMap;
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
+use alloc::vec;
+use alloc::vec::Vec;
 
 use crate::types::*;
 use crate::unicode::*;
@@ -50,7 +54,7 @@ pub struct Engine<'a> {
     pub input: &'a [char],
     pub flags: Flags,
     pub group_count: usize,
-    pub named_groups: &'a HashMap<String, usize>,
+    pub named_groups: &'a BTreeMap<String, usize>,
     steps: u64,
     max_steps: u64,
     depth: u32,
@@ -74,7 +78,7 @@ impl State {
 }
 
 impl<'a> Engine<'a> {
-    pub fn new(input: &'a [char], flags: Flags, group_count: usize, named_groups: &'a HashMap<String, usize>) -> Self {
+    pub fn new(input: &'a [char], flags: Flags, group_count: usize, named_groups: &'a BTreeMap<String, usize>) -> Self {
         Engine {
             input,
             flags,
@@ -627,15 +631,16 @@ impl<'a> Engine<'a> {
                 }
             }
             _ => {
-                let mut temp_state = state.clone();
-                if self.match_nodes(std::slice::from_ref(atom), pos, &mut temp_state) {
-                    let new_pos = temp_state.match_end;
+                // No temp_state clone — let captures from the atom's internal
+                // attempts leak into `state`, matching OpenJDK. This is what
+                // exposes capture leaks from negative lookarounds whose inner
+                // matched (e.g. `(?<!(a|bb))c?` on "ac" leaks group 1 = "a").
+                if self.match_nodes(core::slice::from_ref(atom), pos, state) {
+                    let new_pos = state.match_end;
                     if new_pos > pos {
-                        state.captures = temp_state.captures;
                         self.match_greedy(atom, min, max, count + 1, rest, new_pos, state)
                     } else {
                         // Zero-width match — count as matched up to max, then try rest
-                        state.captures = temp_state.captures;
                         let effective = (count + 1).max(min);
                         if effective >= min {
                             self.match_nodes(rest, pos, state)
@@ -817,15 +822,14 @@ impl<'a> Engine<'a> {
                 false
             }
             _ => {
-                let mut temp_state = state.clone();
-                if self.match_nodes(std::slice::from_ref(atom), pos, &mut temp_state) {
-                    let new_pos = temp_state.match_end;
+                // Same no-temp_state strategy as the matching arm in
+                // try_match_atom_greedy — let inner captures leak.
+                if self.match_nodes(core::slice::from_ref(atom), pos, state) {
+                    let new_pos = state.match_end;
                     if new_pos > pos {
-                        state.captures = temp_state.captures;
                         self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state)
                     } else {
                         // Zero-width match — treat as satisfied, try rest
-                        state.captures = temp_state.captures;
                         let effective = (count + 1).max(min);
                         if effective >= min {
                             self.match_nodes(rest, pos, state)
@@ -849,7 +853,7 @@ impl<'a> Engine<'a> {
 
         while count < max {
             let mut temp_state = state.clone();
-            if self.match_nodes(std::slice::from_ref(atom), current_pos, &mut temp_state) {
+            if self.match_nodes(core::slice::from_ref(atom), current_pos, &mut temp_state) {
                 let new_pos = temp_state.match_end;
                 state.captures = temp_state.captures;
                 count += 1;

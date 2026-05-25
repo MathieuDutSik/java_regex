@@ -1,0 +1,31 @@
+name: CI(03) Benchmark vs regex / fancy-regex / onig
+
+# Day 31: runs in 7 of 12 months (months with 31 days). Lower frequency
+# than tests/clippy because the benchmark pulls in `onig` (which builds a
+# native C dependency, ~3-5min of compile time). Free of polyhedral_common
+# collisions.
+
+on:
+  # Roughly monthly, on day 31 at 00:00 UTC
+  schedule:
+    - cron: "0 0 31 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  bench-linux:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install Oniguruma (native dep for the `onig` crate)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libonig-dev
+      - name: Run benchmark
+        run: |
+          cargo run --release --example bench_engines

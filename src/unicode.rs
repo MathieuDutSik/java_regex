@@ -1,3 +1,5 @@
+use alloc::string::String;
+
 use unicode_general_category::GeneralCategory as UGC;
 use unicode_script::{Script, UnicodeScript};
 

@@ -1,15 +1,51 @@
-use std::collections::HashMap;
-use std::fmt;
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
 
 /// Error returned when a regex pattern fails to compile.
+///
+/// Formatted to match OpenJDK's `PatternSyntaxException`:
+/// ```text
+/// <message> near index <N>
+/// <pattern>
+/// <padding>^
+/// ```
+/// The trailing pattern + caret are omitted only when constructed without
+/// context (e.g. by callers outside the parser).
 #[derive(Debug, Clone)]
 pub struct PatternSyntaxError {
     pub message: String,
+    /// The full source pattern at the time of the error, or empty when none.
+    pub pattern: String,
+    /// Position in `pattern.chars()` where the error was detected.
+    pub index: usize,
+}
+
+impl PatternSyntaxError {
+    pub fn new(message: String) -> Self {
+        Self { message, pattern: String::new(), index: 0 }
+    }
+
+    pub fn with_context(message: String, pattern: String, index: usize) -> Self {
+        Self { message, pattern, index }
+    }
 }
 
 impl fmt::Display for PatternSyntaxError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "PatternSyntaxException: {}", self.message)
+        if self.pattern.is_empty() {
+            write!(f, "{}", self.message)
+        } else {
+            // Width of the leading-padding caret depends on display width of
+            // the chars before `index`. ASCII = 1 col each; non-ASCII chars
+            // in source patterns are rare and treated as 1 col here (matches
+            // OpenJDK, which also uses column count rather than visual width).
+            write!(f, "{} near index {}\n{}\n", self.message, self.index, self.pattern)?;
+            for _ in 0..self.index { f.write_str(" ")?; }
+            f.write_str("^")
+        }
     }
 }
 
@@ -164,5 +200,5 @@ pub struct MatchInfo {
     /// Captured group positions as `(start, end)` char indices.
     pub group_positions: Vec<Option<(usize, usize)>>,
     /// Named group captures, keyed by group name.
-    pub named_groups: HashMap<String, String>,
+    pub named_groups: BTreeMap<String, String>,
 }

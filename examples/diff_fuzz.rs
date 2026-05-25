@@ -93,6 +93,30 @@ impl Oracle {
     }
 }
 
+// --- Replacement-string generator -------------------------------------------
+//
+// Java's `Matcher.appendReplacement` DSL: `$1`, `${name}`, `\$`, `\\`, plus
+// literal chars. We generate a small mix to exercise the DSL parser.
+
+fn gen_replacement(rng: &mut SplitMix64) -> String {
+    let mut s = String::new();
+    let len = (rng.next() % 6) as usize;  // 0..5 segments
+    for _ in 0..len {
+        let kind = rng.next() % 8;
+        match kind {
+            0 => s.push('a'),
+            1 => s.push('-'),
+            2 => s.push_str("$1"),
+            3 => s.push_str("$0"),
+            4 => s.push_str("${foo}"),
+            5 => s.push_str("\\$"),
+            6 => s.push_str("\\\\"),
+            _ => s.push('x'),
+        }
+    }
+    s
+}
+
 // --- Mismatch reporting -----------------------------------------------------
 
 #[derive(Default)]
@@ -165,6 +189,18 @@ fn do_find(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str)
                 return Ok(false);
             }
         }
+        // Compare per-group captures. Java emits `g`: array of strings or null.
+        // We compare values (string content) — group positions would also need
+        // BMP conversion, so for now matched text suffices.
+        if let Some(java_groups) = jv["g"].as_array() {
+            let rust_groups = &rust_matches[i].groups;
+            if java_groups.len() != rust_groups.len() { return Ok(false); }
+            for (k, jg) in java_groups.iter().enumerate() {
+                let java_val = jg.as_str();
+                let rust_val = rust_groups[k].as_deref();
+                if java_val != rust_val { return Ok(false); }
+            }
+        }
     }
     Ok(true)
 }
@@ -182,6 +218,75 @@ fn do_split(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str)
 
     let rust = re.split(input);
     Ok(rust == java_arr)
+}
+
+fn do_looking_at(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str)
+    -> Result<bool, String>
+{
+    let req = serde_json::json!({
+        "op": "lookingAt", "pattern": pat, "input": input, "flags": flags
+    }).to_string();
+    let resp = or.request(&req).map_err(|e| e.to_string())?;
+    if resp["ok"].as_bool() != Some(true) { return Ok(true); }
+    let java = resp["result"].as_bool().ok_or("bad lookingAt result")?;
+    let rust = re.looking_at(input).is_some();
+    Ok(java == rust)
+}
+
+fn do_find_at(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str,
+              start: usize) -> Result<bool, String>
+{
+    let req = serde_json::json!({
+        "op": "findAt", "pattern": pat, "input": input, "flags": flags,
+        "start": start.to_string(),
+    }).to_string();
+    let resp = or.request(&req).map_err(|e| e.to_string())?;
+    if resp["ok"].as_bool() != Some(true) { return Ok(true); }
+    let rust = re.find_at(input, start);
+    match (resp["result"].as_object(), rust) {
+        (None, None) => Ok(true),
+        (Some(jo), Some(rm)) => {
+            let jm = jo.get("m").and_then(|v| v.as_str()).ok_or("bad m")?;
+            Ok(jm == rm.matched_text)
+        }
+        _ => Ok(false),
+    }
+}
+
+fn do_find_in_region(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str,
+                     start: usize, end: usize) -> Result<bool, String>
+{
+    let req = serde_json::json!({
+        "op": "findInRegion", "pattern": pat, "input": input, "flags": flags,
+        "regionStart": start.to_string(), "regionEnd": end.to_string(),
+    }).to_string();
+    let resp = or.request(&req).map_err(|e| e.to_string())?;
+    if resp["ok"].as_bool() != Some(true) { return Ok(true); }
+    let java_arr = resp["result"].as_array().ok_or("bad findInRegion result")?;
+    let rust = re.find_in_region(input, start, Some(end));
+    if rust.len() != java_arr.len() { return Ok(false); }
+    for (i, jv) in java_arr.iter().enumerate() {
+        let jm = jv["m"].as_str().ok_or("bad m")?;
+        if jm != rust[i].matched_text { return Ok(false); }
+    }
+    Ok(true)
+}
+
+fn do_replace_all(or: &mut Oracle, re: &Regex, pat: &str, input: &str, flags: &str,
+                  replacement: &str) -> Result<bool, String>
+{
+    let req = serde_json::json!({
+        "op": "replaceAll", "pattern": pat, "input": input, "flags": flags,
+        "replacement": replacement,
+    }).to_string();
+    let resp = or.request(&req).map_err(|e| e.to_string())?;
+    if resp["ok"].as_bool() != Some(true) {
+        // Java rejected the replacement string (invalid $N, etc.). We accept.
+        return Ok(true);
+    }
+    let java = resp["result"].as_str().ok_or("bad replaceAll result")?;
+    let rust = re.replace_all(input, replacement);
+    Ok(java == rust)
 }
 
 // --- Main loop --------------------------------------------------------------
@@ -248,11 +353,23 @@ fn main() {
         }
         let rust_re = rust_re.unwrap();
 
+        // Generate a small random replacement string mixing literals and the
+        // Java replacement DSL ($N, ${name}, \$, \\). Stays under 16 chars.
+        let replacement = gen_replacement(&mut rng);
+        // Random region bounds for find_at / find_in_region. Keep within input length.
+        let input_len = input.chars().count();
+        let region_start = if input_len == 0 { 0 } else { (rng.next() as usize) % (input_len + 1) };
+        let region_end   = if input_len == 0 { 0 } else { region_start + (rng.next() as usize) % (input_len + 1 - region_start) };
+
         let mut all_ok = true;
         for (kind, result) in [
-            ("matches", do_matches(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
-            ("find",    do_find(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
-            ("split",   do_split(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
+            ("matches",       do_matches(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
+            ("find",          do_find(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
+            ("split",         do_split(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
+            ("replaceAll",    do_replace_all(&mut oracle, &rust_re, &pattern, &input, &flags_str, &replacement)),
+            ("lookingAt",     do_looking_at(&mut oracle, &rust_re, &pattern, &input, &flags_str)),
+            ("findAt",        do_find_at(&mut oracle, &rust_re, &pattern, &input, &flags_str, region_start)),
+            ("findInRegion",  do_find_in_region(&mut oracle, &rust_re, &pattern, &input, &flags_str, region_start, region_end)),
         ] {
             match result {
                 Ok(true)  => {}

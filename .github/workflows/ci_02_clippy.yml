@@ -1,0 +1,26 @@
+name: CI(02) Clippy
+
+# Day 30 is free of polyhedral_common collisions. Skips February since
+# Feb doesn't have a 30th — fine for a lint job.
+
+on:
+  # One time per month, on the 30th at 00:00 UTC
+  schedule:
+    - cron: "0 0 30 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  clippy-linux:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+      - name: cargo clippy --all-targets --all-features
+        run: |
+          cargo clippy --all-targets --all-features -- -D warnings

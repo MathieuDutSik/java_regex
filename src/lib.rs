@@ -169,25 +169,15 @@ impl Regex {
     /// Find all non-overlapping matches within a region of the input.
     ///
     /// `start` and `end` are char indices. Only text in `[start, end)` is considered.
-    /// Anchors like `^` and `$` respect the region boundaries.
+    /// Anchors like `^` and `$` respect the region boundaries (mirroring Java's
+    /// `Matcher.region(start, end)`), but context-dependent lookups still see
+    /// the full input — e.g. `\Z`'s "previous char is `\r`" check at the region
+    /// start uses the actual prior char, matching OpenJDK's `Dollar` behavior.
     pub fn find_in_region(&self, input: &str, start: usize, end: Option<usize>) -> Vec<MatchInfo> {
         let all_chars: Vec<char> = input.chars().collect();
-        let end = end.unwrap_or(all_chars.len());
-        let region_chars: Vec<char> = all_chars[start..end].to_vec();
-        let results = self.find_iter_impl(&region_chars, 0);
-        // Adjust positions by start offset
-        if start == 0 {
-            results
-        } else {
-            results.into_iter().map(|mut m: MatchInfo| {
-                m.start += start;
-                m.end += start;
-                m.group_positions = m.group_positions.into_iter().map(|gp: Option<(usize, usize)>| {
-                    gp.map(|(s, e)| (s + start, e + start))
-                }).collect();
-                m
-            }).collect()
-        }
+        let end = end.unwrap_or(all_chars.len()).min(all_chars.len());
+        let start = start.min(end);
+        self.find_iter_impl_bounded(&all_chars, start, end)
     }
 
     /// Find the first match starting at or after `start` (char index).
@@ -208,6 +198,41 @@ impl Regex {
         None
     }
 
+    /// Like `find_iter_impl` but only matches in the half-open range
+    /// `[start, end)`. The full input is available to the engine for
+    /// context-dependent lookups; bounds only gate where matching starts/ends.
+    fn find_iter_impl_bounded(&self, input_chars: &[char], start: usize, end: usize) -> Vec<MatchInfo> {
+        let mut results = Vec::new();
+        let mut search_pos = start;
+        let mut prev_match_end = start;
+
+        let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
+        engine.text_start = start;
+        engine.text_end = end;
+        let mut state = State::new(self.group_count);
+
+        while search_pos <= end {
+            engine.search_start = prev_match_end;
+
+            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
+                results.push(self.build_match_info(input_chars, search_pos, end_pos, &state.captures));
+
+                prev_match_end = end_pos;
+                if end_pos == search_pos {
+                    search_pos += 1;
+                } else {
+                    search_pos = end_pos;
+                }
+                state = State::new(self.group_count);
+            } else {
+                search_pos += 1;
+            }
+        }
+
+        results
+    }
+
+    #[allow(dead_code)]  // superseded by find_iter_impl_bounded
     fn find_iter_impl(&self, input_chars: &[char], start: usize) -> Vec<MatchInfo> {
         let mut results = Vec::new();
         let input_len = input_chars.len();
@@ -1019,6 +1044,51 @@ mod tests {
         let ms = r.find("\r\n");
         assert_eq!(ms.len(), 1);
         assert_eq!(ms[0].start, 0);
+    }
+
+    #[test]
+    fn test_zero_max_body_with_star_quantifier_leaves_group_unset() {
+        // OpenJDK quirk: when a Group is quantified with cmin=0 and the body
+        // has max-length 0 (truly empty, or only zero-width content like
+        // \Q\E / anchors / lookarounds), the group is treated as not having
+        // executed — `g_i` stays null. Mirrors GroupCurly's `locals[i] = -1`
+        // sentinel that tells GroupTail to skip the capture write.
+        let cases = [
+            (r"(\Q\E)*", true),   // empty body + * → g1 should be null
+            (r"()*",     true),   // truly empty body + *
+            (r"(\Q\E)",  false),  // no quantifier → g1 should be ""
+            (r"()",      false),  // no quantifier
+            (r"()+",     false),  // + (cmin=1) → body actually runs once → g1=""
+        ];
+        for (pat, expect_null) in cases {
+            let r = Regex::new(pat).unwrap();
+            let m = &r.find("ab")[0];
+            let got = m.groups.first().cloned().flatten();
+            if expect_null {
+                assert_eq!(got, None, "{pat}: expected null capture, got {got:?}");
+            } else {
+                assert_eq!(got.as_deref(), Some(""),
+                    "{pat}: expected empty-string capture, got {got:?}");
+            }
+        }
+        // And: a group whose body CAN match (e.g. `a*` or `a?`) still gets ""
+        // even with `*` — the body did run, just matched zero chars by choice.
+        assert_eq!(
+            Regex::new(r"(a*)*").unwrap().find("ab")[0].groups.first().cloned().flatten().as_deref(),
+            Some(""));
+    }
+
+    #[test]
+    fn test_end_anchor_with_region_bounds_sees_full_input() {
+        // `\Z` at position 1 of region [1,2) of "\r\n\r" must see the previous
+        // `\r` (outside the region) to recognize it's mid-`\r\n` and NOT match.
+        // OpenJDK's `Dollar.match` does `seq.charAt(i-1)` without honoring
+        // region bounds; we mirror by passing the full input + bounds to the
+        // engine rather than slicing the input down to the region.
+        let re = Regex::with_flags("\\Z", "ms").unwrap();
+        let matches = re.find_in_region("\r\n\r", 1, Some(2));
+        assert_eq!(matches.len(), 1);
+        assert_eq!(matches[0].start, 2);
     }
 
     #[test]

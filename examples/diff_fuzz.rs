@@ -375,12 +375,22 @@ fn main() {
                 Ok(true)  => {}
                 Ok(false) => {
                     all_ok = false;
-                    let detail = serde_json::json!({
+                    let mut detail = serde_json::json!({
                         "pattern": pattern,
                         "flags": flags_str,
                         "input": input,
                         "op": kind,
                     });
+                    // Include the per-op extra parameters so reduction has
+                    // everything it needs.
+                    if kind == "findAt" {
+                        detail["start"] = serde_json::json!(region_start);
+                    } else if kind == "findInRegion" {
+                        detail["regionStart"] = serde_json::json!(region_start);
+                        detail["regionEnd"] = serde_json::json!(region_end);
+                    } else if kind == "replaceAll" {
+                        detail["replacement"] = serde_json::json!(replacement);
+                    }
                     log_mismatch(&log_path, kind, &detail);
                     stats.mismatches += 1;
                 }

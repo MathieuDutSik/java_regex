@@ -20,6 +20,44 @@ fn is_deterministic_body(p: &Pattern) -> bool {
     p.branches.len() == 1 && p.branches[0].iter().all(node_is_deterministic)
 }
 
+/// Maximum match length of a Pattern, or None if the engine cannot prove a
+/// finite upper bound. Same logic as `parser::pattern_max_length` — duplicated
+/// here so the engine can detect "zero-width body" groups at match time.
+fn pattern_max_length(p: &Pattern) -> Option<usize> {
+    let mut max = 0;
+    for branch in &p.branches {
+        let mut total: usize = 0;
+        for node in branch {
+            total = total.checked_add(node_max_length(node)?)?;
+        }
+        if total > max { max = total; }
+    }
+    Some(max)
+}
+
+fn node_max_length(n: &Node) -> Option<usize> {
+    match n {
+        Node::Literal(_) | Node::Dot | Node::CharClass(_) => Some(1),
+        Node::LinebreakMatcher => Some(2),
+        Node::Anchor(_) | Node::SetFlags(_) | Node::RestoreFlags(_)
+        | Node::Lookahead { .. } | Node::Lookbehind { .. } => Some(0),
+        Node::Group { inner, .. }
+        | Node::FlagGroup { inner, .. }
+        | Node::AtomicGroup { inner } => pattern_max_length(inner),
+        Node::Quantified { inner, max, .. } => {
+            let inner_max = node_max_length(inner)?;
+            if *max == u32::MAX {
+                if inner_max <= 1 { Some(inner_max) } else { None }
+            } else {
+                inner_max.checked_mul(*max as usize)
+            }
+        }
+        Node::Backreference(_) | Node::NamedBackreference(_) => None,
+        Node::GraphemeCluster => None,
+        _ => None,
+    }
+}
+
 fn node_is_deterministic(n: &Node) -> bool {
     match n {
         // Alternation (multi-branch Pattern) is the canonical non-deterministic
@@ -60,6 +98,15 @@ pub struct Engine<'a> {
     depth: u32,
     max_depth: u32,
     pub search_start: usize,
+    /// Inclusive lower bound for matching positions (default 0).
+    /// Mirrors OpenJDK `Matcher.from`.
+    pub text_start: usize,
+    /// Exclusive upper bound for matching positions (default `input.len()`).
+    /// Mirrors OpenJDK `Matcher.to`. Anchors and bounds checks use this
+    /// instead of `input.len()` so the full input is available for
+    /// context-dependent lookups (e.g. `\Z`'s "previous char is \r" check
+    /// needs to see chars OUTSIDE the region — same as OpenJDK's Dollar).
+    pub text_end: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -89,8 +136,14 @@ impl<'a> Engine<'a> {
             depth: 0,
             max_depth: 500,
             search_start: 0,
+            text_start: 0,
+            text_end: input.len(),
         }
     }
+
+    /// Effective end-of-text for matching: `text_end`, mirroring `Matcher.to`.
+    #[inline]
+    pub fn text_len(&self) -> usize { self.text_end }
 
     fn step(&mut self) -> bool {
         self.steps += 1;
@@ -163,7 +216,7 @@ impl<'a> Engine<'a> {
 
         match &nodes[0] {
             Node::Literal(ch) => {
-                if pos < self.input.len() {
+                if pos < self.text_len() {
                     let matched = if self.flags.case_insensitive {
                         chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case)
                     } else {
@@ -177,7 +230,7 @@ impl<'a> Engine<'a> {
             }
 
             Node::Dot => {
-                if pos < self.input.len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
+                if pos < self.text_len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
                     self.match_nodes(&nodes[1..], pos + 1, state)
                 } else {
                     false
@@ -193,7 +246,7 @@ impl<'a> Engine<'a> {
             }
 
             Node::CharClass(cc) => {
-                if pos < self.input.len() && self.match_char_class(cc, self.input[pos]) {
+                if pos < self.text_len() && self.match_char_class(cc, self.input[pos]) {
                     self.match_nodes(&nodes[1..], pos + 1, state)
                 } else {
                     false
@@ -285,8 +338,8 @@ impl<'a> Engine<'a> {
                 // outer PositionCheck constraint can be satisfied. There, fall
                 // back to the single-char alternative when the \r\n branch
                 // fails downstream.
-                if pos < self.input.len() {
-                    if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
+                if pos < self.text_len() {
+                    if self.input[pos] == '\r' && pos + 1 < self.text_len() && self.input[pos + 1] == '\n' {
                         if self.match_nodes(&nodes[1..], pos + 2, state) {
                             return true;
                         }
@@ -343,16 +396,16 @@ impl<'a> Engine<'a> {
                 // - regional indicator pairs (flag emoji)
                 // - emoji ZWJ sequences (emoji + ZWJ + emoji + ...)
                 // - emoji with variation selectors and skin tone modifiers
-                if pos >= self.input.len() { return false; }
+                if pos >= self.text_len() { return false; }
                 let mut p = pos;
-                if self.input[p] == '\r' && p + 1 < self.input.len() && self.input[p + 1] == '\n' {
+                if self.input[p] == '\r' && p + 1 < self.text_len() && self.input[p + 1] == '\n' {
                     p += 2;
                     return self.match_nodes(&nodes[1..], p, state);
                 }
                 // Regional indicator sequence: pairs of RI chars form flag emoji
                 if is_regional_indicator(self.input[p]) {
                     p += 1;
-                    if p < self.input.len() && is_regional_indicator(self.input[p]) {
+                    if p < self.text_len() && is_regional_indicator(self.input[p]) {
                         p += 1;
                     }
                     return self.match_nodes(&nodes[1..], p, state);
@@ -360,11 +413,11 @@ impl<'a> Engine<'a> {
                 // Consume base character
                 p += 1;
                 // Extend: combining marks, ZWJ sequences, variation selectors, modifiers
-                while p < self.input.len() {
+                while p < self.text_len() {
                     let ch = self.input[p];
                     if is_combining_mark(ch) || is_variation_selector(ch) || is_emoji_modifier(ch) {
                         p += 1;
-                    } else if ch == '\u{200D}' && p + 1 < self.input.len() {
+                    } else if ch == '\u{200D}' && p + 1 < self.text_len() {
                         // ZWJ: consume ZWJ + next char
                         p += 1;
                         p += 1;
@@ -411,7 +464,7 @@ impl<'a> Engine<'a> {
             let captured: Vec<char> = self.input[*start..*end].to_vec();
             let mut p = pos;
             for &ch in &captured {
-                if p >= self.input.len() { return false; }
+                if p >= self.text_len() { return false; }
                 if self.flags.case_insensitive {
                     if !chars_eq_ci(self.input[p], ch, self.flags.unicode_case) { return false; }
                 } else if self.input[p] != ch {
@@ -454,7 +507,7 @@ impl<'a> Engine<'a> {
     ) -> bool {
         match atom {
             Node::Literal(ch) => {
-                if pos < self.input.len() {
+                if pos < self.text_len() {
                     let matched = if self.flags.case_insensitive {
                         chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case)
                     } else {
@@ -467,14 +520,14 @@ impl<'a> Engine<'a> {
                 false
             }
             Node::Dot => {
-                if pos < self.input.len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
+                if pos < self.text_len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
                     self.match_greedy(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
                 }
             }
             Node::CharClass(cc) => {
-                if pos < self.input.len() && self.match_char_class(cc, self.input[pos]) {
+                if pos < self.text_len() && self.match_char_class(cc, self.input[pos]) {
                     self.match_greedy(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
@@ -482,6 +535,15 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
+                // OpenJDK quirk: when a Group with cmin=0 has a zero-max-length
+                // body (truly empty `()`, or only zero-width content like
+                // `\Q\E`, anchors, lookarounds), the group is treated as not
+                // having executed — `g_i` stays unset (null). Mirrors
+                // GroupCurly's `locals[localIndex] = -1` trick: GroupTail
+                // sees the sentinel and skips the capture write.
+                if count == 0 && min == 0 && pattern_max_length(inner) == Some(0) {
+                    return self.match_nodes(rest, pos, state);
+                }
                 // OpenJDK uses `GroupCurly` (atomic) for deterministic bodies
                 // and `Loop` (with continuation backtracking) for non-deterministic
                 // ones. We model that split here.
@@ -600,8 +662,8 @@ impl<'a> Engine<'a> {
                 // longest \R available, and the engine doesn't retry a shorter
                 // \R if a later iteration fails. So we match atomically here.
                 // (Sequential `\R\R` still backtracks via the match_nodes arm.)
-                if pos < self.input.len() {
-                    if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
+                if pos < self.text_len() {
+                    if self.input[pos] == '\r' && pos + 1 < self.text_len() && self.input[pos + 1] == '\n' {
                         return self.match_greedy(atom, min, max, count + 1, rest, pos + 2, state);
                     }
                     if is_linebreak(self.input[pos]) {
@@ -617,7 +679,7 @@ impl<'a> Engine<'a> {
                     let captured: Vec<char> = self.input[start..end].to_vec();
                     let mut p = pos;
                     for &ch in &captured {
-                        if p >= self.input.len() { return false; }
+                        if p >= self.text_len() { return false; }
                         if self.flags.case_insensitive {
                             if !chars_eq_ci(self.input[p], ch, self.flags.unicode_case) { return false; }
                         } else if self.input[p] != ch {
@@ -681,7 +743,7 @@ impl<'a> Engine<'a> {
     ) -> bool {
         match atom {
             Node::Literal(ch) => {
-                if pos < self.input.len() {
+                if pos < self.text_len() {
                     let matched = if self.flags.case_insensitive {
                         chars_eq_ci(self.input[pos], *ch, self.flags.unicode_case)
                     } else {
@@ -694,14 +756,14 @@ impl<'a> Engine<'a> {
                 false
             }
             Node::Dot => {
-                if pos < self.input.len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
+                if pos < self.text_len() && (self.flags.dotall || !self.is_lt(self.input[pos])) {
                     self.match_reluctant(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
                 }
             }
             Node::CharClass(cc) => {
-                if pos < self.input.len() && self.match_char_class(cc, self.input[pos]) {
+                if pos < self.text_len() && self.match_char_class(cc, self.input[pos]) {
                     self.match_reluctant(atom, min, max, count + 1, rest, pos + 1, state)
                 } else {
                     false
@@ -709,6 +771,11 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
+                // Same zero-max-body short-circuit as in try_match_atom_greedy
+                // — see the comment there. Mirrors OpenJDK GroupCurly.
+                if count == 0 && min == 0 && pattern_max_length(inner) == Some(0) {
+                    return self.match_nodes(rest, pos, state);
+                }
                 let deterministic = is_deterministic_body(inner);
                 for branch in &inner.branches {
                     let saved = state.captures.clone();
@@ -760,8 +827,8 @@ impl<'a> Engine<'a> {
                 // Atomic match inside a reluctant quantifier — see the
                 // matching arm in `try_match_atom_greedy`. OpenJDK's Curly
                 // doesn't backtrack into a quantified `\R`.
-                if pos < self.input.len() {
-                    if self.input[pos] == '\r' && pos + 1 < self.input.len() && self.input[pos + 1] == '\n' {
+                if pos < self.text_len() {
+                    if self.input[pos] == '\r' && pos + 1 < self.text_len() && self.input[pos + 1] == '\n' {
                         return self.match_reluctant(atom, min, max, count + 1, rest, pos + 2, state);
                     }
                     if is_linebreak(self.input[pos]) {
@@ -877,13 +944,15 @@ impl<'a> Engine<'a> {
     }
 
     fn is_after_line_terminator(&self, pos: usize) -> bool {
-        if pos == 0 { return false; }
+        // With anchoring bounds (default), positions at/before text_start
+        // have no "preceding char" for line-terminator purposes.
+        if pos <= self.text_start { return false; }
         let prev = self.input[pos - 1];
         if self.flags.unix_lines { return prev == '\n'; }
         if prev == '\n' {
             true
         } else if prev == '\r' {
-            pos >= self.input.len() || self.input[pos] != '\n'
+            pos >= self.text_len() || self.input[pos] != '\n'
         } else {
             is_line_terminator(prev)
         }
@@ -896,16 +965,16 @@ impl<'a> Engine<'a> {
                     // Java/Perl quirk: in multiline mode, ^ never matches at end of input
                     // (even after a trailing line terminator). OpenJDK's Caret has an
                     // explicit `if (i == endIndex) return false;` for the same reason.
-                    if pos == self.input.len() { return false; }
-                    pos == 0 || self.is_after_line_terminator(pos)
+                    if pos == self.text_len() { return false; }
+                    pos == self.text_start || self.is_after_line_terminator(pos)
                 } else {
-                    pos == 0
+                    pos == self.text_start
                 }
             }
             AnchorKind::EndOfLine => {
                 if self.flags.multiline {
-                    if pos == self.input.len() { return true; }
-                    if pos < self.input.len() && self.is_lt(self.input[pos]) {
+                    if pos == self.text_len() { return true; }
+                    if pos < self.text_len() && self.is_lt(self.input[pos]) {
                         if !self.flags.unix_lines && self.input[pos] == '\n' && pos > 0 && self.input[pos - 1] == '\r' {
                             return false;
                         }
@@ -916,10 +985,10 @@ impl<'a> Engine<'a> {
                     self.check_end_of_line(pos)
                 }
             }
-            AnchorKind::StartOfInput => pos == 0,
-            AnchorKind::EndOfInput => pos == self.input.len(),
+            AnchorKind::StartOfInput => pos == self.text_start,
+            AnchorKind::EndOfInput => pos == self.text_len(),
             AnchorKind::EndOfInputBeforeFinalNewline => {
-                if pos == self.input.len() { return true; }
+                if pos == self.text_len() { return true; }
                 self.check_before_final_newline(pos)
             }
             AnchorKind::WordBoundary => {
@@ -938,7 +1007,7 @@ impl<'a> Engine<'a> {
 
     /// Check non-multiline $ and \Z: before final newline or at end.
     fn check_before_final_newline(&self, pos: usize) -> bool {
-        let len = self.input.len();
+        let len = self.text_len();
         if len == 0 { return false; }
         if self.flags.unix_lines {
             return pos == len - 1 && self.input[pos] == '\n';
@@ -955,7 +1024,9 @@ impl<'a> Engine<'a> {
     /// Check if the character before pos is a word character,
     /// treating combining marks as inheriting word-status from preceding char.
     fn word_char_before(&self, pos: usize) -> bool {
-        if pos == 0 { return false; }
+        // With anchoring bounds (default), positions at/before text_start
+        // have no preceding word char.
+        if pos <= self.text_start { return false; }
         let mut i = pos - 1;
         // Skip back over combining marks to find the base character
         while i > 0 && is_combining_mark(self.input[i]) {
@@ -967,7 +1038,7 @@ impl<'a> Engine<'a> {
     /// Check if the character at pos is a word character,
     /// treating combining marks as inheriting word-status from preceding char.
     fn word_char_after(&self, pos: usize) -> bool {
-        if pos >= self.input.len() { return false; }
+        if pos >= self.text_len() { return false; }
         if is_combining_mark(self.input[pos]) {
             // Combining mark inherits from preceding char
             return self.word_char_before(pos);
@@ -976,7 +1047,7 @@ impl<'a> Engine<'a> {
     }
 
     fn check_end_of_line(&self, pos: usize) -> bool {
-        if pos == self.input.len() { return true; }
+        if pos == self.text_len() { return true; }
         self.check_before_final_newline(pos)
     }
 
@@ -990,7 +1061,9 @@ impl<'a> Engine<'a> {
         // from genuinely-failed branches, so we only leak captures from
         // attempts that succeeded internally.
         let rest = [Node::PositionCheck(pos)];
-        for start in (0..=pos).rev() {
+        // With anchoring bounds (default), lookbehind doesn't look BEFORE
+        // text_start. Mirrors OpenJDK's `from = max(i - rmax, matcher.from)`.
+        for start in (self.text_start..=pos).rev() {
             if self.match_pattern(inner, &rest, start, state) {
                 return true;
             }

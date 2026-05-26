@@ -66,8 +66,10 @@ fn node_max_length(n: &Node) -> Option<usize> {
         | Node::AtomicGroup { inner } => pattern_max_length(inner),
         Node::Quantified { inner, max, .. } => {
             let inner_max = node_max_length(inner)?;
-            if *max == u32::MAX {
-                if inner_max <= 1 { Some(inner_max) } else { None }
+            if inner_max == 0 {
+                Some(0)
+            } else if *max == u32::MAX {
+                None
             } else {
                 inner_max.checked_mul(*max as usize)
             }
@@ -282,12 +284,19 @@ impl<'a> Engine<'a> {
                 // Branch.match which doesn't reset groups[] between alternatives.
                 // Per-group save/restore happens inside GroupEnd (the GroupTail
                 // analog) for ONLY the slot owned by this Group.
+                //
+                // Flag scoping: append RestoreFlags(saved) at the end of each
+                // branch so inline `(?mu)` setters inside don't leak past the
+                // group. This mirrors OpenJDK's compile-time flag scoping where
+                // `(?:(?mu))` doesn't propagate `m` to nodes after the group.
                 let start = pos;
+                let saved_flags = self.flags;
                 for branch in &inner.branches {
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
+                    combined.push(Node::RestoreFlags(saved_flags));
                     combined.extend_from_slice(&nodes[1..]);
                     if self.match_nodes(&combined, pos, state) {
                         return true;
@@ -326,7 +335,11 @@ impl<'a> Engine<'a> {
                 // what OpenJDK does: lookarounds don't save/restore groups[]
                 // around the inner match, so captures from `(?=(\w))` leak
                 // even when a later `\s` causes the overall attempt to fail.
+                // Flag scoping: save/restore self.flags around the inner so
+                // inline `(?ims)` setters inside don't leak past the lookaround.
+                let saved_flags = self.flags;
                 let matched = self.match_pattern(inner, &[], pos, state);
+                self.flags = saved_flags;
                 if matched == *positive {
                     self.match_nodes(&nodes[1..], pos, state)
                 } else {
@@ -335,7 +348,9 @@ impl<'a> Engine<'a> {
             }
 
             Node::Lookbehind { positive, inner } => {
+                let saved_flags = self.flags;
                 let found = self.check_lookbehind(inner, pos, state);
+                self.flags = saved_flags;
                 if found == *positive {
                     self.match_nodes(&nodes[1..], pos, state)
                 } else {
@@ -348,7 +363,12 @@ impl<'a> Engine<'a> {
                 // (including failed paths) persist into the caller. Mirrors
                 // OpenJDK `Ques(X, INDEPENDENT)` which just does
                 // `atom.match && next.match` without any save/restore.
-                if self.match_pattern(inner, &[], pos, state) {
+                // Flag scoping: inline `(?ims)` inside doesn't leak past the
+                // atomic group.
+                let saved_flags = self.flags;
+                let ok = self.match_pattern(inner, &[], pos, state);
+                self.flags = saved_flags;
+                if ok {
                     let end = state.match_end;
                     self.match_nodes(&nodes[1..], end, state)
                 } else {
@@ -422,8 +442,18 @@ impl<'a> Engine<'a> {
             }
 
             Node::RestoreFlags(flags) => {
+                // Save/restore around the recursive call: the flag change is
+                // scoped to the remaining nodes (the part of the pattern after
+                // the FlagGroup). When the recursive call returns we're back
+                // inside the FlagGroup's body — possibly mid-quantifier-loop
+                // — and the inner flags must remain in effect. Without
+                // restoring, a failed `rest` attempt inside a quantifier
+                // would leak the outer flags into subsequent atom matches.
+                let saved = self.flags;
                 self.flags = *flags;
-                self.match_nodes(&nodes[1..], pos, state)
+                let ok = self.match_nodes(&nodes[1..], pos, state);
+                self.flags = saved;
+                ok
             }
 
             Node::GraphemeCluster => {
@@ -573,53 +603,89 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
-                // OpenJDK quirk: when a Group with cmin=0 has a zero-max-length
-                // body (truly empty `()`, or only zero-width content like
-                // `\Q\E`, anchors, lookarounds), the group is treated as not
-                // having executed — `g_i` stays unset (null). Mirrors
-                // GroupCurly's `locals[localIndex] = -1` trick: GroupTail
-                // sees the sentinel and skips the capture write.
-                // Only triggers for `*`, `+ with cmin=0` (none), `{0,n>=2}` style
-                // — NOT for `?` or `{0,1}`. OpenJDK uses `Ques` for the latter
-                // which DOES capture, and `Curly` (with the `locals[]=-1` trick)
-                // for the former which doesn't. `max > 1` distinguishes the two.
-                if count == 0 && min == 0 && max > 1 && pattern_max_length(inner) == Some(0) {
-                    return self.match_nodes(rest, pos, state);
-                }
                 // OpenJDK uses `GroupCurly` (atomic) for deterministic bodies
                 // and `Loop` (with continuation backtracking) for non-deterministic
                 // ones. We model that split here.
                 let deterministic = is_deterministic_body(inner);
+                // `saved` is captured ONCE before the branch loop. Captures
+                // leak ACROSS branches (mirrors OpenJDK's `Branch.match` which
+                // has no save/restore between alternatives). We only restore
+                // to `saved` if the entire Group fails.
+                let saved = state.captures.clone();
+                let saved_flags = self.flags;
                 for branch in &inner.branches {
-                    let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
-                    // Path 1: atomic — match the branch in isolation, then
-                    // advance the quantifier with the resulting end position.
-                    // For deterministic bodies, this is the ONLY path (matches
-                    // OpenJDK's GroupCurly).
+                    // RestoreFlags scopes any inline (?mu) inside the branch to
+                    // this group, mirroring OpenJDK's compile-time flag scoping.
+                    combined.push(Node::RestoreFlags(saved_flags));
+                    // Path 1: atomic — match the branch in isolation to extract
+                    // its end position, then advance the quantifier. Captures
+                    // are ALWAYS copied back to `state` (even on branch failure)
+                    // so leaks from the inner attempt propagate to the next
+                    // alternative.
                     let mut branch_state = state.clone();
-                    if self.match_nodes(&combined, pos, &mut branch_state) {
+                    let branch_ok = self.match_nodes(&combined, pos, &mut branch_state);
+                    state.captures = branch_state.captures.clone();
+                    if branch_ok {
                         let new_pos = branch_state.match_end;
                         if new_pos > pos {
-                            state.captures = branch_state.captures.clone();
                             if self.match_greedy(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
+                            // Full restore on Path 1 recursion failure: Java's
+                            // greedy `Curly.match0` backtracks via the chain,
+                            // which unwinds all GroupTails set during this
+                            // iter. Path 1 doesn't include the outer chain,
+                            // so we snap back to `saved` (the state at the
+                            // start of this iter) to give Path 2 a clean
+                            // canvas — Path 2's continuation chain then drives
+                            // inner GroupTails to restore properly.
                             state.captures = saved.clone();
                         } else {
-                            // Zero-width match — mirror OpenJDK's Curly which
-                            // breaks out of the greedy loop on k == 0 and tries
-                            // `next`. Treat the iteration as satisfying min so
-                            // we don't loop forever on a zero-width atom.
-                            state.captures = branch_state.captures.clone();
-                            let effective = (count + 1).max(min);
-                            if effective >= min && self.match_nodes(rest, pos, state) {
+                            // Zero-width match. Bookkeeping:
+                            // OpenJDK's `GroupCurly` saves/restores ONLY its own
+                            // group slot before calling atom.match. When the body
+                            // is zero-width AND we're past the minimum, the outer
+                            // group's capture is restored but inner captures leak.
+                            // So:
+                            //   `(?<y2>(?<foo>))*` on "ab" → y2=null, foo=""
+                            // We mirror this by restoring just the outer slot
+                            // when the just-completed iter was zero-width and
+                            // we've reached min — but only when the body could
+                            // ONLY ever be zero-width (deterministic + max 0),
+                            // which is the GroupCurly case. `max > 1` excludes
+                            // `?` / `{0,1}` where OpenJDK uses `Ques` (which
+                            // DOES capture if the body succeeds).
+                            if count == 0 && min == 0 && max > 1
+                                && pattern_max_length(inner) == Some(0)
+                                && deterministic
+                            {
+                                if let Some(idx) = index {
+                                    state.captures[*idx] = saved[*idx];
+                                }
+                            }
+                            if (count + 1) < min {
+                                // Still under min — try one more iteration. Body
+                                // may now fail (e.g. backref that flipped), in
+                                // which case the quantifier as a whole fails.
+                                // Mirrors OpenJDK Curly's cmin loop which calls
+                                // atom.match repeatedly. For NON-deterministic
+                                // bodies (OpenJDK Loop), zero-width iterations
+                                // are rejected via `locals[beginIndex] == i` —
+                                // so we skip the recursion in that case.
+                                if deterministic
+                                    && self.match_greedy(atom, min, max, count + 1, rest, pos, state)
+                                {
+                                    return true;
+                                }
+                            } else if self.match_nodes(rest, pos, state) {
+                                // count+1 >= min — satisfied. Try rest. No more
+                                // greedy expansion (zero-width loops don't help).
                                 return true;
                             }
-                            state.captures = saved.clone();
                         }
                     }
                     // Path 2: with continuation — Loop-style backtracking
@@ -630,6 +696,7 @@ impl<'a> Engine<'a> {
                         if let Some(idx) = index {
                             combined2.push(Node::GroupEnd { index: *idx, start });
                         }
+                        combined2.push(Node::RestoreFlags(saved_flags));
                         combined2.push(Node::GreedyCont {
                             atom: Box::new(atom.clone()),
                             min, max,
@@ -641,8 +708,12 @@ impl<'a> Engine<'a> {
                             return true;
                         }
                     }
-                    state.captures = saved;
                 }
+                // Group failed. Do NOT restore captures — OpenJDK's `Branch.match`
+                // has no save/restore, so leaks from the failed branches persist
+                // into the caller's state (they may matter for subsequent
+                // backtracking or for the final MatchInfo).
+                let _ = saved;
                 false
             }
             Node::FlagGroup { flags, inner } => {
@@ -655,25 +726,27 @@ impl<'a> Engine<'a> {
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
-                    let saved = state.captures.clone();
-                    // Path 1: atomic.
+                    // Path 1: atomic. Use branch_state to extract match_end
+                    // without affecting outer position tracking. Captures
+                    // ALWAYS leak from branch_state into state — even on
+                    // failure — mirroring OpenJDK's `Branch.match` which
+                    // never restores groups[] between alternatives.
                     let mut branch_state = state.clone();
-                    if self.match_nodes(branch, pos, &mut branch_state) {
+                    let branch_ok = self.match_nodes(branch, pos, &mut branch_state);
+                    state.captures = branch_state.captures.clone();
+                    if branch_ok {
                         let new_pos = branch_state.match_end;
                         self.flags = old_flags;
                         if new_pos > pos {
-                            state.captures = branch_state.captures.clone();
                             if self.match_greedy(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
-                            state.captures = saved.clone();
-                        } else {
-                            state.captures = branch_state.captures.clone();
-                            let effective = (count + 1).max(min);
-                            if effective >= min && self.match_nodes(rest, pos, state) {
+                        } else if (count + 1) < min {
+                            if self.match_greedy(atom, min, max, count + 1, rest, pos, state) {
                                 return true;
                             }
-                            state.captures = saved.clone();
+                        } else if self.match_nodes(rest, pos, state) {
+                            return true;
                         }
                         self.flags = *flags;
                     }
@@ -691,7 +764,6 @@ impl<'a> Engine<'a> {
                         if self.match_nodes(&combined, pos, state) {
                             return true;
                         }
-                        state.captures = saved;
                         self.flags = *flags;
                     }
                 }
@@ -743,14 +815,12 @@ impl<'a> Engine<'a> {
                     let new_pos = state.match_end;
                     if new_pos > pos {
                         self.match_greedy(atom, min, max, count + 1, rest, new_pos, state)
+                    } else if (count + 1) < min {
+                        // Zero-width but min not yet reached — iterate.
+                        self.match_greedy(atom, min, max, count + 1, rest, pos, state)
                     } else {
-                        // Zero-width match — count as matched up to max, then try rest
-                        let effective = (count + 1).max(min);
-                        if effective >= min {
-                            self.match_nodes(rest, pos, state)
-                        } else {
-                            false
-                        }
+                        // Zero-width, min satisfied. Try rest.
+                        self.match_nodes(rest, pos, state)
                     }
                 } else {
                     false
@@ -813,39 +883,49 @@ impl<'a> Engine<'a> {
             }
             Node::Group { index, inner, .. } => {
                 let start = pos;
-                // Same zero-max-body short-circuit as in try_match_atom_greedy
-                // — see the comment there. Mirrors OpenJDK GroupCurly.
-                // Only triggers for `*`, `+ with cmin=0` (none), `{0,n>=2}` style
-                // — NOT for `?` or `{0,1}`. OpenJDK uses `Ques` for the latter
-                // which DOES capture, and `Curly` (with the `locals[]=-1` trick)
-                // for the former which doesn't. `max > 1` distinguishes the two.
-                if count == 0 && min == 0 && max > 1 && pattern_max_length(inner) == Some(0) {
-                    return self.match_nodes(rest, pos, state);
-                }
                 let deterministic = is_deterministic_body(inner);
+                let saved = state.captures.clone();
+                let saved_flags = self.flags;
                 for branch in &inner.branches {
-                    let saved = state.captures.clone();
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
                     }
+                    combined.push(Node::RestoreFlags(saved_flags));
                     // Path 1: atomic.
                     let mut branch_state = state.clone();
-                    if self.match_nodes(&combined, pos, &mut branch_state) {
+                    let branch_ok = self.match_nodes(&combined, pos, &mut branch_state);
+                    state.captures = branch_state.captures.clone();
+                    if branch_ok {
                         let new_pos = branch_state.match_end;
                         if new_pos > pos {
-                            state.captures = branch_state.captures.clone();
                             if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
-                            state.captures = saved.clone();
+                            // Same per-slot restoration as the greedy arm —
+                            // `GroupCurly` restores its own slot on failure.
+                            if let Some(idx) = index {
+                                state.captures[*idx] = saved[*idx];
+                            }
                         } else {
-                            state.captures = branch_state.captures.clone();
-                            let effective = (count + 1).max(min);
-                            if effective >= min && self.match_nodes(rest, pos, state) {
+                            // GroupCurly zero-width abort — see greedy arm.
+                            if count == 0 && min == 0 && max > 1
+                                && pattern_max_length(inner) == Some(0)
+                                && deterministic
+                            {
+                                if let Some(idx) = index {
+                                    state.captures[*idx] = saved[*idx];
+                                }
+                            }
+                            if (count + 1) < min {
+                                if deterministic
+                                    && self.match_reluctant(atom, min, max, count + 1, rest, pos, state)
+                                {
+                                    return true;
+                                }
+                            } else if self.match_nodes(rest, pos, state) {
                                 return true;
                             }
-                            state.captures = saved.clone();
                         }
                     }
                     // Path 2: with continuation. Only for non-deterministic bodies.
@@ -854,6 +934,7 @@ impl<'a> Engine<'a> {
                         if let Some(idx) = index {
                             combined2.push(Node::GroupEnd { index: *idx, start });
                         }
+                        combined2.push(Node::RestoreFlags(saved_flags));
                         combined2.push(Node::ReluctantCont {
                             atom: Box::new(atom.clone()),
                             min, max,
@@ -865,8 +946,8 @@ impl<'a> Engine<'a> {
                             return true;
                         }
                     }
-                    state.captures = saved;
                 }
+                let _ = saved;
                 false
             }
             Node::LinebreakMatcher => {
@@ -905,8 +986,11 @@ impl<'a> Engine<'a> {
                             state.captures = saved.clone();
                         } else {
                             state.captures = branch_state.captures.clone();
-                            let effective = (count + 1).max(min);
-                            if effective >= min && self.match_nodes(rest, pos, state) {
+                            if (count + 1) < min {
+                                if self.match_reluctant(atom, min, max, count + 1, rest, pos, state) {
+                                    return true;
+                                }
+                            } else if self.match_nodes(rest, pos, state) {
                                 return true;
                             }
                             state.captures = saved.clone();
@@ -941,14 +1025,12 @@ impl<'a> Engine<'a> {
                     let new_pos = state.match_end;
                     if new_pos > pos {
                         self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state)
+                    } else if (count + 1) < min {
+                        // Zero-width but min not yet reached — iterate.
+                        self.match_reluctant(atom, min, max, count + 1, rest, pos, state)
                     } else {
-                        // Zero-width match — treat as satisfied, try rest
-                        let effective = (count + 1).max(min);
-                        if effective >= min {
-                            self.match_nodes(rest, pos, state)
-                        } else {
-                            false
-                        }
+                        // Zero-width, min satisfied. Try rest.
+                        self.match_nodes(rest, pos, state)
                     }
                 } else {
                     false
@@ -965,13 +1047,25 @@ impl<'a> Engine<'a> {
         let mut count = 0u32;
 
         while count < max {
-            let mut temp_state = state.clone();
-            if self.match_nodes(core::slice::from_ref(atom), current_pos, &mut temp_state) {
-                let new_pos = temp_state.match_end;
-                state.captures = temp_state.captures;
+            // Share state — captures from the atom's internal attempts leak
+            // (matching OpenJDK's `Ques(X, POSSESSIVE)` which doesn't
+            // save/restore around atom.match).
+            if self.match_nodes(core::slice::from_ref(atom), current_pos, state) {
+                let new_pos = state.match_end;
                 count += 1;
-                // Zero-width match: stop to avoid infinite loop
-                if new_pos == current_pos && count >= min { break; }
+                // Zero-width match: stop to avoid infinite loop, but only once
+                // min has been reached. Java's Curly possessive (`match2`) does
+                // the same: it iterates atom while progress is made; once
+                // progress halts, it commits and tries rest.
+                if new_pos == current_pos {
+                    if count >= min { break; }
+                    // Still under min but body went zero-width — calling again
+                    // would loop with no progress unless body's internal state
+                    // (captures, leaked from prior iter) makes it now fail.
+                    // Try one more; if body fails this time, we'll exit the
+                    // loop with count < min and the overall match fails.
+                    continue;
+                }
                 current_pos = new_pos;
             } else {
                 break;
@@ -1111,8 +1205,13 @@ impl<'a> Engine<'a> {
         // this means we try ONLY `pos`, not every prior position.
         let body_min = pattern_min_length(inner);
         let body_max = pattern_max_length(inner).unwrap_or(pos);
+        // `start_high = pos - body_min` — if body_min > pos, the body can't
+        // possibly fit before `pos` and we skip the loop entirely. Mirrors
+        // OpenJDK's `j = i - rmin` falling below `from`. Saturating to 0 would
+        // wrongly trigger one iteration at j=0 and leak captures.
+        if body_min > pos { return false; }
+        let start_high = pos - body_min;
         let start_low = pos.saturating_sub(body_max).max(self.text_start);
-        let start_high = pos.saturating_sub(body_min);
         if start_low > start_high { return false; }
         for start in (start_low..=start_high).rev() {
             if self.match_pattern(inner, &rest, start, state) {

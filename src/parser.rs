@@ -541,7 +541,13 @@ impl Parser {
             match self.peek() {
                 Some(':') => {
                     self.advance();
+                    // Java quirk: inline `(?s)` only leaks across alternation
+                    // at the *top* level. Inside any group, flag changes are
+                    // scoped to that group. Save/restore here so `(?:(?s))|.`
+                    // doesn't propagate the `s` to the second branch.
+                    let saved = self.flags;
                     let inner = self.parse_pattern()?;
+                    self.flags = saved;
                     self.expect(')')?;
                     Ok(Node::Group { index: None, name: None, inner })
                 }
@@ -550,7 +556,9 @@ impl Parser {
                     match self.peek() {
                         Some('=') => {
                             self.advance();
+                            let saved = self.flags;
                             let inner = self.parse_pattern()?;
+                            self.flags = saved;
                             self.expect(')')?;
                             if !is_lookbehind_bounded(&inner) {
                                 return Err(self.error(
@@ -560,7 +568,9 @@ impl Parser {
                         }
                         Some('!') => {
                             self.advance();
+                            let saved = self.flags;
                             let inner = self.parse_pattern()?;
+                            self.flags = saved;
                             self.expect(')')?;
                             if !is_lookbehind_bounded(&inner) {
                                 return Err(self.error(
@@ -577,7 +587,9 @@ impl Parser {
                             self.group_count += 1;
                             let index = self.group_count;
                             self.named_groups.insert(name.clone(), index);
+                            let saved = self.flags;
                             let inner = self.parse_pattern()?;
+                            self.flags = saved;
                             self.expect(')')?;
                             Ok(Node::Group { index: Some(index), name: Some(name), inner })
                         }
@@ -585,19 +597,25 @@ impl Parser {
                 }
                 Some('=') => {
                     self.advance();
+                    let saved = self.flags;
                     let inner = self.parse_pattern()?;
+                    self.flags = saved;
                     self.expect(')')?;
                     Ok(Node::Lookahead { positive: true, inner })
                 }
                 Some('!') => {
                     self.advance();
+                    let saved = self.flags;
                     let inner = self.parse_pattern()?;
+                    self.flags = saved;
                     self.expect(')')?;
                     Ok(Node::Lookahead { positive: false, inner })
                 }
                 Some('>') => {
                     self.advance();
+                    let saved = self.flags;
                     let inner = self.parse_pattern()?;
+                    self.flags = saved;
                     self.expect(')')?;
                     Ok(Node::AtomicGroup { inner })
                 }
@@ -606,7 +624,9 @@ impl Parser {
         } else {
             self.group_count += 1;
             let index = self.group_count;
+            let saved = self.flags;
             let inner = self.parse_pattern()?;
+            self.flags = saved;
             self.expect(')')?;
             Ok(Node::Group { index: Some(index), name: None, inner })
         }

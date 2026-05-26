@@ -218,11 +218,16 @@ impl Regex {
         let input_chars: Vec<char> = input.chars().collect();
         let input_len = input_chars.len();
         let mut search_pos = start;
+        // Persistent State across position attempts — captures from failed
+        // attempts leak into the eventually-successful one (matching Java's
+        // `Matcher.find(start)` which uses the same Start.match iteration
+        // that find() does, with the same per-search groups[] persistence).
+        let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
+        engine.search_start = start;
+        let mut state = State::new(self.group_count);
         while search_pos <= input_len {
-            let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
-            engine.search_start = start;
-            if let Some((end_pos, captures)) = engine.try_match_at(&self.pattern, search_pos) {
-                return Some(self.build_match_info(&input_chars, search_pos, end_pos, &captures));
+            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
+                return Some(self.build_match_info(&input_chars, search_pos, end_pos, &state.captures));
             }
             search_pos += 1;
         }
@@ -363,19 +368,25 @@ impl Regex {
         let mut last_end = 0;
         let mut search_pos = 0;
 
+        // Persistent State so captures from failed find attempts leak into
+        // the eventual successful match, matching Java's `appendReplacement`
+        // which uses the same find() semantics. State is reset after each
+        // successful replacement (Java's per-search groups[] reset).
+        let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
+        let mut state = State::new(self.group_count);
+
         let mut prev_match_end = 0;
         while search_pos <= input_len {
-            let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
-            if let Some((end_pos, mut captures)) = engine.try_match_at(&self.pattern, search_pos) {
+            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
                 result.extend(&input_chars[last_end..search_pos]);
 
-                if !captures.is_empty() {
-                    captures[0] = Some((search_pos, end_pos));
+                if !state.captures.is_empty() {
+                    state.captures[0] = Some((search_pos, end_pos));
                 }
 
-                let info = self.build_match_info(input_chars, search_pos, end_pos, &captures);
+                let info = self.build_match_info(input_chars, search_pos, end_pos, &state.captures);
                 replacer.replace_append(&info, &mut result);
 
                 last_end = end_pos;
@@ -390,6 +401,7 @@ impl Regex {
                     search_pos = end_pos;
                 }
 
+                state = State::new(self.group_count);
                 if first_only { break; }
             } else {
                 search_pos += 1;
@@ -566,22 +578,28 @@ impl Regex {
         let mut index = 0;
         let mut search_pos = 0;
 
+        // Persistent State across position attempts — relevant when the
+        // pattern uses backreferences that the capture leak across positions
+        // could change the result of (rare for split, but matches Java).
+        let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
+        let mut state = State::new(self.group_count);
+
         let mut prev_match_end = 0;
         while search_pos <= input_len {
             if limit > 0 && parts.len() as i32 >= limit - 1 {
                 break;
             }
 
-            let mut engine = Engine::new(&input_chars, self.flags, self.group_count, &self.named_groups);
             engine.search_start = prev_match_end;
 
-            if let Some((end_pos, _captures)) = engine.try_match_at(&self.pattern, search_pos) {
+            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
                 // Java quirk: a zero-width match at position 0 produces NO leading
                 // empty substring. OpenJDK's Pattern.split has the explicit check:
                 //     if (index == 0 && index == m.start() && m.start() == m.end()) continue;
                 if index == 0 && search_pos == 0 && end_pos == 0 {
                     prev_match_end = end_pos;
                     search_pos = 1;
+                    state = State::new(self.group_count);
                     continue;
                 }
                 parts.push(input_chars[index..search_pos].iter().collect());
@@ -592,6 +610,7 @@ impl Regex {
                 } else {
                     search_pos = end_pos;
                 }
+                state = State::new(self.group_count);
             } else {
                 search_pos += 1;
             }

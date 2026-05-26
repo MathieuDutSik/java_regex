@@ -86,23 +86,21 @@ OpenJDK source: `Pattern.java` `clazz`, specifically the `else { unread(); right
 
 ---
 
-## 5. Inline `(?s)` propagates across alternation branches
+## 5. Inline `(?s)` propagates across alternation, but only at the top level
 
 ```
-Pattern:    (?s)|.
-Input:      "\n"
-matches():  true       (branch 1's (?s) sets dotall for branch 2's . even though branch 1 didn't match)
-
-Pattern:    (?s)xx|.
-Input:      "\n"
-matches():  true       (same — (?s) takes effect even when its branch fails)
+Pattern:    (?s)|.            on "\n"   matches: true   ← top-level (?s) leaks
+Pattern:    (?s)xx|.          on "\n"   matches: true   ← still leaks even from failed branch
+Pattern:    (?:(?s))|.        on "\n"   matches: false  ← wrapped in any group → scoped
+Pattern:    ((?s))|.          on "\n"   matches: false  ← scoped to the capture
+Pattern:    (?>(?s))|.        on "\n"   matches: false  ← scoped to the atomic group
 ```
 
-Inline `(?flags)` is a compile-time directive in OpenJDK: it mutates the parser's flag state for the rest of the pattern. By the time the alternation node is fully parsed, the `.` in a later branch has been compiled against the new flag state. At runtime there's nothing special — the `.` already "knows" about dotall.
+Inline `(?flags)` is a compile-time directive in OpenJDK: it mutates the parser's flag state. But the change is scoped to the enclosing group — once parsing exits a group of any kind (capturing, non-capturing, atomic, lookaround), the flag state is restored. Only at the *top* level (no surrounding group) does the flag change persist past the surrounding `|` alternation.
 
-Because Rust's engine evaluates flags at match time (the parser emits `SetFlags` nodes), this implementation prepends a `SetFlags(branch_start_flags)` node to each parsed branch and treats `SetFlags` as a non-rollback operation, producing the same effect.
+Because Rust's engine evaluates flags at match time (the parser emits `SetFlags` nodes), this implementation prepends a `SetFlags(branch_start_flags)` node to each parsed branch *and* save/restores `self.flags` around `parse_pattern` calls inside every group kind. The combined effect reproduces both rules: top-level alternation propagates, group-internal flag changes do not escape.
 
-OpenJDK source: `Pattern.java` parser `self.flags` mutation in inline-flag handling.
+OpenJDK source: `Pattern.java` parser `self.flags` mutation in inline-flag handling, plus per-group bracketing in `group0()`.
 
 ---
 

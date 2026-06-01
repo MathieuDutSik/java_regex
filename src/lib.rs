@@ -1266,6 +1266,25 @@ mod tests {
     }
 
     #[test]
+    fn test_nondet_reluctant_zero_width_body_rejects() {
+        // `(?:((\1[^\w])*?)){2,3}?` on "\t" must NOT match: outer reluctant
+        // {2,3}? min=2 with a non-deterministic zero-width body. Java's Prolog
+        // calls body.match once; the body's reluctant `*?` returns zero-width
+        // via 0 inner iters; then chain unwinds to LazyLoop which bails at
+        // i==beginIndex. Body never advances → matches=false.
+        //
+        // Previously our impl leaked group-1's capture from Path 1's
+        // atomic body match into Path 2's continuation, where the inner `\1`
+        // could succeed against the leaked empty capture and consume `\t`.
+        // The fix restores `state.captures = saved.clone()` when Path 1's
+        // zero-width body fails the cmin requirement on non-deterministic
+        // bodies, mirroring Java's chain-unwind GroupTail restoration.
+        let re = Regex::new(r"(?:((\1[^\w])*?)){2,3}?").unwrap();
+        assert!(!re.matches("\t"),
+            "outer reluctant {{2,3}}? with non-det zero-width body must not match");
+    }
+
+    #[test]
     fn test_optional_inner_anchor_capture_resets_on_failure() {
         // Reduced from a fuzz-found case. Inner of the neg lookahead is an
         // optional capture group containing an `^` anchor (multiline-scoped).

@@ -944,19 +944,7 @@ impl<'a> Engine<'a> {
                 let deterministic = is_deterministic_body(inner);
                 let saved = state.captures.clone();
                 let saved_flags = self.flags;
-                let multi_branch = inner.branches.len() > 1;
-                for (branch_idx, branch) in inner.branches.iter().enumerate() {
-                    if branch_idx > 0 && multi_branch {
-                        // Between alternation branches, clear captures set by
-                        // the previous (failed) branch's atomic body match.
-                        // Java's inner GroupTails would have restored their
-                        // group-ends when their continuation failed; our Path 1
-                        // doesn't include that continuation so we simulate by
-                        // resetting to `saved`. Only done when the outer body
-                        // actually has alternatives — a single-branch body
-                        // (like inside a neg lookahead) must let captures leak.
-                        state.captures = saved.clone();
-                    }
+                for branch in inner.branches.iter() {
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
@@ -972,12 +960,19 @@ impl<'a> Engine<'a> {
                             if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
-                            // Per-slot restoration of the outer group's own
-                            // slot. Inner captures intentionally leak so that
-                            // a downstream lookaround can see them — matching
-                            // Java's behavior where `(?!(?:(X)){n,}?)` retains
-                            // X's capture after the inner LazyLoop fails.
-                            if let Some(idx) = index {
+                            // Java's inner GroupTail restores when the chain
+                            // through `BranchConn → LazyLoop iter` fails. We
+                            // simulate that here, but only when:
+                            //   * body is non-deterministic (Java uses Loop —
+                            //     inner GroupTails DO restore). With det body,
+                            //     Java uses GroupCurly which lets inner
+                            //     captures leak.
+                            //   * min > 0 — for `*?`/`?` reluctant the leak
+                            //     should persist (matches Java's Branch-based
+                            //     compile of `Ques`).
+                            if !deterministic && min > 0 {
+                                state.captures = saved.clone();
+                            } else if let Some(idx) = index {
                                 state.captures[*idx] = saved[*idx];
                             }
                         } else {
@@ -996,7 +991,19 @@ impl<'a> Engine<'a> {
                                 {
                                     return true;
                                 }
-                                if let Some(idx) = index {
+                                if !deterministic {
+                                    // Non-det body matched zero-width but cmin
+                                    // unreached. Java's `Prolog` calls body.match
+                                    // and on body success the chain runs
+                                    // LazyLoop which bails (i == beginIndex);
+                                    // the chain then unwinds through inner
+                                    // GroupTails which restore their slots. Our
+                                    // Path 1 chopped the chain so those
+                                    // restorations didn't happen — simulate by
+                                    // resetting to `saved` before Path 2's
+                                    // continuation-driven retry.
+                                    state.captures = saved.clone();
+                                } else if let Some(idx) = index {
                                     state.captures[*idx] = saved[*idx];
                                 }
                             } else if self.match_nodes(rest, pos, state) {
@@ -1047,6 +1054,7 @@ impl<'a> Engine<'a> {
                 // continuation-backtracking path only for non-deterministic
                 // (multi-branch / variable-length-quantified) bodies.
                 let deterministic = is_deterministic_body(inner);
+                let saved = state.captures.clone();
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
@@ -1073,6 +1081,12 @@ impl<'a> Engine<'a> {
                                 && self.match_reluctant(atom, min, max, count + 1, rest, pos, state)
                             {
                                 return true;
+                            }
+                            if !deterministic {
+                                // Same reason as Group arm: simulate Java's
+                                // chain-unwind GroupTail restoration before
+                                // Path 2 retries via its continuation chain.
+                                state.captures = saved.clone();
                             }
                         } else if self.match_nodes(rest, pos, state) {
                             return true;

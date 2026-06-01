@@ -744,9 +744,35 @@ impl<'a> Engine<'a> {
                 // atomic — which mirrors Java's behavior because Java has no
                 // runtime FlagGroup node, only parse-time flag scoping.
                 let deterministic = is_deterministic_body(inner);
+                // Detect `(?...:X)?` — a greedy `?` quantifier. In this case
+                // Java's `Ques(atom, GREEDY)` matches by chaining atom's body
+                // with `next` (the continuation after `?`), so any inner
+                // `GroupTail` sees the continuation's failure and restores
+                // its group-end. We can't easily replicate that for general
+                // `{n,m}` quantifiers (where iteration must be threaded), but
+                // for `?` (single iteration) we can inline `rest` into Path 1.
+                let is_ques_greedy = count == 0 && min == 0 && max == 1;
                 let old_flags = self.flags;
                 self.flags = *flags;
                 for branch in &inner.branches {
+                    if is_ques_greedy {
+                        // Ques greedy path: chain body + rest in one shot so
+                        // inner GroupEnds propagate rest-failure into their
+                        // own restoration logic. Falls back to no-atom below.
+                        // Captures from the failed chain LEAK into the without-
+                        // atom branch — mirroring Java's `Branch[atom, null]`
+                        // compilation where Branch never restores groups[]
+                        // between alternatives.
+                        let mut combined = branch.clone();
+                        combined.push(Node::RestoreFlags(old_flags));
+                        combined.extend_from_slice(rest);
+                        if self.match_nodes(&combined, pos, state) {
+                            self.flags = old_flags;
+                            return true;
+                        }
+                        self.flags = *flags;
+                        continue;
+                    }
                     // Path 1: atomic. Use branch_state to extract match_end
                     // without affecting outer position tracking. Captures
                     // ALWAYS leak from branch_state into state — even on
@@ -918,7 +944,19 @@ impl<'a> Engine<'a> {
                 let deterministic = is_deterministic_body(inner);
                 let saved = state.captures.clone();
                 let saved_flags = self.flags;
-                for branch in &inner.branches {
+                let multi_branch = inner.branches.len() > 1;
+                for (branch_idx, branch) in inner.branches.iter().enumerate() {
+                    if branch_idx > 0 && multi_branch {
+                        // Between alternation branches, clear captures set by
+                        // the previous (failed) branch's atomic body match.
+                        // Java's inner GroupTails would have restored their
+                        // group-ends when their continuation failed; our Path 1
+                        // doesn't include that continuation so we simulate by
+                        // resetting to `saved`. Only done when the outer body
+                        // actually has alternatives — a single-branch body
+                        // (like inside a neg lookahead) must let captures leak.
+                        state.captures = saved.clone();
+                    }
                     let mut combined = branch.clone();
                     if let Some(idx) = index {
                         combined.push(Node::GroupEnd { index: *idx, start });
@@ -934,11 +972,11 @@ impl<'a> Engine<'a> {
                             if self.match_reluctant(atom, min, max, count + 1, rest, new_pos, state) {
                                 return true;
                             }
-                            // Per-slot restoration — `GroupCurly` restores its
-                            // own slot on failure. We don't restore inner
-                            // captures because that would clobber legitimate
-                            // cross-find leaks (e.g. through a failed lookaround
-                            // that nonetheless leaks captures into state).
+                            // Per-slot restoration of the outer group's own
+                            // slot. Inner captures intentionally leak so that
+                            // a downstream lookaround can see them — matching
+                            // Java's behavior where `(?!(?:(X)){n,}?)` retains
+                            // X's capture after the inner LazyLoop fails.
                             if let Some(idx) = index {
                                 state.captures[*idx] = saved[*idx];
                             }

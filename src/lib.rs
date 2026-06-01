@@ -1231,6 +1231,61 @@ mod tests {
     }
 
     #[test]
+    fn test_zero_width_alt_clears_failed_capture() {
+        // `(?:(a)|(?=.)){2,3}?` on "ba" at pos 1: outer quantifier matches via
+        // alt2 (?=.) zero-width twice. Java's LazyLoop bails at i==beginIndex
+        // so alt1=(a) never re-fires for iters 2+. g1 should be null.
+        // Previously alt1 captured "a" in iter 1's attempt and leaked into the
+        // final zero-width match.
+        let re = Regex::new(r"(?:(a)|(?=.)){2,3}?").unwrap();
+        let matches = re.find("ba");
+        assert_eq!(matches.len(), 2);
+        assert_eq!(matches[1].start, 1);
+        assert_eq!(matches[1].end, 1);
+        assert_eq!(matches[1].groups.first().cloned().flatten(), None,
+            "g1 must be null when outer succeeds via the zero-width alt");
+    }
+
+    #[test]
+    fn test_neg_lookahead_with_noncap_quant_capture_persists() {
+        // `(?!(?:(X)){2,}?)` on input where (X) matches once but cmin=2 can't be
+        // reached. Java's inner LazyLoop sets g1 from iter 1's GroupTail then
+        // returns false; the negative-lookahead inversion makes the outer match
+        // succeed and the inner capture LEAKS into the final state.
+        let re = Regex::new(r"(?!(?:(\n)){2,}?)").unwrap();
+        let matches = re.find("h\n>");
+        // At pos 1, inner attempts: \n matches at pos 1 (count=1), then \n at
+        // pos 2 fails (count=2 not reached). Inner fails. Neg lookahead succeeds.
+        // g1 should leak as "\n".
+        assert_eq!(matches.len(), 4);
+        assert_eq!(matches[1].start, 1);
+        assert_eq!(matches[1].end, 1);
+        assert_eq!(matches[1].groups.first().cloned().flatten(),
+            Some("\n".to_string()),
+            "g1 should leak from the failed iter-2 attempt at pos 1");
+    }
+
+    #[test]
+    fn test_optional_inner_anchor_capture_resets_on_failure() {
+        // Reduced from a fuzz-found case. Inner of the neg lookahead is an
+        // optional capture group containing an `^` anchor (multiline-scoped).
+        // At pos 0 the `^` matches zero-width → g1="" via GroupTail. Then `\R`
+        // at pos 0 fails. The `?` greedy retries without the optional. `\R`
+        // still fails. Java reports g1=null because GroupTail restores its
+        // end-marker on the inner failure even though we never advanced; we
+        // previously leaked g1="" because our zero-width body path didn't
+        // trigger GroupEnd's end-restoration.
+        let re = Regex::new(r"(?!(?:(?msu:(^))?)\Q\E(\R))").unwrap();
+        let matches = re.find("3\r");
+        assert!(!matches.is_empty());
+        // First match at pos 0.
+        assert_eq!(matches[0].start, 0);
+        assert_eq!(matches[0].end, 0);
+        assert_eq!(matches[0].groups.first().cloned().flatten(), None,
+            "g1 must be null when zero-width inner capture's continuation failed");
+    }
+
+    #[test]
     fn test_lookbehind_unbounded_multichar_body_rejected() {
         // Java: `(?<=(?:ab)+)` and similar reject at compile time.
         assert!(Regex::new(r"(?<=(?:ab)+)").is_err());

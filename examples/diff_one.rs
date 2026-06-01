@@ -53,7 +53,7 @@ fn main() {
             "matches" => serde_json::json!({"ok": true, "result": re.matches(input)}),
             "find" => {
                 let arr: Vec<_> = re.find(input).into_iter().map(|m|
-                    serde_json::json!({"m": m.matched_text, "s": m.start, "e": m.end})
+                    serde_json::json!({"m": m.matched_text, "s": m.start, "e": m.end, "g": m.groups})
                 ).collect();
                 serde_json::json!({"ok": true, "result": arr})
             }
@@ -70,7 +70,7 @@ fn main() {
             let r = rust_resp.get("result").and_then(|v| v.as_array());
             match (j, r) {
                 (Some(j), Some(r)) => j.len() == r.len()
-                    && j.iter().zip(r).all(|(a, b)| a["m"] == b["m"]),
+                    && j.iter().zip(r).all(|(a, b)| a["m"] == b["m"] && a["g"] == b["g"]),
                 _ => java_resp == rust_resp,
             }
         }

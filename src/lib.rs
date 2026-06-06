@@ -1285,6 +1285,153 @@ mod tests {
     }
 
     #[test]
+    fn test_lookbehind_unbounded_body_overflow_threshold() {
+        // Java's `Pattern.java::TreeInfo` computes lookbehind `info.maxLength`
+        // using i32 wrapping arithmetic. A possessive `*+` contributes
+        // MAX_REPS; a bounded sibling/prefix then pushes maxLength past
+        // Integer.MAX_VALUE, causing signed overflow. In `NotBehind.match`,
+        // `i - rmax` becomes a large positive for `i + 1 < bounded_max`, so
+        // body iteration is SKIPPED and the negative lookbehind succeeds.
+        // For `i + 1 >= bounded_max`, overflow wraps back and body iterates
+        // normally. We model this with i32-wrap `pattern_java_max`.
+        let re = Regex::new(r"(?su:(?<!(?:(?:[a-f]{0,4}?)??)(?isu:(?u:[\w]*+))))").unwrap();
+        let matches = re.find("\r\r\rΑα");
+        assert_eq!(matches.len(), 3);
+        assert_eq!(matches[0].start, 0);
+        assert_eq!(matches[1].start, 1);
+        assert_eq!(matches[2].start, 2);
+    }
+
+    #[test]
+    fn test_lookbehind_alternation_with_overflowed_alt_does_not_skip() {
+        // Regression case from the earlier i32-overflow attempt: when the
+        // lookbehind body has an alternation `(empty | unbounded_body)`,
+        // Java's `Branch.study` takes signed `Math.max` across atoms — the
+        // null/empty atom (=0) dominates the unbounded alt's negative wrap.
+        // So `rmax` ends up at 0 (not negative), and `NotBehind` iterates
+        // body normally at `j=i`. The empty alt then matches zero-width,
+        // making the negative lookbehind FAIL.
+        //
+        // Earlier attempts that always-skipped iteration when body had any
+        // unbounded part broke this case. The fix is to honor Java's
+        // `Math.max` across alternation atoms in `pattern_java_max`.
+        let re = Regex::new(r"(?<!|\n\t(?:.{4,})(?:))").unwrap();
+        assert_eq!(re.find("").len(), 0,
+            "alt 1 (empty) matches → neg lookbehind fails at every position");
+    }
+
+    #[test]
+    fn test_lookbehind_ques_lazy_body_zero_width_match() {
+        // Regression from the same investigation: `(?<!(?:X)??)` with X
+        // containing an unbounded `+` part. Java compiles `(?:X)??` as
+        // `Branch[null, head]`, so even if X's chain overflows the i32
+        // maxLength to negative, Branch's Math.max(null=0, X_max=negative)
+        // = 0. The lookbehind body's overall maxLength = 0, NotBehind
+        // iterates `j=i` normally, body's null path matches zero-width,
+        // and the negative lookbehind FAILS.
+        //
+        // The fix: in `node_java_max`, when Quantified has `max == 1`
+        // (Ques), use `inner_max.max(0)` to mirror Java's Branch wrap.
+        let re = Regex::new(r"(?!(?<!(?:\n\z\R(?:\Q~\r\E+))??)+?)").unwrap();
+        let matches = re.find("\r");
+        // The outer is a positive lookahead of negated... complex. Just
+        // verify count matches Java (2 for input "\r").
+        assert_eq!(matches.len(), 2);
+    }
+
+    #[test]
+    fn test_groupcurly_backoff_overrides_capture_with_iter_slice() {
+        // Reduced from a fuzz-found case (seed 20). Pattern:
+        // `(?:([^\w])+){2}` on "\t\t\r".
+        //
+        // Java compiles the outer `(?:X){2}` (non-det inner) to `Prolog(Loop)`
+        // and the inner `([^\w])+` to a capturing `GroupCurly`. When the inner
+        // GroupCurly's greedy `match0` maximally consumes 3 chars then needs
+        // to back off for the outer Loop's 2nd iter to fit, the backoff loop
+        // explicitly OVERRIDES groups[idx,+1] = (i-k, i) — the slice of the
+        // last-kept atom — AFTER `next.match` succeeds. Even though the
+        // recursive Loop iter 2 internally re-sets groups[idx] = (2,3), the
+        // outer GroupCurly's override re-stamps to (1,2) on return. Final
+        // groups[1] = "\t".
+        //
+        // Our match_greedy mirrors this: after `match_nodes(rest)` succeeds at
+        // a count > 0, we override captures[idx] = (iter_start, pos) — the
+        // slice of the last consumed iter. iter_start is passed down through
+        // each recursive try_match_atom_greedy → match_greedy hop.
+        let re = Regex::new(r"(?:([^\w])+){2}").unwrap();
+        let ms = re.find("\t\t\r");
+        assert_eq!(ms.len(), 1);
+        assert_eq!(ms[0].group(0), Some("\t\t\r"));
+        assert_eq!(ms[0].group(1), Some("\t"),
+            "Java's outer GroupCurly backoff overrides group 1 to its own \
+             iter's slice (1,2) after the recursive Loop iter 2 had set (2,3)");
+    }
+
+    #[test]
+    fn test_reluctant_generic_zero_width_body_aborts_does_not_retry_rest() {
+        // Reduced from a fuzz-found case (seed 32). Pattern:
+        // `(?:(?<=())*?)(?msu:\1)` on "".
+        //
+        // The reluctant `*?` is on a Lookbehind (atomic from the perspective
+        // of node_is_deterministic — lookarounds are deterministic). atom is
+        // Lookbehind, NOT Group, so try_match_atom_reluctant's generic `_` arm
+        // handles it. Java's Curly LAZY `match1` aborts on zero-width body:
+        // `if (i == matcher.last) return false;`. Our generic arm previously
+        // tried `rest` after a zero-width body match unconditionally, picking
+        // up the lookbehind body's leaked group-1 capture and making `\1`
+        // succeed where Java rejects.
+        //
+        // The fix mirrors the Group arm's existing `count + 1 == min` guard
+        // (the cmin-equivalent body match) — apply the same to the generic and
+        // FlagGroup arms.
+        let re = Regex::new(r"(?:(?<=())*?)(?msu:\1)").unwrap();
+        assert!(!re.matches(""),
+            "reluctant Lookbehind body (zero-width) must abort like Java's \
+             match1; the lookbehind's leaked group 1 capture should not enable \
+             \\1 to succeed");
+    }
+
+    #[test]
+    fn test_reluctant_zero_width_body_aborts_does_not_retry_rest() {
+        // Reduced from a fuzz-found case. Pattern: `(?:(?iu)(\B))*?\1\R` on
+        // "\r". Java's Curly LAZY `match1` tries `next.match` (= `\1\R`)
+        // FIRST. With group 1 unset, `\1` fails. Then match1 attempts atom
+        // expansion. atom matches zero-width (\B at start of "\r"). The
+        // zero-width abort fires: `if (i == matcher.last) return false`.
+        // Curly returns false. Overall pattern doesn't match.
+        //
+        // Previously our reluctant Group arm's zero-width branch was retrying
+        // `rest` after Path 1's body match, picking up the leaked group-1
+        // capture so `\1` would now succeed. That made us match where Java
+        // doesn't. The fix is to NOT retry rest after a zero-width reluctant
+        // body match — Java's `next.match` was already tried at the top of
+        // `match_reluctant`.
+        let re = Regex::new(r"(?:(?iu)(\B))*?\1\R").unwrap();
+        assert_eq!(re.find("\r").len(), 0,
+            "Java's reluctant Curly aborts on zero-width body, not re-trying \
+             rest with the body's leaked capture");
+    }
+
+    #[test]
+    fn test_possessive_cmin_loop_does_not_abort_on_zero_width() {
+        // Reduced from a fuzz-found case. Pattern's body has alternatives
+        // where alt 3 is a neg-lookahead whose inner captures group 2 (and
+        // leaks the capture before failing), and alt 2 `(?:.)\2` depends on
+        // group 2 being set. In iter 1, alt 2 fails (g2 unset); alt 3 fails
+        // but leaks; alt 4 (empty) matches zero-width. In iter 2 (re-run of
+        // atom.match by the possessive), alt 2 now succeeds because g2 was
+        // leaked. Java's Curly possessive cmin loop iterates `min` times
+        // unconditionally without a zero-width abort, then `match2` keeps
+        // iterating while atom advances. Our previous match_possessive broke
+        // after a single zero-width iter, missing iter 2 where state had
+        // changed via the leaked capture.
+        let re = Regex::new(r"(?<y2>(?:\z|(?:.)\2|(?!(\G{3,}?))||\Q\E)++)").unwrap();
+        assert!(re.matches("\t"),
+            "possessive ++ should iterate again after a zero-width iter because \
+             leaked captures from inner alt 3 enable alt 2 to advance in iter 2");
+    }
+
+    #[test]
     fn test_optional_inner_anchor_capture_resets_on_failure() {
         // Reduced from a fuzz-found case. Inner of the neg lookahead is an
         // optional capture group containing an `^` anchor (multiline-scoped).

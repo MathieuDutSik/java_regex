@@ -1,0 +1,35 @@
+name: CI(07) cargo publish --dry-run
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Catches packaging regressions (missing license files, exclude-list
+# mistakes that ship test data, manifest field problems) before the next
+# real `cargo publish`.
+
+on:
+  # One time per month, on the 7th at 00:00 UTC
+  schedule:
+    - cron: "0 0 7 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  publish-dryrun:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo publish --dry-run
+        run: |
+          cargo publish --dry-run
+      - name: cargo package --list (verify exclude list keeps OpenJDK source out)
+        run: |
+          cargo package --list | tee /tmp/pkg.lst
+          if grep -E '^(JAVA_code|DiffOracle|DiffTest|tests/openjdk_)' /tmp/pkg.lst; then
+            echo "FAIL: OpenJDK or dev-tooling files leaked into the package" >&2
+            exit 1
+          fi

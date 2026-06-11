@@ -1,14 +1,11 @@
 name: CI(03) Benchmark vs regex / fancy-regex / onig
 
-# Day 31: runs in 7 of 12 months (months with 31 days). Lower frequency
-# than tests/clippy because the benchmark pulls in `onig` (which builds a
-# native C dependency, ~3-5min of compile time). Free of polyhedral_common
-# collisions.
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
 
 on:
-  # Roughly monthly, on day 31 at 00:00 UTC
+  # One time per month, on the 3rd at 00:00 UTC
   schedule:
-    - cron: "0 0 31 * *"
+    - cron: "0 0 3 * *"
   # Manually triggered
   workflow_dispatch:
 

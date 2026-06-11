@@ -1,13 +1,12 @@
 name: CI(01) Tests
 
-# Pattern follows polyhedral_common workflows: one monthly cron, no
-# two of this repo's CI jobs share a day-of-month. Day 24 is free of
-# polyhedral_common collisions (same GitHub account = shared minutes).
+# Monthly cron + workflow_dispatch. File index matches day-of-month:
+# ci_NN_*.yml runs on day NN.
 
 on:
-  # One time per month, on the 24th at 00:00 UTC
+  # One time per month, on the 1st at 00:00 UTC
   schedule:
-    - cron: "0 0 24 * *"
+    - cron: "0 0 1 * *"
   # Manually triggered
   workflow_dispatch:
 

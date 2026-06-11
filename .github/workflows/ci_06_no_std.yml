@@ -1,0 +1,28 @@
+name: CI(06) no_std build (thumbv7em-none-eabi)
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Verifies the crate's no_std claim by building for an embedded target
+# (no std, no allocator beyond the alloc crate we already require).
+
+on:
+  # One time per month, on the 6th at 00:00 UTC
+  schedule:
+    - cron: "0 0 6 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  no-std-build:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: thumbv7em-none-eabi
+      - name: cargo build --target thumbv7em-none-eabi (no_std)
+        run: |
+          cargo build --release --target thumbv7em-none-eabi

@@ -16,6 +16,7 @@ use core::fmt;
 /// context (e.g. by callers outside the parser).
 #[derive(Debug, Clone)]
 pub struct PatternSyntaxError {
+    /// Human-readable error message (e.g., "Unclosed group", "Unknown character property").
     pub message: String,
     /// The full source pattern at the time of the error, or empty when none.
     pub pattern: String,
@@ -24,10 +25,14 @@ pub struct PatternSyntaxError {
 }
 
 impl PatternSyntaxError {
+    /// Construct an error with only a message — no source context attached.
+    /// Used when the error surfaces outside the parser (e.g., from `Matcher`).
     pub fn new(message: String) -> Self {
         Self { message, pattern: String::new(), index: 0 }
     }
 
+    /// Construct an error with full source context (message + pattern + index).
+    /// The `Display` impl formats this in OpenJDK's `PatternSyntaxException` style.
     pub fn with_context(message: String, pattern: String, index: usize) -> Self {
         Self { message, pattern, index }
     }

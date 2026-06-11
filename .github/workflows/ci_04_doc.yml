@@ -1,0 +1,29 @@
+name: CI(04) Doc & missing-docs
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+
+on:
+  # One time per month, on the 4th at 00:00 UTC
+  schedule:
+    - cron: "0 0 4 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  doc-linux:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo doc --no-deps (broken intra-doc links → error)
+        env:
+          RUSTDOCFLAGS: "-D warnings -D rustdoc::broken_intra_doc_links"
+        run: |
+          cargo doc --no-deps --all-features
+      - name: cargo rustdoc -- -D missing-docs (public API documentation)
+        run: |
+          cargo rustdoc --all-features -- -D missing-docs

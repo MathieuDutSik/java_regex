@@ -1089,6 +1089,25 @@ mod tests {
         assert_eq!(r.split("\t"), vec!["\t"]);
         let r = Regex::new("(?:)").unwrap();
         assert_eq!(r.split("\r"), vec!["\r"]);
+        // Zero-width matches at EVERY position split into individual chars
+        // (because the leading empty at pos 0 is suppressed, but the internal
+        // ones are not — the input is sliced between every char).
+        let r = Regex::new(r"\Q\E").unwrap();
+        assert_eq!(r.split("abc"), vec!["a", "b", "c"]);
+        // Lookahead-only zero-width matches are also splits — same suppression.
+        let r = Regex::new(r"(?=b)").unwrap();
+        assert_eq!(r.split("abc"), vec!["a", "bc"]);
+        // Empty input: split returns a single empty element (no suppression
+        // because there's only one position and it gets emitted as the tail).
+        let r = Regex::new(r"\Q\E").unwrap();
+        assert_eq!(r.split(""), vec![""]);
+        // Sanity: non-zero-width match at pos 0 does NOT suppress the leading
+        // empty (the suppression is specifically zero-width).
+        let r = Regex::new("a").unwrap();
+        assert_eq!(r.split("abc"), vec!["", "bc"]);
+        // Zero-width lookbehind anchor at pos 0 only — no further matches.
+        let r = Regex::new(r"(?<=^)").unwrap();
+        assert_eq!(r.split("abc"), vec!["abc"]);
     }
 
     #[test]
@@ -1481,6 +1500,20 @@ mod tests {
         // Inside a scoped FlagGroup, the propagation still applies within scope:
         let r = Regex::new(r"(?iu:(?s)|(?:.).\R)").unwrap();
         assert!(r.matches("\nΑ\r"));
+        // Scoped-wrap NEGATIVE cases (from QUIRKS.md): wrapping `(?s)` in any
+        // group at all stops the propagation — non-capturing, capturing, atomic,
+        // and lookaround groups all close the scope.
+        assert!(!Regex::new(r"(?:(?s))|.").unwrap().matches("\n"),
+            "non-cap wrap should scope the (?s)");
+        assert!(!Regex::new(r"((?s))|.").unwrap().matches("\n"),
+            "capturing wrap should scope the (?s)");
+        assert!(!Regex::new(r"(?>(?s))|.").unwrap().matches("\n"),
+            "atomic wrap should scope the (?s)");
+        assert!(!Regex::new(r"(?=(?s))|.").unwrap().matches("\n"),
+            "lookahead wrap should scope the (?s)");
+        // And the same with a non-matching branch-1 still leaves branch-2 with
+        // default (no DOTALL) flags:
+        assert!(!Regex::new(r"(?:(?s)xx)|.").unwrap().matches("\n"));
     }
 
     #[test]

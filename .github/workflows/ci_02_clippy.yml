@@ -1,12 +1,11 @@
 name: CI(02) Clippy
 
-# Day 30 is free of polyhedral_common collisions. Skips February since
-# Feb doesn't have a 30th — fine for a lint job.
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
 
 on:
-  # One time per month, on the 30th at 00:00 UTC
+  # One time per month, on the 2nd at 00:00 UTC
   schedule:
-    - cron: "0 0 30 * *"
+    - cron: "0 0 2 * *"
   # Manually triggered
   workflow_dispatch:
 

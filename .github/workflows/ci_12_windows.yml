@@ -1,0 +1,27 @@
+name: CI(12) Windows build & test
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Builds and tests on Windows to verify the crate compiles and behaves
+# identically on Win32. Mirrors ci_01_tests.yml but on windows-latest.
+
+on:
+  # One time per month, on the 12th at 00:00 UTC
+  schedule:
+    - cron: "0 0 12 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    timeout-minutes: 30
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo test (release, includes JSONL OpenJDK test vectors)
+        run: |
+          cargo test --release --all-targets

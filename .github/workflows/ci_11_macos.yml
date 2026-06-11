@@ -1,0 +1,27 @@
+name: CI(11) macOS build & test
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Builds and tests on macOS to verify the crate compiles and behaves
+# identically on Darwin. Mirrors ci_01_tests.yml but on macos-latest.
+
+on:
+  # One time per month, on the 11th at 00:00 UTC
+  schedule:
+    - cron: "0 0 11 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    timeout-minutes: 30
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo test (release, includes JSONL OpenJDK test vectors)
+        run: |
+          cargo test --release --all-targets

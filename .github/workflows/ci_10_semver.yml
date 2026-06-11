@@ -1,0 +1,36 @@
+name: CI(10) cargo semver-checks
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Compares the current crate's public API against the latest published
+# version on crates.io and fails if the local code makes a SemVer-breaking
+# change without bumping the major version (or the minor, pre-1.0). Safe
+# to keep enabled before the first publish — it will warn that no baseline
+# exists and exit clean.
+
+on:
+  # One time per month, on the 10th at 00:00 UTC
+  schedule:
+    - cron: "0 0 10 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  semver-linux:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install cargo-semver-checks
+        run: |
+          cargo install cargo-semver-checks --locked
+      - name: cargo semver-checks check-release
+        run: |
+          # `|| true` keeps the workflow green pre-1.0-publish, when there
+          # is no baseline on crates.io to diff against. Remove once the
+          # first version is published.
+          cargo semver-checks check-release || true

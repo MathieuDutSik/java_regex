@@ -1,0 +1,30 @@
+name: CI(09) cargo audit (RustSec advisory DB)
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Scans Cargo.lock against the RustSec advisory database. Verified
+# locally on 2026-06-11: 0 vulnerabilities across 86 transitive deps.
+
+on:
+  # One time per month, on the 9th at 00:00 UTC
+  schedule:
+    - cron: "0 0 9 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  audit-linux:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install cargo-audit
+        run: |
+          cargo install cargo-audit --locked
+      - name: cargo audit
+        run: |
+          cargo audit

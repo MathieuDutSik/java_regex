@@ -1,0 +1,41 @@
+name: CI(08) Code coverage
+
+# Monthly cron + workflow_dispatch. File index matches day-of-month.
+#
+# Uses cargo-llvm-cov to compute line coverage of the lib test suite plus
+# the JSONL integration tests. Expected to be near-100% given how
+# exhaustively the fuzz-derived test corpus covers the engine.
+
+on:
+  # One time per month, on the 8th at 00:00 UTC
+  schedule:
+    - cron: "0 0 8 * *"
+  # Manually triggered
+  workflow_dispatch:
+
+jobs:
+  coverage-linux:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: llvm-tools-preview
+      - name: Install cargo-llvm-cov
+        run: |
+          cargo install cargo-llvm-cov --locked
+      - name: cargo llvm-cov --all-features --all-targets --workspace
+        run: |
+          cargo llvm-cov --all-features --all-targets --workspace --summary-only
+      - name: cargo llvm-cov --lcov (artifact)
+        run: |
+          cargo llvm-cov --all-features --all-targets --workspace --lcov --output-path lcov.info
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov-info
+          path: lcov.info
+          if-no-files-found: error

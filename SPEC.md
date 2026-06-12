@@ -2,7 +2,7 @@
 
 This document specifies what **OpenJDK 25's `java.util.regex.Pattern`** actually does — not what the Javadoc says. The Javadoc is the official spec, but it is underspecified in dozens of places and, in several others, OpenJDK's parser/engine diverges from a literal reading. Because OpenJDK is by far the dominant JVM implementation (Oracle JDK, GraalVM, Amazon Corretto, Azul Zulu, IBM Semeru / OpenJ9, etc.), "what OpenJDK does" is the working definition of Java regex.
 
-This spec describes that working definition. Wherever it differs from a naive reading of the Javadoc, the divergence is called out and cross-referenced to [QUIRKS.md](QUIRKS.md).
+This spec describes that working definition. Wherever it differs from a naive reading of the Javadoc, the divergence is called out and cross-referenced to [QUIRKS.md](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md).
 
 **Scope.** Java 8+, targeting Java 13+ semantics (OpenJDK 25). Excludes the `CANON_EQ` (canonical equivalence) flag, which is rarely used and not implemented by most third-party engines.
 
@@ -581,7 +581,7 @@ The exact message text varies between Java versions; the *condition* is stable.
 
 ## 8. Quirks index
 
-For each documented divergence from a literal Javadoc reading, see [QUIRKS.md](QUIRKS.md):
+For each documented divergence from a literal Javadoc reading, see [QUIRKS.md](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md):
 
 1. **`^` at end of input** — multiline `^` never matches at the very end of input, even after a trailing line terminator.
 2. **Deterministic atom atomicity** — `\R{2}`, `(?:\R){2}`, `(?i:\R){2}` are atomic.
@@ -592,7 +592,7 @@ For each documented divergence from a literal Javadoc reading, see [QUIRKS.md](Q
 7. **`split()` suppresses leading empty** for a zero-width match at position 0.
 8. **Capture state leaks** across find positions and from failed lookarounds.
 
-For intentional deviations of this Rust port from OpenJDK, see [DIFFERENCES.md](DIFFERENCES.md) (one item: UTF-16 vs UTF-8 position offsets).
+For intentional deviations of this Rust port from OpenJDK, see [DIFFERENCES.md](https://github.com/mathieudutour/java_regex/blob/main/DIFFERENCES.md) (one item: UTF-16 vs UTF-8 position offsets).
 
 ---
 

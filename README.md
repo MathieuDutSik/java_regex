@@ -72,16 +72,16 @@ patterns, inputs, and operations. At ~20 000 cases per second, the latest
 The only documented difference is structural: `Matcher.start()` / `end()`
 return UTF-16 code-unit offsets, while we return Unicode-codepoint offsets.
 Matched *text* is always identical; only the integer indices differ when the
-input contains supplementary characters. See [DIFFERENCES.md](DIFFERENCES.md).
+input contains supplementary characters. See [DIFFERENCES.md](https://github.com/mathieudutour/java_regex/blob/main/DIFFERENCES.md).
 
 The crate also faithfully reproduces eight well-known OpenJDK quirks
 (multiline `^` end-of-input behavior, atomic quantified atoms, chained `&&`
 parser asymmetry, capture leaks across `find()` positions, etc.). See
-[QUIRKS.md](QUIRKS.md) for each one's pattern, behavior, and OpenJDK source
+[QUIRKS.md](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md) for each one's pattern, behavior, and OpenJDK source
 class.
 
 For a full reference specification of what OpenJDK regex actually does — the
-behavior the Javadoc underspecifies — see [SPEC.md](SPEC.md).
+behavior the Javadoc underspecifies — see [SPEC.md](https://github.com/mathieudutour/java_regex/blob/main/SPEC.md).
 
 ## Performance
 
@@ -116,10 +116,10 @@ Issues and PRs welcome.
 
 ## Further reading
 
-- [SPEC.md](SPEC.md) — Reference spec of OpenJDK regex behavior.
-- [QUIRKS.md](QUIRKS.md) — The eight OpenJDK quirks this crate reproduces, with worked examples.
-- [DIFFERENCES.md](DIFFERENCES.md) — The one intentional deviation (UTF-16 vs UTF-8 offsets).
-- [FUZZING.md](FUZZING.md) — How to run the proptest, cargo-fuzz, differential, and benchmark suites.
+- [SPEC.md](https://github.com/mathieudutour/java_regex/blob/main/SPEC.md) — Reference spec of OpenJDK regex behavior.
+- [QUIRKS.md](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md) — The eight OpenJDK quirks this crate reproduces, with worked examples.
+- [DIFFERENCES.md](https://github.com/mathieudutour/java_regex/blob/main/DIFFERENCES.md) — The one intentional deviation (UTF-16 vs UTF-8 offsets).
+- [FUZZING.md](https://github.com/mathieudutour/java_regex/blob/main/FUZZING.md) — How to run the proptest, cargo-fuzz, differential, and benchmark suites.
 
 ## License
 

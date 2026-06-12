@@ -4,7 +4,7 @@ The `java.util.regex.Pattern` Javadoc is the official specification, but it leav
 
 If you're porting a regex from Java, **nothing here will catch you off-guard.** If you're coming from a different regex engine or reading the Javadoc, this is the list of "huh, why does it do that?" answers.
 
-For *intentional* divergences (where we do NOT match OpenJDK), see [DIFFERENCES.md](DIFFERENCES.md).
+For *intentional* divergences (where we do NOT match OpenJDK), see [DIFFERENCES.md](https://github.com/mathieudutour/java_regex/blob/main/DIFFERENCES.md).
 
 ---
 

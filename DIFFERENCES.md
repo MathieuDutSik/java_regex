@@ -10,7 +10,7 @@ The two agree exactly on inputs that contain no supplementary characters (every 
 
 For inputs containing supplementary characters (most emoji, several CJK extension blocks, math/historic scripts) a single character is one position in Rust but two positions in Java. **Matched text is always identical; only the integer positions differ.**
 
-```
+```text
 Pattern: \Q\E         (zero-width match at every position)
 Input:   "😀a"
 Rust:    matches at positions 0, 1, 2     (3 chars)

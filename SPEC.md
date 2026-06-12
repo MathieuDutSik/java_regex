@@ -210,7 +210,7 @@ A group is a sub-expression delimited by `(` and `)`. OpenJDK supports six kinds
 
 **Inline flag setter `(?flags)` / `(?flags-flags)`.** No colon, no body. The setter mutates the *parser's* flag state from that point onward, scoped to the **enclosing group** (or the whole pattern if at the top level). Top-level inline flags propagate across alternation branches; wrapping in any group (including `(?:...)`, `(...)`, `(?>...)`, `(?=...)`) scopes the change to that group. **[Q-5]**
 
-```
+```text
 (?s)|.       on "\n"  →  matches: true   (top-level (?s) leaks into alt 2)
 (?s)xx|.     on "\n"  →  matches: true   (even from a failing branch)
 (?:(?s))|.   on "\n"  →  matches: false  (wrapped → scoped)
@@ -239,7 +239,7 @@ Anchors match a **position**, not a character.
 
 **Multiline `^`.** With MULTILINE, `^` matches at the start of input and immediately after every line terminator — **except at the very end of input**, even if the end of input is also the end of a line. So:
 
-```
+```text
 ^ on ""       (MULTILINE)  →  no match
 ^ on "\n"     (MULTILINE)  →  matches at pos 0 only (NOT at pos 1)
 ^ on "\r\né"  (MULTILINE)  →  matches at positions 0, 1, 2 only
@@ -280,7 +280,7 @@ A lookaround matches a **position** by attempting an inner pattern at that posit
 
 **Bounded-length requirement.** Lookbehind requires that the inner pattern have a **statically known maximum length**. OpenJDK's compile-time check uses `TreeInfo.maxLength` over the inner AST. Patterns that fail this check are rejected with `"Look-behind group does not have an obvious maximum length"`. Examples:
 
-```
+```text
 (?<=a)            OK  (max len 1)
 (?<=ab)           OK  (max len 2)
 (?<=a{2,4})       OK  (max len 4)
@@ -353,7 +353,7 @@ A backreference matches the **same characters** as a previously-captured group.
 
 **Property syntax variants.**
 
-```
+```text
 \pX          → \p{X}   for X a single letter (\pL, \pN, ...)
 \p{X}        → property X
 \p{IsLatin}  → script Latin
@@ -467,19 +467,19 @@ This is the part of `Pattern` / `Matcher` semantics least well-described by the 
 
 **Consequences (with examples).**
 
-```
+```text
 Pattern:    (?=(\w))*\s
 Input:      "a "
 find()[0]:  start=1, end=2, text=" ", g1="a"     ← captures from failed pos-0 leak
 ```
 
-```
+```text
 Pattern:    (?<!(a|bb))c?
 Input:      "ac"
 find()[1]:  start=2, end=2, text="", g1="a"     ← inner cap from failed pos-1 negative LB
 ```
 
-```
+```text
 Pattern:    (?:([^\w])+){2}
 Input:      "\t\t\r"
 find()[0]:  text="\t\t\r", g1="\t"             ← outer GroupCurly's backoff re-stamps g1
@@ -499,7 +499,7 @@ The third example illustrates the "GroupCurly backoff re-stamp": the inner `([^\
 
 **Zero-width match suppression at position 0.** If the **very first** match is zero-width *and* at position 0, the would-be leading empty string is **suppressed**. This means:
 
-```
+```text
 \Q\E split "abc"    →  ["a", "b", "c"]
 \Q\E split "\t"     →  ["\t"]
 (?=b) split "abc"   →  ["a", "bc"]
@@ -514,7 +514,7 @@ The Javadoc covers this rule; it is easy to miss the first time. **[Q-7]**
 - `limit == 0`: Default. Splits as many times as possible, but **trailing empty strings are removed**.
 - `limit < 0`: Splits as many times as possible; trailing empty strings are *retained*.
 
-```
+```text
 "a,b,,".split(",")     →  ["a", "b"]          (limit=0, trailing empties removed)
 "a,b,,".split(",", -1) →  ["a", "b", "", ""]  (trailing empties kept)
 "a,b,,".split(",", 2)  →  ["a", "b,,"]         (limit=2, at most 1 split)
@@ -543,7 +543,7 @@ The replacement string in `Matcher.appendReplacement(sb, replacement)` and `Matc
 
 **Literal `$` and `\` in the replacement.** Use `\$` for `$` and `\\` for `\`. Bare `$` followed by a non-digit / non-`{` is also treated as literal `$` (Java tolerates this — though for safety, escape it).
 
-```
+```text
 replace_all("a", r"\$")    →  "$"
 replace_all("a", "$$")     →  "$$"  (bare $ before non-digit → literal $)
 ```

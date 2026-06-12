@@ -10,7 +10,7 @@ For *intentional* divergences (where we do NOT match OpenJDK), see [DIFFERENCES.
 
 ## 1. Multiline `^` never matches at end of input
 
-```
+```text
 Pattern:    ^             (with MULTILINE / `m` flag)
 Input:      "\n"
 matches():  false
@@ -25,7 +25,7 @@ OpenJDK source: `Pattern.java` `Caret.match` / `UnixCaret.match`.
 
 ## 2. Quantified atom is atomic when its body is "deterministic"
 
-```
+```text
 Pattern:    \R{2}                 (also (?:\R){2}, (\R){2}, (?>\R){2}, (?i:\R){2})
 Input:      "\r\n"
 matches():  false
@@ -45,7 +45,7 @@ This implementation mirrors the split via `is_deterministic_body` in `src/engine
 
 A direct consequence of #2.
 
-```
+```text
 Pattern:    \R\n
 Input:      "\r\n"
 matches():  true        (sequential `\R\R`-style backtracking)
@@ -65,14 +65,14 @@ OpenJDK source: `Pattern.java` `LineEnding.match`.
 
 ## 4. Chained `[A && B && C]` drops trailing clauses when middle has a literal after a nested class
 
-```
+```text
 Pattern:    [abc && [\w]a && z]
 Input:      "abcxz"
 find():     "a", "b", "c"          (the `&& z` clause is silently dropped)
 ```
 
 Compare:
-```
+```text
 Pattern:    [abc && [\w] && z]   →   no match (proper 3-way intersection)
 Pattern:    [abc && [x] && z]    →   no match
 Pattern:    [abc && [\w]a && z]  →   matches a, b, c   ← QUIRK
@@ -88,7 +88,7 @@ OpenJDK source: `Pattern.java` `clazz`, specifically the `else { unread(); right
 
 ## 5. Inline `(?s)` propagates across alternation, but only at the top level
 
-```
+```text
 Pattern:    (?s)|.            on "\n"   matches: true   ← top-level (?s) leaks
 Pattern:    (?s)xx|.          on "\n"   matches: true   ← still leaks even from failed branch
 Pattern:    (?:(?s))|.        on "\n"   matches: false  ← wrapped in any group → scoped
@@ -106,7 +106,7 @@ OpenJDK source: `Pattern.java` parser `self.flags` mutation in inline-flag handl
 
 ## 6. Case-folded range membership uses the input char, not the endpoints
 
-```
+```text
 Pattern:    [1-c]         (with CASE_INSENSITIVE / `i` flag)
 Input:      "g"
 matches():  true
@@ -120,7 +120,7 @@ OpenJDK source: `Pattern.java` `CIRange` predicate construction in `range` metho
 
 ## 7. `split()` suppresses a leading empty for zero-width matches at position 0
 
-```
+```text
 Pattern:    \Q\E          (zero-width)
 Input:      "\t"
 split():    ["\t"]        (no leading empty)
@@ -134,13 +134,13 @@ OpenJDK source: `Pattern.java` `split(CharSequence input, int limit)`.
 
 ## 8. Group captures leak across `find()` start positions and from failed lookaround inner attempts
 
-```
+```text
 Pattern:    (?=(\w))*\s
 Input:      "a "
 find()[0]:  start=1, end=2, text=" ", g1="a"     ← g1 leaks from failed pos 0 attempt
 ```
 
-```
+```text
 Pattern:    (?<!(a|bb))c?
 Input:      "ac"
 find()[1]:  start=2, end=2, text="",  g1="a"     ← g1 leaks from failed pos 1 attempt

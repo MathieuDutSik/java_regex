@@ -1,22 +1,5 @@
 #![no_std]
-//! Rust implementation of Java's `java.util.regex.Pattern` API (Java 8+, targeting Java 13+ semantics).
-//!
-//! `no_std` with `alloc` — no filesystem, no threads, no stdin/stdout.
-//!
-//! Supports the full Java regex syntax including Unicode properties, lookahead/lookbehind,
-//! atomic groups, possessive quantifiers, backreferences, and all standard flags.
-//! The `CANON_EQ` (canonical equivalence) flag is not supported.
-//!
-//! # Examples
-//!
-//! ```
-//! use java_regex::Regex;
-//!
-//! let re = Regex::new(r"\d+").unwrap();
-//! assert!(re.matches("123"));
-//! assert_eq!(re.find("a1b22c").len(), 2);
-//! assert_eq!(re.replace_all("a1b2", "#"), "a#b#");
-//! ```
+#![doc = include_str!("../README.md")]
 
 extern crate alloc;
 
@@ -35,6 +18,34 @@ mod engine;
 
 #[doc(hidden)]
 pub mod gen;
+
+// ---------------------------------------------------------------------------
+// Companion documentation modules. These hold no code — their sole purpose
+// is to surface the project's Markdown docs in the rustdoc / docs.rs output,
+// so a reader on docs.rs can browse the full reference spec, the documented
+// OpenJDK quirks, the intentional differences, and the fuzzing setup without
+// leaving the docs site.
+// ---------------------------------------------------------------------------
+
+/// Reference specification of OpenJDK's `java.util.regex.Pattern` behavior —
+/// the rules this crate reproduces.
+#[doc = include_str!("../SPEC.md")]
+pub mod spec {}
+
+/// Eight well-known OpenJDK quirks this crate faithfully reproduces, with
+/// patterns, expected behavior, and the responsible OpenJDK source class.
+#[doc = include_str!("../QUIRKS.md")]
+pub mod quirks {}
+
+/// The single intentional deviation from OpenJDK: UTF-16 code-unit offsets
+/// vs Unicode-codepoint offsets in `Matcher.start()` / `end()`.
+#[doc = include_str!("../DIFFERENCES.md")]
+pub mod differences {}
+
+/// How to run the proptest, cargo-fuzz, differential-fuzz, and benchmark
+/// suites that protect this crate's byte-for-byte OpenJDK compatibility.
+#[doc = include_str!("../FUZZING.md")]
+pub mod fuzzing {}
 
 use alloc::collections::BTreeMap;
 use alloc::format;

@@ -1,6 +1,6 @@
 # Differences from OpenJDK's java.util.regex
 
-This implementation faithfully reproduces OpenJDK's `java.util.regex.Pattern` behavior — including OpenJDK's well-known quirks (those are documented in [QUIRKS.md](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md), not here). The only remaining behavioral difference is a structural one rooted in the host language's string representation.
+This implementation faithfully reproduces OpenJDK's `java.util.regex.Pattern` behavior — including OpenJDK's well-known quirks (those are documented in [QUIRKS.md](https://github.com/MathieuDutSik/java_regex/blob/main/QUIRKS.md), not here). The only remaining behavioral difference is a structural one rooted in the host language's string representation.
 
 ## 1. Position offsets for supplementary code points
 
@@ -27,7 +27,7 @@ This is a deliberate, fundamental difference rooted in the host language. Code t
 
 That's it — the only difference. Every other previously-documented divergence has been brought into alignment with OpenJDK:
 
-- **Group capture leaks across `find()` start positions** (was: clean reset, now: leaks like Java does) — see [QUIRKS.md §8](https://github.com/mathieudutour/java_regex/blob/main/QUIRKS.md).
+- **Group capture leaks across `find()` start positions** (was: clean reset, now: leaks like Java does) — see [QUIRKS.md §8](https://github.com/MathieuDutSik/java_regex/blob/main/QUIRKS.md).
 - **Lookbehind with unbounded multi-char body** (was: accepted, now: rejected at compile time like Java).
 - **Negative lookbehind capture leak** (was: clean reset, now: leaks like Java).
 

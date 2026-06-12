@@ -64,7 +64,7 @@ Findings: 0 panics or hangs across cumulative ~10 CPU-hours as of the latest run
 
 ## Differential fuzzer against OpenJDK
 
-The highest-signal tool. It compiles a Java oracle (`DiffOracle.java`) once and spawns it as a long-lived child process; the Rust fuzzer feeds it JSON requests and compares responses against the local engine's output.
+This is the tool that backs the crate's "byte-for-byte compatible with OpenJDK 25" claim. It compiles a Java oracle (`DiffOracle.java`) once and spawns it as a long-lived child process; the Rust fuzzer feeds randomly-generated patterns, inputs, and operations to both engines through JSON requests and compares responses against the local engine's output. Throughput is roughly **20 000 cases per second** on a modern desktop CPU.
 
 ```sh
 javac DiffOracle.java                                              # one-time
@@ -82,7 +82,7 @@ The numeric argument is the number of test cases; 20 000 is a 1-second smoke tes
 | `DIFF_CLASSPATH` | Where `DiffOracle.class` lives (default: current directory) |
 | `DIFF_LOG` | JSONL file to append every mismatch — invaluable for analysis |
 
-**Current status.** 700 000+ cumulative iterations across 8 seeds (20, 32, 42, 100, 200, 300, 400, 500) at the most recent measurement: zero BMP-only divergences. Inputs containing supplementary characters produce position-offset differences only (matched text always agrees) — this is the documented, intentional [UTF-16 / UTF-8 gap](https://github.com/mathieudutour/java_regex/blob/main/DIFFERENCES.md).
+**Current status.** The latest 700 000-case batch (8 seeds: 20, 32, 42, 100, 200, 300, 400, 500) produced **zero** semantic divergences on BMP inputs. Inputs containing supplementary characters produce position-offset differences only (matched text always agrees) — this is the documented, intentional [UTF-16 / UTF-8 gap](https://github.com/MathieuDutSik/java_regex/blob/main/DIFFERENCES.md).
 
 **Reading a mismatch log.** Each line in `DIFF_LOG` is one JSON object: `{"kind": "find" | "matches" | "split" | ..., "case": {"pattern", "input", "flags", ...}}`. Reduce a failure with `cargo run --release --example diff_one < case.json`.
 

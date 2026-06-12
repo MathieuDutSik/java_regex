@@ -47,7 +47,18 @@ fn node_min_length(n: &Node) -> usize {
         | Node::FlagGroup { inner, .. }
         | Node::AtomicGroup { inner } => pattern_min_length(inner),
         Node::Quantified { inner, min, .. } => node_min_length(inner) * (*min as usize),
-        _ => 0,
+        // Only call site is `check_lookbehind` (via `pattern_min_length`).
+        // The lookbehind body is a parsed pattern, which the parser has
+        // already validated to reject Backreference/NamedBackreference/
+        // GraphemeCluster (lookbehind requires a bounded max length, which
+        // those nodes can't provide). Engine-internal nodes (GroupEnd,
+        // GreedyCont, ReluctantCont, PositionCheck) are produced by the
+        // engine during matching and never appear in parsed pattern bodies.
+        n => unreachable!(
+            "node_min_length called with {n:?} — lookbehind body should never \
+             contain Backref/NamedBackref/GraphemeCluster (parser-rejected) \
+             nor engine-internal nodes (never in parsed patterns)"
+        ),
     }
 }
 
@@ -112,7 +123,15 @@ fn node_java_max(n: &Node) -> i32 {
                 inner_max.wrapping_mul(*max as i32)
             }
         }
-        _ => 0,
+        // Same reasoning as `node_min_length`: only called via
+        // `check_lookbehind` on a parser-validated lookbehind body, which
+        // can contain neither Backref/NamedBackref/GraphemeCluster nor
+        // engine-internal nodes.
+        n => unreachable!(
+            "node_java_max called with {n:?} — lookbehind body should never \
+             contain Backref/NamedBackref/GraphemeCluster (parser-rejected) \
+             nor engine-internal nodes (never in parsed patterns)"
+        ),
     }
 }
 
@@ -144,7 +163,15 @@ fn node_max_length(n: &Node) -> Option<usize> {
         }
         Node::Backreference(_) | Node::NamedBackreference(_) => None,
         Node::GraphemeCluster => None,
-        _ => None,
+        // Only call site is `match_quant`'s Group/FlagGroup zero-width body
+        // restore check (`pattern_max_length(inner) == Some(0)`), where
+        // `inner` is the parsed inner pattern of a Group node. Engine-internal
+        // nodes (GroupEnd, GreedyCont, ReluctantCont, PositionCheck) are
+        // never present in parsed pattern bodies.
+        n => unreachable!(
+            "node_max_length called with {n:?} — only invoked on parsed \
+             Group/FlagGroup bodies, which never contain engine-internal nodes"
+        ),
     }
 }
 

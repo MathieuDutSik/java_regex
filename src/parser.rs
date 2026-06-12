@@ -53,8 +53,16 @@ fn node_max_length(n: &Node) -> Option<usize> {
         // the referenced group matches at runtime). OpenJDK rejects too.
         Node::Backreference(_) | Node::NamedBackreference(_) => None,
         Node::GraphemeCluster => None,
-        // Engine-internal node kinds shouldn't appear in user-parsed patterns.
-        _ => None,
+        // The parser's `pattern_max_length` is called via
+        // `is_lookbehind_bounded` on a freshly-parsed pattern body. That
+        // body comes straight from the parser and never contains engine-
+        // internal nodes (GroupEnd, GreedyCont, ReluctantCont,
+        // PositionCheck), which are produced only during matching.
+        n => unreachable!(
+            "parser::node_max_length called with engine-internal node {n:?} \
+             — only invoked on freshly-parsed pattern bodies which never \
+             contain such nodes"
+        ),
     }
 }
 
@@ -610,7 +618,15 @@ impl Parser {
                         'U' => target.unicode_class = true,
                         'd' => target.unix_lines = true,
                         'u' => target.unicode_case = true,
-                        _ => unreachable!(),
+                        // The outer arm at line 602 binds `ch` from the
+                        // exhaustive `'i' | 'm' | 's' | 'x' | 'U' | 'd' | 'u'`
+                        // pattern, so this catchall is structurally
+                        // unreachable. Kept to satisfy the exhaustiveness
+                        // checker on the inner `match ch`.
+                        ch => unreachable!(
+                            "inline-flag char {ch:?} not in the outer pattern \
+                             'i' | 'm' | 's' | 'x' | 'U' | 'd' | 'u'"
+                        ),
                     }
                 }
                 Some('-') => { self.advance(); clearing = true; }

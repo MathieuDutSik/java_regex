@@ -268,43 +268,6 @@ impl Regex {
         results
     }
 
-    #[allow(dead_code)]  // superseded by find_iter_impl_bounded
-    fn find_iter_impl(&self, input_chars: &[char], start: usize) -> Vec<MatchInfo> {
-        let mut results = Vec::new();
-        let input_len = input_chars.len();
-        let mut search_pos = start;
-        let mut prev_match_end = start;
-
-        // One Engine for the whole find, but State is reset after each
-        // successful match — matching OpenJDK's Matcher.search() which clears
-        // groups[] at the top of each call. Within one search-call (i.e.
-        // between failed position attempts BEFORE the next successful match),
-        // State persists so captures leak as OpenJDK does in Start.match.
-        let mut engine = Engine::new(input_chars, self.flags, self.group_count, &self.named_groups);
-        let mut state = State::new(self.group_count);
-
-        while search_pos <= input_len {
-            engine.search_start = prev_match_end;
-
-            if let Some(end_pos) = engine.try_match_at_persistent(&self.pattern, search_pos, &mut state) {
-                results.push(self.build_match_info(input_chars, search_pos, end_pos, &state.captures));
-
-                prev_match_end = end_pos;
-                if end_pos == search_pos {
-                    search_pos += 1;
-                } else {
-                    search_pos = end_pos;
-                }
-                // Reset captures for the next search-call equivalent.
-                state = State::new(self.group_count);
-            } else {
-                search_pos += 1;
-            }
-        }
-
-        results
-    }
-
     fn build_match_info(&self, input_chars: &[char], start: usize, end: usize,
                         captures: &[Option<(usize, usize)>]) -> MatchInfo {
         let matched_text: String = input_chars[start..end].iter().collect();
@@ -1546,5 +1509,405 @@ mod tests {
         // Sanity: a range that doesn't span any uppercase ASCII should still reject.
         let r = Regex::with_flags("[d-e]", "i").unwrap();
         assert!(!r.matches("g"));
+    }
+
+    // -----------------------------------------------------------------
+    // Coverage-targeted tests. Each verifies an OpenJDK-spec behavior
+    // (per java.util.regex.Pattern / Matcher Javadoc and observed JDK
+    // behavior) for a code path not exercised by the broader suite.
+    // -----------------------------------------------------------------
+
+    #[test]
+    fn test_pattern_syntax_error_no_context() {
+        // PatternSyntaxError::new constructs an error without source context.
+        // Display omits the "near index N\npattern\n  ^" part when there is
+        // no pattern attached. Mirrors how Java omits index/source when
+        // constructing PatternSyntaxException with only a message.
+        let err = PatternSyntaxError::new("boom".to_string());
+        assert_eq!(err.message, "boom");
+        assert_eq!(err.pattern, "");
+        assert_eq!(err.index, 0);
+        assert_eq!(format!("{err}"), "boom");
+    }
+
+    #[test]
+    fn test_match_info_name_and_group_count() {
+        // Mirrors Matcher.group(String) and Matcher.groupCount().
+        let re = Regex::new(r"(?<user>\w+)@(?<host>\w+\.\w+)").unwrap();
+        let ms = re.find("alice@example.com");
+        assert_eq!(ms.len(), 1);
+        let m = &ms[0];
+        assert_eq!(m.name("user"), Some("alice"));
+        assert_eq!(m.name("host"), Some("example.com"));
+        assert_eq!(m.name("nope"), None);
+        // Java's groupCount = number of groups EXCLUDING group 0.
+        assert_eq!(m.group_count(), 2);
+        // No named groups → name() always None.
+        let re2 = Regex::new(r"(\w+)").unwrap();
+        let m2 = &re2.find("hi")[0];
+        assert_eq!(m2.name("anything"), None);
+        assert_eq!(m2.group_count(), 1);
+    }
+
+    #[test]
+    fn test_java_property_names() {
+        // OpenJDK supports these Java-specific \p{...} property names
+        // (Pattern Javadoc § "Classes for Unicode scripts, blocks, categories
+        // and binary properties" — the javaXxx family mirrors
+        // java.lang.Character predicates).
+        //
+        // \p{javaISOControl}: Character.isISOControl — U+0000..U+001F and
+        // U+007F..U+009F.
+        let r = Regex::new(r"\p{javaISOControl}").unwrap();
+        assert!(r.matches("\u{0000}"));
+        assert!(r.matches("\u{001F}"));
+        assert!(r.matches("\u{007F}"));
+        assert!(!r.matches(" "));
+        assert!(!r.matches("a"));
+        // \p{javaUnicodeIdentifierStart}: Character.isUnicodeIdentifierStart
+        // — letters (alphabetic). Same set in our approximation.
+        let r = Regex::new(r"\p{javaUnicodeIdentifierStart}").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches("Ω"));
+        assert!(!r.matches("1"));
+        // \p{javaUnicodeIdentifierPart}: Character.isUnicodeIdentifierPart
+        // — letters, digits, and underscore.
+        let r = Regex::new(r"\p{javaUnicodeIdentifierPart}").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches("1"));
+        assert!(r.matches("_"));
+        assert!(!r.matches(" "));
+        // \p{javaIdentifierIgnorable}: Character.isIdentifierIgnorable —
+        // controls (non-whitespace) and format chars. Java: returns true for
+        // U+0007 (BEL, control non-whitespace) and U+200B (ZWSP, Cf).
+        let r = Regex::new(r"\p{javaIdentifierIgnorable}").unwrap();
+        assert!(r.matches("\u{0007}"));
+        assert!(r.matches("\u{200B}"));
+        assert!(!r.matches("a"));
+        assert!(!r.matches(" "));
+    }
+
+    #[test]
+    fn test_java_mirrored_property_covers_math_symbols() {
+        // OpenJDK's \p{javaMirrored} via Character.isMirrored. Bidi_Mirrored
+        // covers Ps/Pe/Pi/Pf punctuation universally; for math symbols (Sm),
+        // it covers a curated subset including U+2208 (∈ ELEMENT OF) but
+        // NOT U+2200 (∀ FOR ALL).
+        let r = Regex::new(r"\p{javaMirrored}").unwrap();
+        // Open/close punct — short-circuits in is_bidi_mirrored.
+        assert!(r.matches("("));
+        assert!(r.matches(")"));
+        // Math symbol IN the mirrored set (∈ = U+2208).
+        assert!(r.matches("\u{2208}"));
+        // Math symbol NOT in the mirrored set (∀ = U+2200) — exercises
+        // is_mirrored_math returning false.
+        assert!(!r.matches("\u{2200}"));
+        // Non-mirrored, non-punctuation, non-math (a letter).
+        assert!(!r.matches("a"));
+        // ASCII '<' and '>' are handled as a special-case in is_bidi_mirrored
+        // (treated as mirrored per Java).
+        assert!(r.matches("<"));
+        assert!(r.matches(">"));
+    }
+
+    #[test]
+    fn test_unicode_block_no_match_for_char_outside_block() {
+        // \p{InBasicLatin} matches ASCII only; a non-ASCII char hits the
+        // "Some(b) => b != expected" branch returning false.
+        let r = Regex::new(r"\p{InBasicLatin}").unwrap();
+        assert!(r.matches("a"));
+        // Cyrillic 'я' (U+044F) is in Cyrillic block, not BasicLatin.
+        assert!(!r.matches("я"));
+    }
+
+    #[test]
+    fn test_script_short_name_resolution() {
+        // OpenJDK accepts both full and short ISO 15924 script names with
+        // the "Is" prefix. Latn = Latin (short name path).
+        let r = Regex::new(r"\p{IsLatn}").unwrap();
+        assert!(r.matches("a"));
+        assert!(!r.matches("я")); // Cyrillic
+        let r = Regex::new(r"\p{IsLatin}").unwrap();
+        assert!(r.matches("a"));
+    }
+
+    #[test]
+    fn test_match_unicode_property_public_wrapper() {
+        // The non-_ext convenience wrapper. Calls match_unicode_property_ext
+        // with unicode_class=false. Tests the public API surface.
+        use crate::unicode::match_unicode_property;
+        assert!(match_unicode_property("digit", '5'));
+        assert!(!match_unicode_property("digit", 'a'));
+        assert!(match_unicode_property("L", 'a'));
+    }
+
+    #[test]
+    fn test_inline_unix_lines_flag() {
+        // OpenJDK inline `(?d)` sets UNIX_LINES (treats only `\n` as a line
+        // terminator). Documented in java.util.regex.Pattern Javadoc § "Match
+        // flags". With UNIX_LINES, `.` matches everything except `\n`, and `^`
+        // / `$` in multiline mode anchor only at `\n` — not at `\r` or other
+        // line terminators.
+        let r = Regex::new(r"(?d).").unwrap();
+        // `\r` is NOT a line terminator under UNIX_LINES, so `.` matches it.
+        assert!(r.matches("\r"));
+        // `\n` IS the terminator under UNIX_LINES; `.` rejects.
+        assert!(!r.matches("\n"));
+        // Sanity: without `(?d)`, default treats both \r and \n as terminators.
+        let r = Regex::new(r".").unwrap();
+        assert!(!r.matches("\r"));
+        assert!(!r.matches("\n"));
+    }
+
+    #[test]
+    fn test_char_class_with_predefined_h_v() {
+        // [\H] and [\V] inside a character class: Java accepts these as
+        // "non-horizontal whitespace" and "non-vertical whitespace" set
+        // contributors. The bare `\H` / `\V` are documented predefined
+        // classes; using them inside [...] composes them with other items.
+        let r = Regex::new(r"[\H]").unwrap();
+        assert!(r.matches("a"));
+        // Horizontal whitespace per Java: \t and Unicode space separators
+        // (\u{00A0}, \u{1680}, etc.) — \H rejects ' ' since space IS \h.
+        assert!(!r.matches(" "));
+        assert!(!r.matches("\t"));
+        // `\r` / `\n` are vertical whitespace, not horizontal — so \H
+        // includes them.
+        assert!(r.matches("\r"));
+        assert!(r.matches("\n"));
+
+        let r = Regex::new(r"[\V]").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches(" "));      // space is horizontal, not vertical → \V includes
+        assert!(r.matches("\t"));     // tab is horizontal too
+        assert!(!r.matches("\n"));    // newline IS vertical → \V rejects
+        assert!(!r.matches("\u{2028}")); // line separator is vertical → \V rejects
+    }
+
+    #[test]
+    fn test_grapheme_cluster_with_zwj() {
+        // \X matches a single extended grapheme cluster, including ZWJ
+        // sequences. OpenJDK supports \X as the Unicode UAX#29 extended
+        // grapheme cluster (with some quirks). A "family" emoji like
+        // 👨‍👩‍👦 = U+1F468 U+200D U+1F469 U+200D U+1F466 is one cluster.
+        let r = Regex::new(r"\X").unwrap();
+        let ms = r.find("👨‍👩‍👦");
+        assert_eq!(ms.len(), 1, "expected the whole ZWJ sequence as one cluster");
+        // Combining marks attach to base: "é" with combining acute
+        // (a + combining acute) is one cluster.
+        let ms = r.find("a\u{0301}");
+        assert_eq!(ms.len(), 1);
+        assert_eq!(ms[0].matched_text, "a\u{0301}");
+    }
+
+    #[test]
+    fn test_grapheme_in_lookbehind_unbounded_rejected() {
+        // \X is unbounded (1..many chars). Java rejects unbounded multi-char
+        // bodies in lookbehind at compile time. node_max_length(\X) = None,
+        // so pattern_max_length(lookbehind body) = None → reject.
+        assert!(Regex::new(r"(?<=\X)").is_err());
+    }
+
+    #[test]
+    fn test_zero_width_outer_with_quantified_literal_body() {
+        // Triggers pattern_max_length evaluation on a body containing
+        // Quantified(Literal,...), exercising the node_max_length arms for
+        // Literal (Some(1)), the max==u32::MAX path (None), and the bounded
+        // checked_mul path. Outer `(...)*` with min=0,max>1,body matching
+        // zero-width.
+        // Body = a* → Quantified Literal, max=u32::MAX.
+        let r = Regex::new(r"(a*)*").unwrap();
+        assert!(r.matches(""));
+        // Body = a{3} → Quantified Literal, bounded max.
+        let r = Regex::new(r"(a{3})*").unwrap();
+        assert!(r.matches(""));
+        // Body = \R{2} → Quantified LinebreakMatcher.
+        let r = Regex::new(r"(\R{2})*").unwrap();
+        assert!(r.matches(""));
+        // Body containing FlagGroup quantified.
+        let r = Regex::new(r"((?i:a)?)*").unwrap();
+        assert!(r.matches(""));
+        // Body containing Backreference quantified (unsized → None).
+        let r = Regex::new(r"((\1)?)*").unwrap();
+        assert!(r.matches(""));
+        // Body containing GraphemeCluster quantified.
+        let r = Regex::new(r"(\X?)*").unwrap();
+        assert!(r.matches(""));
+    }
+
+    #[test]
+    fn test_case_insensitive_backref_in_reluctant_quantifier() {
+        // Backreference arm of try_match_atom_mode in reluctant mode with
+        // case-insensitive comparison. Pattern (X)\1? captures "A" then
+        // reluctant-attempts \1 with CI. Mirrors Java Matcher behavior.
+        let r = Regex::with_flags(r"(A)\1+?", "i").unwrap();
+        // Capture "A" then reluctantly match more 'A' (case-insensitive).
+        assert!(r.matches("Aa"));
+        assert!(r.matches("AA"));
+        // CI mismatch — second char isn't 'a' nor 'A'.
+        let r = Regex::with_flags(r"(A)\1+?z", "i").unwrap();
+        assert!(r.matches("AaZ")); // backref \1 matches "a" (CI), then "Z" matches "z" (CI)
+        assert!(!r.matches("Abz")); // 'b' is not CI-equal to 'A'
+    }
+
+    #[test]
+    fn test_reluctant_flag_group_zero_width_body() {
+        // Reluctant quantifier on a FlagGroup with a non-deterministic body
+        // (so chain-based). Exercises the FlagGroup reluctant chain arm in
+        // try_match_atom_mode.
+        let r = Regex::new(r"(?i:a|b)*?c").unwrap();
+        assert!(r.matches("AAc"));
+        assert!(r.matches("c"));
+        // Reluctant non-det FlagGroup zero-width body — outer reluctant
+        // {2,3}? with body that can match zero-width via lookaround.
+        let r = Regex::new(r"(?i:(?=a)|x){0,3}?a").unwrap();
+        assert!(r.matches("a"));
+    }
+
+    #[test]
+    fn test_unicode_javamirrored_math_ranges() {
+        // Covers the multi-line matches! macro in is_mirrored_math: one
+        // representative char per uncovered range line. Each is a math
+        // symbol whose Bidi_Mirrored=Yes per Unicode data.
+        let r = Regex::new(r"\p{javaMirrored}").unwrap();
+        for ch in &[
+            '\u{2224}',  // ∤
+            '\u{2239}',  // ∹
+            '\u{225F}',  // ≟
+            '\u{2264}',  // ≤
+            '\u{228F}',  // ⊏
+            '\u{22BE}',  // ⊾
+            '\u{22D0}',  // ⋐
+            '\u{22F0}',  // ⋰
+            '\u{2320}',  // ⌠
+            '\u{27D5}',  // ⟕
+            '\u{27E2}',  // ⟢
+        ] {
+            assert!(r.matches(&ch.to_string()),
+                "U+{:04X} should be javaMirrored (Bidi_Mirrored math symbol)", *ch as u32);
+        }
+    }
+
+    #[test]
+    fn test_replace_multi_digit_group_and_literal_dollar() {
+        // OpenJDK's appendReplacement DSL: `$NN` references group NN, with
+        // greedy multi-digit consumption capped at the actual group count
+        // (so for 1-group pattern, `$11` is `$1` + literal "1"). Literal
+        // `$` is `\$`.
+        let r = Regex::new(r"(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)").unwrap();
+        // $10 → group 10 char (with 11 groups available).
+        assert_eq!(r.replace_all("abcdefghijk", "$10-$1"), "j-a");
+        // 1-group pattern: `$11` should consume `$1` and leave literal "1",
+        // exercising the multi-digit overflow break.
+        let r = Regex::new(r"(a)").unwrap();
+        assert_eq!(r.replace_all("a", "$11"), "a1");
+        // Escaped literal `$` via `\$`.
+        let r = Regex::new(r"a").unwrap();
+        assert_eq!(r.replace_all("a", r"\$"), "$");
+    }
+
+    #[test]
+    fn test_replacer_impls_for_string_and_ref_string() {
+        // The Replacer trait has impls for `&str`, `String`, and `&String`.
+        // Tests directly cover the String / &String impls (the &str impl is
+        // exercised by every other test).
+        let r = Regex::new(r"x").unwrap();
+        let s_owned: String = "Y".to_string();
+        let s_ref: &String = &s_owned;
+        // Closure impl (FnMut)
+        assert_eq!(r.replace_all("axb", |_m: &MatchInfo| "Y".to_string()), "aYb");
+        // String impl
+        assert_eq!(r.replace_all("axb", s_owned.clone()), "aYb");
+        // &String impl
+        assert_eq!(r.replace_all("axb", s_ref), "aYb");
+    }
+
+    #[test]
+    fn test_negative_lookbehind_unbounded_body_rejected() {
+        // Java rejects unbounded multi-char bodies for negative lookbehind
+        // (same constraint as positive): `(?<!(?:ab)+)` etc. — error.
+        assert!(Regex::new(r"(?<!(?:ab)+)").is_err());
+        assert!(Regex::new(r"(?<!\R+)").is_err());
+    }
+
+    #[test]
+    fn test_char_class_with_comments_mode() {
+        // OpenJDK's (?x) COMMENTS flag strips whitespace and `#` comments
+        // inside `[...]` as well as outside. Inside the class, whitespace
+        // should be ignored.
+        let r = Regex::new(r"(?x)[a b c]").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches("b"));
+        assert!(!r.matches(" "));
+        // Comment inside char class.
+        let r = Regex::new("(?x)[a # this is a comment\nb]").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches("b"));
+    }
+
+    #[test]
+    fn test_unclosed_character_class_error() {
+        // Java rejects unclosed character classes. Parser must emit an
+        // "Unclosed character class" PatternSyntaxException.
+        assert!(Regex::new(r"[abc").is_err());
+        assert!(Regex::new(r"[a-").is_err());
+    }
+
+    #[test]
+    fn test_empty_intersection_error() {
+        // OpenJDK rejects `[abc&&]` — the RHS of `&&` cannot be empty.
+        assert!(Regex::new(r"[abc&&]").is_err());
+    }
+
+    #[test]
+    fn test_nested_character_class() {
+        // OpenJDK supports nested character classes: `[[abc][xyz]]` is the
+        // union of {a,b,c} and {x,y,z}, equivalent to `[abcxyz]`.
+        let r = Regex::new(r"[[abc][xyz]]").unwrap();
+        assert!(r.matches("a"));
+        assert!(r.matches("b"));
+        assert!(r.matches("x"));
+        assert!(r.matches("y"));
+        assert!(!r.matches("m"));
+        // Nested with negation: `[[^abc]]` is "anything not in abc".
+        let r = Regex::new(r"[[^abc]]").unwrap();
+        assert!(r.matches("d"));
+        assert!(!r.matches("a"));
+    }
+
+    #[test]
+    fn test_unknown_category_name_returns_false() {
+        // match_ugc_category falls through `_ => false` for unrecognized
+        // names. Java's \p{...} with an unknown name is rejected at parse
+        // time, so we can only hit this branch via the engine's internal
+        // category lookup. Exercise via a property name our parser accepts
+        // but the category matcher doesn't recognize.
+        use crate::unicode::match_unicode_property;
+        // Pass a name that goes through to match_ugc_category but isn't in
+        // the giant match arm — falls through to false.
+        assert!(!match_unicode_property("definitely_not_a_real_category", 'a'));
+    }
+
+    #[test]
+    fn test_find_iter_iterator_api() {
+        // Exercises Matches::next + find_iter. Mirrors using Java's
+        // `while (m.find()) { ... }` loop. Equivalent to find() but yields
+        // matches lazily.
+        let re = Regex::new(r"\w+").unwrap();
+        let collected: Vec<_> = re.find_iter("hello   world\tfoo")
+            .map(|m| m.matched_text)
+            .collect();
+        assert_eq!(collected, vec!["hello", "world", "foo"]);
+        // Zero-width matches at each position — mirrors Java's behavior
+        // where m.find() advances by 1 after a zero-width match.
+        let re = Regex::new(r"\b").unwrap();
+        let count = re.find_iter("ab cd").count();
+        assert!(count >= 4, "expected ≥4 word boundaries, got {count}");
+        // Empty input — iterator terminates immediately for a non-zero-width
+        // pattern, and yields exactly one zero-width match for one.
+        let re = Regex::new(r"\w").unwrap();
+        assert_eq!(re.find_iter("").count(), 0);
+        let re = Regex::new(r"").unwrap();
+        assert_eq!(re.find_iter("").count(), 1);
     }
 }

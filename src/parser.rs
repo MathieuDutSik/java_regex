@@ -126,10 +126,6 @@ impl Parser {
         }
     }
 
-    fn remaining(&self) -> usize {
-        self.chars.len() - self.pos
-    }
-
     fn parse_pattern(&mut self) -> Result<Pattern, PatternSyntaxError> {
         // Java's inline `(?s)` is compile-time: any branch parsed AFTER an
         // inline flag setter sees the new flags at parse time (because the
@@ -294,7 +290,9 @@ impl Parser {
 
             'R' => Ok(Node::LinebreakMatcher),
             'X' => Ok(Node::GraphemeCluster),
-            'Q' => self.parse_quoted(),
+            // Note: top-level `\Q...\E` is pre-handled in parse_pattern_alt;
+            // char-class `\Q...\E` is handled in parse_char_class_item. So
+            // `\Q` never reaches parse_escape — no arm needed here.
             'p' => self.parse_unicode_property_node(false),
             'P' => self.parse_unicode_property_node(true),
             'x' => self.parse_hex_char().map(Node::Literal),
@@ -330,19 +328,10 @@ impl Parser {
                 Ok(Node::NamedBackreference(name))
             }
 
-            // Octal 3-digit (1-3 leading digit)
-            ch if ('1'..='3').contains(&ch) && self.remaining() >= 2
-                && self.chars.get(self.pos).is_some_and(|c| ('0'..='7').contains(c))
-                && self.chars.get(self.pos + 1).is_some_and(|c| ('0'..='7').contains(c))
-                && (ch as u32 - '0' as u32) * 64
-                    + (self.chars[self.pos] as u32 - '0' as u32) * 8
-                    + (self.chars[self.pos + 1] as u32 - '0' as u32) <= 0o377 => {
-                let d1 = ch as u32 - '0' as u32;
-                let d2 = self.advance().unwrap() as u32 - '0' as u32;
-                let d3 = self.advance().unwrap() as u32 - '0' as u32;
-                let code = d1 * 64 + d2 * 8 + d3;
-                Ok(Node::Literal(char::from_u32(code).unwrap_or('\0')))
-            }
+            // Note: there's no "bare" 3-digit octal (`\377`) arm here.
+            // Java's spec requires the leading `0` (`\0nnn`). The `'1'..='9'`
+            // arm above always catches the leading digit as a backreference,
+            // matching OpenJDK behavior.
 
             // Escaped metacharacters
             '\\' | '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '^' | '$' | '-' | '!' | '=' | '<' | '>' | '/' | '#' | ' ' | '&' | '~' | '@' | '`' | '\'' | '"' | ',' | ';' | ':' => {
@@ -453,35 +442,6 @@ impl Parser {
         Node::CharClass(CharClass {
             negated: false,
             items: vec![CharClassItem::Predefined(pc)],
-        })
-    }
-
-    fn parse_quoted(&mut self) -> Result<Node, PatternSyntaxError> {
-        let mut chars = Vec::new();
-        loop {
-            if self.pos >= self.chars.len() { break; }
-            if self.pos + 1 < self.chars.len() && self.chars[self.pos] == '\\' && self.chars[self.pos + 1] == 'E' {
-                self.pos += 2;
-                break;
-            }
-            chars.push(self.chars[self.pos]);
-            self.pos += 1;
-        }
-        if chars.is_empty() {
-            return Ok(Node::Group {
-                index: None,
-                name: None,
-                inner: Pattern { branches: vec![vec![]] },
-            });
-        }
-        if chars.len() == 1 {
-            return Ok(Node::Literal(chars[0]));
-        }
-        let nodes: Vec<Node> = chars.into_iter().map(Node::Literal).collect();
-        Ok(Node::Group {
-            index: None,
-            name: None,
-            inner: Pattern { branches: vec![nodes] },
         })
     }
 

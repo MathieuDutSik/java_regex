@@ -488,3 +488,112 @@ fn render_class_item(it: &ClassItem, out: &mut String) {
         }
     }
 }
+
+#[cfg(all(test, feature = "fuzz-gen"))]
+mod tests {
+    use super::*;
+    use arbitrary::{Arbitrary, Unstructured};
+    use alloc::vec;
+
+    /// Deterministic SplitMix64 — same PRNG used by diff_fuzz.
+    fn fill(state: &mut u64, buf: &mut [u8]) {
+        for chunk in buf.chunks_mut(8) {
+            *state = state.wrapping_add(0x9E3779B97F4A7C15);
+            let mut z = *state;
+            z = (z ^ (z >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
+            z = (z ^ (z >> 27)).wrapping_mul(0x94D049BB133111EB);
+            let bytes = (z ^ (z >> 31)).to_le_bytes();
+            for (i, b) in chunk.iter_mut().enumerate() { *b = bytes[i]; }
+        }
+    }
+
+    #[test]
+    fn fuzz_render_covers_all_variants() {
+        // 50k Arbitrary-driven render() calls. The PRNG seed is fixed so
+        // the coverage signal is deterministic across runs.
+        let mut state: u64 = 0xDEADBEEFCAFEBABE;
+        let mut buf = vec![0u8; 1024];
+        let mut produced = 0usize;
+        for _ in 0..50_000 {
+            fill(&mut state, &mut buf);
+            let mut u = Unstructured::new(&buf);
+            if let Ok(node) = RegexNode::arbitrary(&mut u) {
+                let s = render(&node);
+                // Output must be valid UTF-8 (always true for String) and
+                // non-empty for non-degenerate trees. We don't assert
+                // anything about regex validity — the goal is coverage.
+                let _ = s;
+                produced += 1;
+            }
+        }
+        assert!(produced > 1000, "expected >1k successful renders, got {produced}");
+    }
+
+    #[test]
+    fn flag_set_to_flags_str_alias() {
+        // `to_flags_str` is a public alias of the private `to_chars`. Direct
+        // call covers the alias method.
+        let f = FlagSet { i: true, m: false, s: true, u: false };
+        assert_eq!(f.to_flags_str(), "is");
+    }
+
+    #[test]
+    fn render_each_top_level_variant() {
+        // Direct hand-rolled coverage of each top-level RegexNode variant
+        // and a few representative inner shapes. Acts as a checklist that
+        // every render path runs at least once.
+        let cases: alloc::vec::Vec<RegexNode> = vec![
+            RegexNode::Literal(LitChar::Cr),
+            RegexNode::Dot,
+            RegexNode::Anchor(Anchor::WordBoundary),
+            RegexNode::Escape(EscClass::Digit),
+            RegexNode::LineBreak,
+            RegexNode::Concat(vec![RegexNode::Dot, RegexNode::Dot]),
+            RegexNode::Alt(vec![RegexNode::Dot, RegexNode::Literal(LitChar::Cr)]),
+            RegexNode::Alt(vec![]),
+            RegexNode::Group {
+                kind: GroupKind::Capturing,
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Group {
+                kind: GroupKind::NonCapturing,
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Group {
+                kind: GroupKind::Atomic,
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Group {
+                kind: GroupKind::Named(GroupName::Foo),
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Quantified {
+                body: Box::new(RegexNode::Dot),
+                quant: Quantifier { kind: QuantKind::Star, mode: QuantMode::Greedy },
+            },
+            RegexNode::Lookaround {
+                ahead: true, neg: false,
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Lookaround {
+                ahead: false, neg: true,
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::Backref(BackrefIdx::B1),
+            RegexNode::Quote(vec![LitChar::Cr]),
+            RegexNode::InlineFlags(FlagSet { i: true, m: false, s: true, u: false }),
+            RegexNode::InlineFlags(FlagSet { i: false, m: false, s: false, u: false }),
+            RegexNode::FlagGroup {
+                flags: FlagSet { i: true, m: false, s: false, u: false },
+                body: Box::new(RegexNode::Dot),
+            },
+            RegexNode::FlagGroup {
+                flags: FlagSet { i: false, m: false, s: false, u: false },
+                body: Box::new(RegexNode::Dot),
+            },
+        ];
+        for n in &cases {
+            let _ = render(n);
+        }
+    }
+}

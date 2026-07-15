@@ -661,32 +661,30 @@ impl<'a> Engine<'a> {
             }
         }
 
-        if count >= min {
-            if self.match_nodes(rest, pos, state) {
-                // Mirror Java's GroupCurly.match0 backoff: after `next.match`
-                // succeeds, the OUTER GroupCurly explicitly sets
-                //   groups[groupIndex]   = i - k
-                //   groups[groupIndex+1] = i
-                // overriding any captures set deeper in the chain. Equivalent
-                // here: when this match_greedy frame's rest succeeds (= Java's
-                // outer GroupCurly continuation), and our atom is a capturing
-                // Group, override captures[idx] to (iter_start, pos) = the
-                // last-consumed iter's slice.
-                //
-                // GUARD: only fire when the atom would use Path 1 (= Java's
-                // GroupCurly conversion). For Path 2 (Ques `Branch[head, null]`
-                // or non-det `Prolog(Loop)`), Java has no such override.
-                if count > 0 {
-                    if let Node::Group { index: Some(idx), inner, .. } = atom {
-                        let is_ques = min == 0 && max == 1;
-                        let chain_based = is_ques || !is_deterministic_body(inner);
-                        if !chain_based {
-                            state.captures[*idx] = Some((iter_start, pos));
-                        }
+        if count >= min && self.match_nodes(rest, pos, state) {
+            // Mirror Java's GroupCurly.match0 backoff: after `next.match`
+            // succeeds, the OUTER GroupCurly explicitly sets
+            //   groups[groupIndex]   = i - k
+            //   groups[groupIndex+1] = i
+            // overriding any captures set deeper in the chain. Equivalent
+            // here: when this match_greedy frame's rest succeeds (= Java's
+            // outer GroupCurly continuation), and our atom is a capturing
+            // Group, override captures[idx] to (iter_start, pos) = the
+            // last-consumed iter's slice.
+            //
+            // GUARD: only fire when the atom would use Path 1 (= Java's
+            // GroupCurly conversion). For Path 2 (Ques `Branch[head, null]`
+            // or non-det `Prolog(Loop)`), Java has no such override.
+            if count > 0 {
+                if let Node::Group { index: Some(idx), inner, .. } = atom {
+                    let is_ques = min == 0 && max == 1;
+                    let chain_based = is_ques || !is_deterministic_body(inner);
+                    if !chain_based {
+                        state.captures[*idx] = Some((iter_start, pos));
                     }
                 }
-                return true;
             }
+            return true;
         }
 
         false

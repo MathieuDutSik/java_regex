@@ -240,7 +240,7 @@ proptest! {
     #[test]
     fn parser_never_panics(ast in arb_regex_node()) {
         let pat = render(&ast);
-        let _ = std::panic::catch_unwind(|| {
+        std::panic::catch_unwind(|| {
             let _ = Regex::new(&pat);
         }).map_err(|_| TestCaseError::fail(format!("parser panicked on pattern {:?}", pat)))?;
     }

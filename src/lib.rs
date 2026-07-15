@@ -548,7 +548,7 @@ impl Regex {
     pub fn split_with_limit(&self, input: &str, limit: i32) -> Vec<String> {
         let input_chars: Vec<char> = input.chars().collect();
         let input_len = input_chars.len();
-        let mut parts = Vec::new();
+        let mut parts: Vec<String> = Vec::new();
         let mut index = 0;
         let mut search_pos = 0;
 
@@ -594,7 +594,9 @@ impl Regex {
 
         // Java limit=0: remove trailing empty strings
         if limit == 0 {
-            while parts.last().is_some_and(|s: &String| s.is_empty()) {
+            // `is_some_and` is stable since 1.70; our MSRV is 1.65 so we use
+            // the equivalent `matches!` form.
+            while matches!(parts.last(), Some(s) if s.is_empty()) {
                 parts.pop();
             }
         }

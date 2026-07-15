@@ -19,8 +19,7 @@ pub fn chars_eq_ci(a: char, b: char, unicode_case: bool) -> bool {
         let b_upper = b.to_uppercase().next().unwrap_or(b);
         a_upper == b_upper
     } else {
-        a.to_ascii_lowercase() == b.to_ascii_lowercase()
-            || a.to_ascii_uppercase() == b.to_ascii_uppercase()
+        a.eq_ignore_ascii_case(&b)
     }
 }
 

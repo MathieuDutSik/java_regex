@@ -13,7 +13,7 @@ cargo test              # 109 lib tests + 61 jsonl + 8 proptest + 5 doctest
 cargo doc --no-deps     # builds the rustdoc, including SPEC/QUIRKS/etc.
 ```
 
-The crate is `no_std` with `alloc`; tests run on stable Rust 1.65+. No native
+The crate is `no_std` with `alloc`; tests run on stable Rust 1.78+. No native
 dependencies needed for the standard test suite.
 
 ## The compatibility commitment
@@ -164,7 +164,7 @@ file, cron at midnight on day N for `ci_NN_*.yml`):
 | 2 | `ci_02_clippy.yml` | `cargo clippy --all-targets --all-features -- -D warnings` |
 | 3 | `ci_03_benchmark.yml` | `cargo run --release --example bench_engines` |
 | 4 | `ci_04_doc.yml` | `cargo doc --no-deps -D warnings`, missing-docs check |
-| 5 | `ci_05_msrv.yml` | Rust 1.65 build + lib tests |
+| 5 | `ci_05_msrv.yml` | Rust 1.78 build + lib tests |
 | 6 | `ci_06_no_std.yml` | `cargo build --target thumbv7em-none-eabi` |
 | 7 | `ci_07_publish_dryrun.yml` | `cargo publish --dry-run` + exclude-list audit |
 | 8 | `ci_08_coverage.yml` | `cargo-llvm-cov` summary + lcov artifact |

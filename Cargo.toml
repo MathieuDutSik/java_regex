@@ -2,7 +2,7 @@
 name = "java_regex"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.65"  # for `let ... else` syntax used in examples
+rust-version = "1.78"  # matches lock-file format v4 (Rust 1.78+)
 authors = ["Mathieu Dutour Sikiric <mathieu.dutour@gmail.com>"]
 description = "Rust implementation of Java's java.util.regex.Pattern, byte-for-byte compatible with OpenJDK"
 license = "MIT OR Apache-2.0"

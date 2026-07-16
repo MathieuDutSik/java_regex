@@ -594,9 +594,7 @@ impl Regex {
 
         // Java limit=0: remove trailing empty strings
         if limit == 0 {
-            // `is_some_and` is stable since 1.70; our MSRV is 1.65 so we use
-            // the equivalent `matches!` form.
-            while matches!(parts.last(), Some(s) if s.is_empty()) {
+            while parts.last().is_some_and(|s| s.is_empty()) {
                 parts.pop();
             }
         }
